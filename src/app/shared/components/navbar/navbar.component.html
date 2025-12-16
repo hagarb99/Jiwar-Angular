@@ -1,0 +1,21 @@
+
+<nav class="navbar">
+  <div class="logo">
+    <a routerLink="/"><img src="assets/logo.png" alt="Jiwar"></a>
+  </div>
+
+  <ul class="nav-links">
+    <li><a routerLink="/home">{{ 'HOME' | translate }}</a></li>
+    <li><a routerLink="/listings">{{ 'LISTINGS' | translate }}</a></li>
+    <li><a routerLink="/calculator">{{ 'CALCULATOR' | translate }}</a></li>
+    <li *ngIf="isLoggedIn"><a routerLink="/dashboard">{{ 'DASHBOARD' | translate }}</a></li>
+    <li><a routerLink="/about">{{ 'ABOUT' | translate }}</a></li>
+    <li><a routerLink="/contact">{{ 'CONTACT' | translate }}</a></li>
+  </ul>
+
+  <div class="nav-actions">
+    <button (click)="toggleLanguage()">{{ currentLang }}</button>
+    <button *ngIf="!isLoggedIn" routerLink="/login">{{ 'LOGIN' | translate }}</button>
+    <button *ngIf="isLoggedIn" (click)="logout()">{{ 'LOGOUT' | translate }}</button>
+  </div>
+</nav>
