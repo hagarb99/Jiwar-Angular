@@ -1,22 +1,13 @@
 import { Component } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [ButtonModule, ToastModule],  // Add PrimeNG modules here
-  template: `
-    <p-button label="Show Toast" (onClick)="showToast()"></p-button>
-    <p-toast></p-toast>
-  `,
-  styles: []
+   standalone: true,
+  imports: [RouterOutlet],
+   template: `<router-outlet></router-outlet>`
+  // styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  constructor(private messageService: MessageService) {}
-
-  showToast() {
-    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'PrimeNG is working!' });
-  }
+  title = 'app';
 }

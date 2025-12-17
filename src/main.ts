@@ -4,7 +4,9 @@ import { AppComponent } from './app/app.component';
 import { HTTP_INTERCEPTORS, provideHttpClient , withInterceptorsFromDi} from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthInterceptor } from './app/core/interceptors/auth.interceptor';
-import { router } from './app/app.routes';
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeuix/themes/aura';
+
 bootstrapApplication(AppComponent, {
   ...appConfig,
   providers: [
@@ -18,7 +20,11 @@ bootstrapApplication(AppComponent, {
       multi: true
     },
     CookieService,
-    router
+     providePrimeNG({
+      theme: {
+        preset: Aura
+      }
+    })
   ]
 })
 .catch((err) => console.error(err));

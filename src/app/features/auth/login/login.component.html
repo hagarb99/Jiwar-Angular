@@ -1,0 +1,20 @@
+<form [formGroup]="loginForm" (ngSubmit)="submit()">
+  <div class="p-field">
+    <label for="email">Email</label>
+    <input pInputText id="email" formControlName="email" placeholder="Enter your email" class="p-inputtext-lg" />
+    <small *ngIf="emailErrors?.['required']" class="p-error">Email is required.</small>
+    <small *ngIf="emailErrors?.['email']" class="p-error">Invalid email format.</small>
+  </div>
+  
+  <div class="p-field">
+    <label for="password">Password</label>
+    <input pPassword id="password" formControlName="password" placeholder="Enter your password" class="p-inputtext-lg" />
+    <small *ngIf="passwordErrors?.['required']" class="p-error">Password is required.</small>
+  </div>
+  
+  <p-button type="submit" label="Login" [loading]="loading" [disabled]="loginForm.invalid || loading" class="p-button-lg"></p-button>
+  
+  <p-progressSpinner *ngIf="loading" styleClass="w-2rem h-2rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+  
+  <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage"></p-message>
+</form>
