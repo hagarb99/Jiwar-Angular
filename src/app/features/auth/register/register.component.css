@@ -1,0 +1,84 @@
+.register-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* LEFT */
+.register-left {
+  width: 50%;
+  background: url('/assets/register-bg.jpg') center/cover no-repeat;
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px;
+}
+
+.overlay h2 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+/* RIGHT */
+.register-right {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.register-form {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subtitle {
+  color: #777;
+  margin-bottom: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.error {
+  color: #e53935;
+  font-size: 12px;
+}
+
+.submit-btn {
+  width: 100%;
+}
+
+.login-link {
+  text-align: center;
+  font-size: 14px;
+}
+
+.spinner {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .register-left {
+    display: none;
+  }
+  .register-right {
+    width: 100%;
+  }
+}

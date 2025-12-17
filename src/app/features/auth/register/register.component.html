@@ -1,0 +1,113 @@
+<div class="register-layout">
+
+  <!-- LEFT SIDE (IMAGE / INFO) -->
+  <div class="register-left">
+    <div class="overlay">
+      <h2>Create Account</h2>
+      <p>Join us as Customer, Property Owner, or Interior Designer</p>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE (FORM) -->
+  <div class="register-right">
+    <form [formGroup]="registerForm" (ngSubmit)="submit()" class="register-form">
+
+      <h1>Create Account</h1>
+      <p class="subtitle">Start your journey with us</p>
+
+      <!-- Username -->
+      <div class="field">
+        <label>Username</label>
+        <input pInputText formControlName="username" placeholder="Enter username" />
+        <small class="error" *ngIf="registerForm.get('username')?.touched && registerForm.get('username')?.invalid">
+          Username is required
+        </small>
+      </div>
+
+      <!-- Full Name -->
+      <div class="field">
+        <label>Full Name</label>
+        <input pInputText formControlName="name" placeholder="Enter full name" />
+        <small class="error" *ngIf="registerForm.get('name')?.touched && registerForm.get('name')?.invalid">
+          Name is required
+        </small>
+      </div>
+
+      <!-- Email -->
+      <div class="field">
+        <label>Email</label>
+        <input pInputText formControlName="email" placeholder="Enter email" />
+        <small class="error" *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
+          Enter valid email
+        </small>
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label>Password</label>
+        <p-password
+          formControlName="password"
+          placeholder="Enter password"
+          [toggleMask]="true"
+          [feedback]="false">
+        </p-password>
+        <small class="error" *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
+          Password is required
+        </small>
+      </div>
+
+      <!-- Role Cards -->
+      <div class="field">
+        <label>I am a</label>
+        <p-dropdown
+          formControlName="role"
+          [options]="roles"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select role">
+        </p-dropdown>
+        <small class="error" *ngIf="registerForm.get('role')?.touched && registerForm.get('role')?.invalid">
+          Role is required
+        </small>
+      </div>
+
+      <!-- Phone -->
+      <div class="field">
+        <label>Phone Number</label>
+        <input pInputText formControlName="phoneNumber" placeholder="Enter phone number" />
+        <small class="error" *ngIf="registerForm.get('phoneNumber')?.touched && registerForm.get('phoneNumber')?.invalid">
+          Phone number is required
+        </small>
+      </div>
+
+      <!-- Submit -->
+      <p-button
+        type="submit"
+        label="Create Account"
+        styleClass="submit-btn"
+        [loading]="loading"
+        [disabled]="registerForm.invalid || loading">
+      </p-button>
+
+      <!-- Loading -->
+      <div class="spinner" *ngIf="loading">
+        <p-progressSpinner strokeWidth="6"></p-progressSpinner>
+      </div>
+
+      <!-- Error -->
+      <p-message
+        *ngIf="errorMessage"
+        severity="error"
+        [text]="errorMessage">
+      </p-message>
+
+      <!-- Login link -->
+      <p class="login-link">
+        Already have an account?
+        <a routerLink="/login">Login</a>
+      </p>
+
+    </form>
+  </div>
+
+</div>
