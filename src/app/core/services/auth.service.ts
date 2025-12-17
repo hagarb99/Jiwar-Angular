@@ -25,12 +25,12 @@ export class AuthService extends ApiBaseService {
   }
 
   login(data: LoginRequest) {
-    return this.httpClient.post<{
-      success: boolean;
-      message: string;
-      data: LoginResponse;
-    }>(`${this.apiBaseUrl}/account/login`, data);
+    return this.httpClient.post<LoginResponse>(
+      `${this.apiBaseUrl}/account/login`,
+      data
+    );
   }
+
 
   logout() {
     this.cookieService.delete('token');
