@@ -40,21 +40,29 @@ export class LoginComponent {
   }
 
   submit(): void {
-    if (this.loginForm.invalid) return;
+  if (this.loginForm.invalid) return;
 
-    this.loading = true; // start loading
-    this.authService.login(this.loginForm.value).subscribe({
-      next: (res) => {
-        this.authService.setToken(res.token);
-        console.log('Saved token:', this.authService.getToken());
-        this.router.navigate(['/']); // redirect after login
-        this.loading = false;
-      },
-      error: (err) => {
-        this.errorMessage = err?.error?.message ?? 'Login failed';
-        console.error(err);
-        this.loading = false;
-      }
-    });
-  }
+  this.loading = true;
+  this.errorMessage = null;
+
+  this.authService.login(this.loginForm.value).subscribe({
+    next: (response) => {
+      this.authService.setToken(response.token);
+
+      // redirect after success
+      this.router.navigate(['/']);
+    },
+    error: (error) => {
+      // backend message if exists
+      this.errorMessage =
+        error?.error?.message ?? 'Invalid email or password';
+
+      this.loading = false;
+    },
+    complete: () => {
+      this.loading = false;
+    }
+  });
+}
+
 }
