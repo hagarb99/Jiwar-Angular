@@ -1,20 +1,117 @@
-<form [formGroup]="loginForm" (ngSubmit)="submit()">
-  <div class="p-field">
-    <label for="email">Email</label>
-    <input pInputText id="email" formControlName="email" placeholder="Enter your email" class="p-inputtext-lg" />
-    <small *ngIf="emailErrors?.['required']" class="p-error">Email is required.</small>
-    <small *ngIf="emailErrors?.['email']" class="p-error">Invalid email format.</small>
+<div class="auth-container">
+  <!-- LEFT SIDE -->
+  <div class="auth-left">
+    <div class="overlay"></div>
+
+    <div class="services">
+      <h2>Our Services</h2>
+      <p>Discover what we offer to help you find your perfect property</p>
+
+      <div class="services-grid">
+        <div class="service-card">
+          <i class="pi pi-home"></i>
+          <h4>Property Listing</h4>
+          <span>List & manage properties</span>
+        </div>
+
+        <div class="service-card">
+          <i class="pi pi-search"></i>
+          <h4>Buying & Renting</h4>
+          <span>Find your dream home</span>
+        </div>
+
+        <div class="service-card">
+          <i class="pi pi-palette"></i>
+          <h4>Interior Design</h4>
+          <span>Professional design services</span>
+        </div>
+
+        <div class="service-card">
+          <i class="pi pi-cog"></i>
+          <h4>Property Management</h4>
+          <span>Complete management solutions</span>
+        </div>
+      </div>
+    </div>
   </div>
-  
-  <div class="p-field">
-    <label for="password">Password</label>
-    <input pPassword id="password" formControlName="password" placeholder="Enter your password" class="p-inputtext-lg" />
-    <small *ngIf="passwordErrors?.['required']" class="p-error">Password is required.</small>
+
+  <!-- RIGHT SIDE -->
+ <div class="auth-right">
+  <div class="auth-form">
+
+    <!-- Logo -->
+    <div class="logo-wrapper">
+      <div class="logo-circle">
+        <i class="pi pi-building"></i>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <h1 class="title">Welcome Back!</h1>
+    <p class="subtitle">Sign in to your account</p>
+
+    <!-- FORM -->
+    <form [formGroup]="loginForm" (ngSubmit)="submit()" class="form">
+
+      <!-- Email -->
+      <div class="field">
+        <label>Your Email</label>
+        <input
+          pInputText
+          formControlName="email"
+          placeholder="Enter your email"
+        />
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label>Password</label>
+        <div class="password-wrapper">
+          <input
+            pPassword
+            formControlName="password"
+            placeholder="Enter password"
+            [feedback]="false"
+          />
+        </div>
+      </div>
+
+      <!-- Remember / Forgot -->
+      <div class="options">
+        <div class="remember">
+          <span>Remember Me</span>
+        </div>
+        <a class="forgot">Forgot Password?</a>
+      </div>
+
+      <!-- Button -->
+      <p-button
+        label="Login"
+        type="submit"
+        class="login-btn"
+        [loading]="loading"
+      ></p-button>
+
+      <!-- Divider -->
+      <div class="divider">
+        <span>Instant Login</span>
+      </div>
+
+      <!-- Social -->
+      <div class="social">
+        <button class="social-btn google">
+          <i class="pi pi-google"></i>
+          Continue with Google
+        </button>
+        <button class="social-btn facebook">
+          <i class="pi pi-facebook"></i>
+          Continue with Facebook
+        </button>
+      </div>
+
+    </form>
+
   </div>
-  
-  <p-button type="submit" label="Login" [loading]="loading" [disabled]="loginForm.invalid || loading" class="p-button-lg"></p-button>
-  
-  <p-progressSpinner *ngIf="loading" styleClass="w-2rem h-2rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
-  
-  <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage"></p-message>
-</form>
+</div>
+
+</div>

@@ -13,7 +13,8 @@ import { MessageModule } from 'primeng/message';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule, PasswordModule, ProgressSpinnerModule, MessageModule],
-  templateUrl: './login.component.html'
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   loginForm: FormGroup;
