@@ -46,11 +46,12 @@ export class LoginComponent {
     this.authService.login(this.loginForm.value).subscribe({
       next: (res) => {
         this.authService.setToken(res.token);
+        console.log('Saved token:', this.authService.getToken());
         this.router.navigate(['/']); // redirect after login
         this.loading = false;
       },
       error: (err) => {
-        this.errorMessage = 'Login failed';
+        this.errorMessage = err?.error?.message ?? 'Login failed';
         console.error(err);
         this.loading = false;
       }
