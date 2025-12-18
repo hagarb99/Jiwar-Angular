@@ -89,26 +89,19 @@
   max-width: 420px;
 }
 
-/* Logo */
+/* Center wrapper */
 .logo-wrapper {
   display: flex;
   justify-content: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
-.logo-circle {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #DAC187, #bfa15a);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo-circle i {
-  font-size: 26px;
-  color: #112B45;
+/* The logo itself */
+.logo-image {
+  width: 100px !important;      /* حجم مثالي */
+  max-width: 30%;      /* آمن للموبايل */
+  height: auto;
+  object-fit: contain;
 }
 
 /* Titles */
