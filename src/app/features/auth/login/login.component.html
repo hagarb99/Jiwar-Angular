@@ -23,6 +23,7 @@
     </div>
   </div>
 
+<<<<<<< HEAD
   <!-- Right Side - Auth Form -->
   <div class="w-full lg-w-half flex flex-col justify-center items-center p-8 bg-background">
     <div class="w-full max-w-md">
@@ -118,5 +119,85 @@
         <a routerLink="/register" class="switch-link">Register</a>
       </p>
     </div>
+=======
+  <!-- RIGHT SIDE -->
+ <div class="auth-right">
+  <div class="auth-form">
+
+    <!-- Logo -->
+<div class="logo-wrapper">
+  <div class="logo-circle">
+    <div class="logo-inner">
+      <img src="logo3.jpg" alt="Logo" style="margin-top: 100px;"/>
+    </div>
+  </div>
+</div>
+
+    <!-- Title -->
+    <h1 class="title">Welcome Back!</h1>
+    <p class="subtitle">Sign in to your account</p>
+
+    <!-- FORM -->
+    <form [formGroup]="loginForm" (ngSubmit)="submit()" class="form">
+
+      <!-- Email -->
+      <div class="field">
+        <label>Your Email</label>
+        <input
+          pInputText
+          formControlName="email"
+          placeholder="Enter your email"
+        />
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label>Password</label>
+        <div class="password-wrapper">
+          <input
+            pPassword
+            formControlName="password"
+            placeholder="Enter password"
+            [feedback]="false"
+          />
+        </div>
+      </div>
+
+      <!-- Remember / Forgot -->
+      <div class="options">
+        <div class="remember">
+          <span>Remember Me</span>
+        </div>
+        <a class="forgot">Forgot Password?</a>
+      </div>
+
+      <!-- Button -->
+      <p-button
+        label="Login"
+        type="submit"
+        class="login-btn"
+        [loading]="loading"
+      ></p-button>
+
+      <!-- Divider -->
+      <div class="divider">
+        <span>Instant Login</span>
+      </div>
+
+      <!-- Social -->
+      <div class="social">
+        <button class="social-btn google">
+          <i class="pi pi-google"></i>
+          Continue with Google
+        </button>
+        <button class="social-btn facebook">
+          <i class="pi pi-facebook"></i>
+          Continue with Facebook
+        </button>
+      </div>
+
+    </form>
+
+>>>>>>> 2da592e028f9573ea13b5a7240a40a658eeb80fb
   </div>
 </div>
