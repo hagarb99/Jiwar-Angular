@@ -138,7 +138,6 @@
   color: #6b7280;
 }
 
-<<<<<<< HEAD
 /* Logo */
 .logo-circle {
   width: 3.5rem;
@@ -154,21 +153,6 @@
 .logo-icon {
   font-size: 1.75rem;
   color: #112B45;
-=======
-/* Center wrapper */
-.logo-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 32px;
-}
-
-/* The logo itself */
-.logo-image {
-  width: 100px !important;      /* حجم مثالي */
-  max-width: 30%;      /* آمن للموبايل */
-  height: auto;
-  object-fit: contain;
->>>>>>> 2da592e028f9573ea13b5a7240a40a658eeb80fb
 }
 
 /* Typography */
