@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { AuthService, RegisterRequest } from '../../../core/services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -28,14 +28,60 @@ import { RouterModule } from '@angular/router';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit, OnDestroy {
   registerForm: FormGroup;
   loading = false;
   errorMessage: string | null = null;
+  showPassword = false;
+  showConfirmPassword = false;
+  currentSlide = 0;
+  private slideInterval: any;
+
   roles = [
-    { label: 'Property Owner', value: 'PropertyOwner' },
-    { label: 'Interior Designer', value: 'InteriorDesigner' }
+    {
+      id: 'PropertyOwner',
+      label: 'Property Owner',
+      icon: 'pi-key',
+      description: 'List and manage your properties'
+    },
+    {
+      id: 'Customer',
+      label: 'Customer',
+      icon: 'pi-search',
+      description: 'Browse and book properties'
+    },
+    {
+      id: 'InteriorDesigner',
+      label: 'Interior Designer',
+      icon: 'pi-palette',
+      description: 'Design and staging services'
+    }
   ];
+
+  roleSlides = [
+    {
+      id: 'owner',
+      image: '/assets/auth-slider-owner.png',
+      title: 'Property Owner',
+      subtitle: 'List, manage, and sell your properties easily.',
+      icon: 'pi-key'
+    },
+    {
+      id: 'customer',
+      image: '/assets/auth-slider-customer.png',
+      title: 'Customer',
+      subtitle: 'Discover, explore, and find your perfect home.',
+      icon: 'pi-search'
+    },
+    {
+      id: 'designer',
+      image: '/assets/auth-slider-designer.png',
+      title: 'Interior Designer',
+      subtitle: 'Showcase your designs and connect with property owners.',
+      icon: 'pi-palette'
+    }
+  ];
+
 
   constructor(
     private fb: FormBuilder,
@@ -48,7 +94,8 @@ export class RegisterComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
       role: [null, Validators.required],
-      phoneNumber: ['', Validators.required]
+      phoneNumber: ['', Validators.required],
+      confirmPassword: ['', Validators.required]
     });
   }
 
@@ -58,11 +105,12 @@ export class RegisterComponent {
     this.loading = true;
     this.errorMessage = null;
 
-    const data: RegisterRequest = this.registerForm.value;
+    // const data: RegisterRequest = this.registerForm.value;
+    const { confirmPassword, ...data } = this.registerForm.value as any;
 
     this.authService.register(data).subscribe({
       next: () => {
-        this.router.navigate(['/auth/login']);
+        this.router.navigate(['/login']);
         this.loading = false;
       },
       error: (err) => {
@@ -71,5 +119,26 @@ export class RegisterComponent {
         this.loading = false;
       }
     });
+  }
+
+  nextSlide() {
+    this.currentSlide = (this.currentSlide + 1) % this.roleSlides.length;
+  }
+
+  prevSlide() {
+    this.currentSlide = (this.currentSlide - 1 + this.roleSlides.length) % this.roleSlides.length;
+  }
+
+  ngOnInit() {
+    // Auto-advance slider every 5 seconds
+    this.slideInterval = setInterval(() => {
+      this.nextSlide();
+    }, 5000);
+  }
+
+  ngOnDestroy() {
+    if (this.slideInterval) {
+      clearInterval(this.slideInterval);
+    }
   }
 }

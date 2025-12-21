@@ -1,113 +1,153 @@
-<div class="register-layout">
+<div class="min-h-screen flex">
+  <!-- Left Side - Image Slider -->
+  <div class="hidden lg-flex w-half relative overflow-hidden">
+    <!-- Slider Images -->
+    <div *ngFor="let slide of roleSlides; let i = index" [class.active]="i === currentSlide" class="slide">
+      <img [src]="slide.image" [alt]="slide.title" class="slide-image" />
+      <!-- Dark overlay for text readability -->
+      <div class="slide-overlay"></div>
+    </div>
 
-  <!-- LEFT SIDE (IMAGE / INFO) -->
-  <div class="register-left">
-    <div class="overlay">
-      <h2>Create Account</h2>
-      <p>Join us as Customer, Property Owner, or Interior Designer</p>
+    <!-- Slide Content -->
+    <div class="slide-content">
+      <div class="max-w-md">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="slide-icon-wrapper">
+            <i [class]="'pi ' + roleSlides[currentSlide].icon + ' slide-icon'"></i>
+          </div>
+          <h2 class="slide-title">{{ roleSlides[currentSlide].title }}</h2>
+        </div>
+        <p class="slide-subtitle">{{ roleSlides[currentSlide].subtitle }}</p>
+
+        <!-- Slider indicators -->
+        <div class="slider-indicators">
+          <button *ngFor="let _ of roleSlides; let idx = index" (click)="currentSlide = idx"
+            [class.active]="idx === currentSlide" class="indicator" type="button"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Arrows -->
+    <button (click)="prevSlide()" type="button" class="nav-arrow nav-arrow-left">
+      <i class="pi pi-chevron-left"></i>
+    </button>
+    <button (click)="nextSlide()" type="button" class="nav-arrow nav-arrow-right">
+      <i class="pi pi-chevron-right"></i>
+    </button>
+  </div>
+
+  <!-- Right Side - Auth Form -->
+  <div class="w-full lg-w-half flex flex-col justify-center items-center p-8 bg-background">
+    <div class="w-full max-w-md">
+      <!-- Logo -->
+      <div class="flex justify-center mb-6">
+        <div class="logo-circle">
+          <i class="pi pi-building logo-icon"></i>
+        </div>
+      </div>
+
+      <!-- Title -->
+      <h1 class="title">Create Account</h1>
+      <p class="subtitle">Join us and start your journey</p>
+
+      <!-- Form -->
+      <form [formGroup]="registerForm" (ngSubmit)="submit()" class="form">
+        <!-- Full Name -->
+        <div class="field">
+          <label class="field-label">Full Name</label>
+          <input pInputText formControlName="name" placeholder="Enter your full name" class="field-input" />
+          <small *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched"
+            class="p-error block mt-1">Name is required</small>
+        </div>
+
+        <!-- Role Selection Cards -->
+        <div class="field">
+          <label class="field-label">I am a...</label>
+          <div class="role-cards">
+            <button *ngFor="let role of roles" type="button" (click)="registerForm.patchValue({ role: role.id })"
+              [class.active]="registerForm.value.role === role.id" class="role-card">
+              <div class="role-icon-wrapper" [class.active]="registerForm.value.role === role.id">
+                <i [class]="'pi ' + role.icon + ' role-icon'" [class.active]="registerForm.value.role === role.id"></i>
+              </div>
+              <div class="role-text">
+                <p class="role-label">{{ role.label }}</p>
+                <p class="role-description">{{ role.description }}</p>
+              </div>
+            </button>
+          </div>
+          <small *ngIf="registerForm.get('role')?.invalid && registerForm.get('role')?.touched"
+            class="p-error block mt-1">Please select a role</small>
+        </div>
+
+        <!-- Username -->
+        <div class="field">
+          <label class="field-label">Username</label>
+          <input pInputText formControlName="username" placeholder="Enter username" class="field-input" />
+          <small *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
+            class="p-error block mt-1">Username is required</small>
+        </div>
+
+        <!-- Email -->
+        <div class="field">
+          <label class="field-label">Email</label>
+          <input pInputText type="email" formControlName="email" placeholder="Enter your email" class="field-input" />
+          <small *ngIf="registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched"
+            class="p-error block mt-1">Email is required</small>
+          <small *ngIf="registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched"
+            class="p-error block mt-1">Invalid email format</small>
+        </div>
+
+        <!-- Phone -->
+        <div class="field">
+          <label class="field-label">Phone</label>
+          <input pInputText formControlName="phoneNumber" placeholder="Enter phone number" class="field-input" />
+          <small *ngIf="registerForm.get('phoneNumber')?.invalid && registerForm.get('phoneNumber')?.touched"
+            class="p-error block mt-1">Phone number is required</small>
+        </div>
+
+        <!-- Password -->
+        <div class="field">
+          <label class="field-label">Password</label>
+          <div class="password-field">
+            <input [type]="showPassword ? 'text' : 'password'" pInputText formControlName="password"
+              placeholder="Enter password" class="field-input pr-12" />
+            <button type="button" (click)="showPassword = !showPassword" class="password-toggle">
+              <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+            </button>
+          </div>
+          <small *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+            class="p-error block mt-1">Password is required</small>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="field">
+          <label class="field-label">Confirm Password</label>
+          <div class="password-field">
+            <input [type]="showConfirmPassword ? 'text' : 'password'" pInputText formControlName="confirmPassword"
+              placeholder="Confirm your password" class="field-input pr-12" />
+            <button type="button" (click)="showConfirmPassword = !showConfirmPassword" class="password-toggle">
+              <i [class]="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+            </button>
+          </div>
+          <small *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
+            class="p-error block mt-1">Confirm password is required</small>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Submit Button -->
+        <p-button [label]="loading ? 'Please wait...' : 'Create Account'" type="submit" [loading]="loading"
+          [disabled]="loading" class="submit-btn" styleClass="w-full h-12"></p-button>
+      </form>
+
+      <!-- Switch to Login -->
+      <p class="switch-text">
+        Already have an account?
+        <a routerLink="/login" class="switch-link">Login</a>
+      </p>
     </div>
   </div>
-
-  <!-- RIGHT SIDE (FORM) -->
-  <div class="register-right">
-    <form [formGroup]="registerForm" (ngSubmit)="submit()" class="register-form">
-
-      <h1>Create Account</h1>
-      <p class="subtitle">Start your journey with us</p>
-
-      <!-- Username -->
-      <div class="field">
-        <label>Username</label>
-        <input pInputText formControlName="username" placeholder="Enter username" />
-        <small class="error" *ngIf="registerForm.get('username')?.touched && registerForm.get('username')?.invalid">
-          Username is required
-        </small>
-      </div>
-
-      <!-- Full Name -->
-      <div class="field">
-        <label>Full Name</label>
-        <input pInputText formControlName="name" placeholder="Enter full name" />
-        <small class="error" *ngIf="registerForm.get('name')?.touched && registerForm.get('name')?.invalid">
-          Name is required
-        </small>
-      </div>
-
-      <!-- Email -->
-      <div class="field">
-        <label>Email</label>
-        <input pInputText formControlName="email" placeholder="Enter email" />
-        <small class="error" *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
-          Enter valid email
-        </small>
-      </div>
-
-      <!-- Password -->
-      <div class="field">
-        <label>Password</label>
-        <p-password
-          formControlName="password"
-          placeholder="Enter password"
-          [toggleMask]="true"
-          [feedback]="false">
-        </p-password>
-        <small class="error" *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
-          Password is required
-        </small>
-      </div>
-
-      <!-- Role Cards -->
-      <div class="field">
-        <label>I am a</label>
-        <p-dropdown
-          formControlName="role"
-          [options]="roles"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Select role">
-        </p-dropdown>
-        <small class="error" *ngIf="registerForm.get('role')?.touched && registerForm.get('role')?.invalid">
-          Role is required
-        </small>
-      </div>
-
-      <!-- Phone -->
-      <div class="field">
-        <label>Phone Number</label>
-        <input pInputText formControlName="phoneNumber" placeholder="Enter phone number" />
-        <small class="error" *ngIf="registerForm.get('phoneNumber')?.touched && registerForm.get('phoneNumber')?.invalid">
-          Phone number is required
-        </small>
-      </div>
-
-      <!-- Submit -->
-      <p-button
-        type="submit"
-        label="Create Account"
-        styleClass="submit-btn"
-        [loading]="loading"
-        [disabled]="registerForm.invalid || loading">
-      </p-button>
-
-      <!-- Loading -->
-      <div class="spinner" *ngIf="loading">
-        <p-progressSpinner strokeWidth="6"></p-progressSpinner>
-      </div>
-
-      <!-- Error -->
-      <p-message
-        *ngIf="errorMessage"
-        severity="error"
-        [text]="errorMessage">
-      </p-message>
-
-      <!-- Login link -->
-      <p class="login-link">
-        Already have an account?
-        <a routerLink="/login">Login</a>
-      </p>
-
-    </form>
-  </div>
-
 </div>

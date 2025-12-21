@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService, LoginResponse } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
@@ -8,11 +8,13 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
+import { CheckboxModule } from 'primeng/checkbox';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule, PasswordModule, ProgressSpinnerModule, MessageModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ButtonModule, InputTextModule, PasswordModule, ProgressSpinnerModule, MessageModule, CheckboxModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -20,6 +22,15 @@ export class LoginComponent {
   loginForm: FormGroup;
   errorMessage: string | null = null;
   loading = false;
+  showPassword = false;
+  rememberMe = false;
+
+  services = [
+    { icon: 'pi-home', title: 'Property Listing', subtitle: 'List & manage properties' },
+    { icon: 'pi-search', title: 'Buying & Renting', subtitle: 'Find your dream home' },
+    { icon: 'pi-palette', title: 'Interior Design', subtitle: 'Professional design services' },
+    { icon: 'pi-cog', title: 'Property Management', subtitle: 'Complete management solutions' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -55,15 +66,14 @@ export class LoginComponent {
           this.authService.setToken(token);
           this.router.navigate(['/']);
         } else {
-          this.errorMessage ='Login failed';
+          this.errorMessage = 'Login failed';
         }
         this.loading = false;
       },
       error: (err) => {
         console.error('Login error detailed:', err);
-        const status = err.status || 'Unknown';
-        const msg = err.error?.message || err.message || 'Unknown error';
-        this.errorMessage = `Login failed: ${status} - ${msg}`;
+        const msg = err.error?.message || err.message || 'Login failed';
+        this.errorMessage = msg;
         this.loading = false;
       }
     });
