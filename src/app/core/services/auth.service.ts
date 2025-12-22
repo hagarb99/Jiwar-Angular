@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ApiBaseService } from './api-base.service';
 import { CookieService } from 'ngx-cookie-service';
+import { GoogleLoginProvider, SocialAuthService } from '@abacritt/angularx-social-login';
 
 export interface RegisterRequest {
   username: string;
@@ -37,11 +38,17 @@ export interface LoginResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService extends ApiBaseService {
 
-  constructor(http: HttpClient, private cookieService: CookieService) {
+  constructor(http: HttpClient, private cookieService: CookieService,
+    private socialAuthService: SocialAuthService
+  ) {
     super(http);
   }
+  
+  googleBackendLogin(payload: { IdToken: string }) {
+    return this.httpClient.post(`${this.apiBaseUrl}/auth/google-signin`, payload);
+  }
 
-   register(data: RegisterRequest) {
+  register(data: RegisterRequest) {
     return this.httpClient.post<RegisterResponse>(
       `${this.apiBaseUrl}/account/register`,
       data
@@ -71,4 +78,20 @@ export class AuthService extends ApiBaseService {
     const token = this.getToken();
     return !!token;
   }
+  googleLogin() {
+    return this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
+  }
+
+  // googleBackendLogin(idToken: string) {
+  //   return this.httpClient.post<any>(
+  //     `${this.apiBaseUrl}/auth/google-signin`,
+  //     idToken,
+  //     {
+  //       headers: { 'Content-Type': 'application/json' }
+  //     }
+  //   );
+  // }
+
+
+  
 }

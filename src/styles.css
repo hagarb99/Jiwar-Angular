@@ -1,1 +1,40 @@
 @import "primeicons/primeicons.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #020817;
+  --card: #ffffff;
+  --card-foreground: #020817;
+  --primary: #0f172a;
+  --primary-foreground: #f8fafc;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #d4af37;
+  --accent-foreground: #0f172a;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #020817;
+  --shadow-luxury: 0 20px 40px -15px rgba(0, 0, 0, .1), 0 10px 20px -10px rgba(0, 0, 0, .05);
+  --shadow-gold: 0 10px 30px -5px rgba(212, 175, 55, .3);
+}
+
+@layer utilities {
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#D4AF37] via-[#F9E29C] to-[#D4AF37];
+  }
+  .gradient-gold {
+    @apply bg-gradient-to-r from-[#D4AF37] via-[#F9E29C] to-[#D4AF37];
+  }
+  .hover-gold:hover {
+    @apply border-[#D4AF37]/50 shadow-[0_10px_30px_-5px_rgba(212,175,55,.3)];
+  }
+  .transition-smooth {
+    @apply transition-all duration-300 ease-in-out;
+  }
+}

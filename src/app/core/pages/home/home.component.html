@@ -1,1 +1,84 @@
-<p>home works!</p>
+<div class="min-h-screen">
+    <app-navigation />
+
+    <!-- Hero -->
+    <section class="relative h-screen flex items-center justify-center text-white"
+        [style.backgroundImage]="'url(' + heroBackgroundImage + ')'"
+        style="background-size: cover; background-position: center;">
+        <div
+            class="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/85 to-transparent pointer-events-none">
+        </div>
+
+        <div class="relative container mx-auto px-4 z-10">
+            <div class="max-w-3xl space-y-6">
+                <span class="px-4 py-2 rounded-full bg-accent/20 text-accent text-sm font-semibold">
+                    AI-Powered Real Estate Intelligence
+                </span>
+
+                <h1 class="text-5xl md:text-7xl font-bold">
+                    Your Smart Gateway to
+                    <span class="text-gradient-gold"> Fair Property Value</span>
+                </h1>
+
+                <p class="text-xl text-white/90">
+                    Discover transparent property valuations and intelligent comparisons.
+                </p>
+
+                <div class="flex gap-4">
+                    <p-button label="Get Your Property Value" styleClass="gradient-gold text-primary font-bold px-8"
+                        iconPos="right">
+                        <lucide-angular [img]="ArrowRight" class="ml-2 h-5 w-5"></lucide-angular>
+                    </p-button>
+
+                    <p-button label="Explore Features" severity="secondary" outlined="true">
+                    </p-button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Properties -->
+    <section class="py-20 bg-muted">
+        <div class="grid md:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            <app-property-card [image]="propertyImageOne" title="Modern Luxury Villa" location="Beverly Hills, CA"
+                price="$4,500,000" type="Villa" purpose="For Sale" />
+
+            <app-property-card [image]="propertyImageTwo" title="Downtown Penthouse" location="Manhattan, NY"
+                price="$8,500/mo" type="Penthouse" purpose="For Rent" />
+
+            <app-property-card [image]="propertyImageThree" title="Waterfront Condo" location="Miami Beach, FL"
+                price="$2,100,000" type="Condo" purpose="For Sale" />
+
+            <app-property-card [image]="propertyImageFour" title="Beachfront Estate" location="Malibu, CA"
+                price="$15,000/mo" type="Estate" purpose="For Rent" />
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="py-20">
+        <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div *ngFor="let feature of features" class="p-8 rounded-2xl shadow-luxury border">
+                <lucide-angular [img]="feature.icon" class="h-8 w-8 text-accent"></lucide-angular>
+                <h3 class="text-2xl font-bold mt-4">{{ feature.title }}</h3>
+                <p class="text-muted-foreground">{{ feature.description }}</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-20 bg-muted">
+        <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div *ngFor="let testimonial of testimonials" class="p-8 rounded-2xl shadow-luxury">
+                <div class="flex mb-4">
+                    <lucide-angular *ngFor="let _ of getRatingArray(testimonial.rating)" [img]="Star"
+                        class="h-5 w-5 text-accent fill-accent">
+                    </lucide-angular>
+                </div>
+                <p class="italic">"{{ testimonial.content }}"</p>
+                <p class="font-bold mt-4">{{ testimonial.name }}</p>
+                <p class="text-sm">{{ testimonial.role }}</p>
+            </div>
+        </div>
+    </section>
+    <app-footer />
+</div>

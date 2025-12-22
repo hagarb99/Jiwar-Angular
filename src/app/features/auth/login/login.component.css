@@ -344,6 +344,29 @@
   border-color: #DAC187;
 }
 
+.google-signin-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3rem;
+}
+
+::ng-deep .google-signin-wrapper asl-google-signin-button {
+  width: 100%;
+}
+
+::ng-deep .google-signin-wrapper asl-google-signin-button>div {
+  width: 100% !important;
+  display: flex;
+  justify-content: center;
+}
+
+::ng-deep .google-signin-wrapper asl-google-signin-button iframe {
+  width: 100% !important;
+  height: 3rem !important;
+}
+
+
 .ml-2 {
   margin-left: 0.5rem;
 }
