@@ -1,0 +1,8 @@
+.bg-navy-overlay {
+  background: linear-gradient(
+    to right,
+    rgba(8, 25, 55, 0.92),
+    rgba(8, 25, 55, 0.75),
+    rgba(8, 25, 55, 0.2)
+  );
+}
