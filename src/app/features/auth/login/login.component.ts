@@ -10,7 +10,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
 import { CheckboxModule } from 'primeng/checkbox';
 import { RouterModule } from '@angular/router';
-import { SocialAuthService, GoogleSigninButtonModule, SocialUser } from '@abacritt/angularx-social-login';
+import { SocialAuthService, GoogleSigninButtonModule, SocialUser, GoogleLoginProvider } from '@abacritt/angularx-social-login';
 import { SocialLoginModule } from '@abacritt/angularx-social-login';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Subscription } from 'rxjs';
@@ -90,37 +90,46 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
 
+ngOnInit(): void {
+  this.authSubscription = this.socialAuthService.authState.subscribe((user: SocialUser | null) => {
+    if (!user || !user.idToken) {
+      return; // No login happened
+    }
 
-  ngOnInit(): void {
-    this.authSubscription = this.socialAuthService.authState.subscribe((user: SocialUser | null) => {
-      if (!user) return;
-      const idToken = (user as any).idToken || (user).idToken;
-      if (!idToken) {
-        console.error('No idToken returned from social login', user);
-        this.errorMessage = 'Google sign-in failed: no idToken';
-        return;
-      }
+    // Show loading while contacting backend
+    this.loading = true;
+    this.errorMessage = null;
 
-      this.authService.googleBackendLogin({ IdToken: idToken }).subscribe({
-        next: (response: any) => {
-          const token = response?.Data?.Token;
-          if (token) {
-            this.authService.setToken(token);
-            this.router.navigate(['/']);
-          } else {
-            this.errorMessage = 'Google login failed: No token received';
-            console.error('Backend response', response);
-          }
-        },
-        error: (err) => {
-          console.error('Backend google login error', err);
-          this.errorMessage = err?.error?.message || 'Google login failed';
+    this.authService.googleBackendLogin(user.idToken).subscribe({
+      next: (response: any) => {
+        // Now response has: { Success: true, Data: { Token: "...", ... } }
+        const token = response?.data?.token || response?.token;
+
+        if (token) {
+          this.authService.setToken(token);
+          this.router.navigate(['/']);
+        } else {
+          this.errorMessage = 'Google login failed: No token received';
+          console.error('Invalid response:', response);
         }
-      });
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Google login error:', err);
+        this.errorMessage = err?.error?.message || 'Failed to sign in with Google';
+        this.loading = false;
+      }
     });
-  }
+  });
+}
 
-
+googleLogin() {
+  this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
+}
+triggerGoogleSignIn() {
+  const button = document.querySelector('asl-google-signin-button') as HTMLElement;
+  button?.click();
+}
   ngOnDestroy(): void {
     this.authSubscription?.unsubscribe();
   }

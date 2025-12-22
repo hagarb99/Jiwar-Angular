@@ -89,7 +89,7 @@
 
         <!-- Social Login -->
         <div class="social-grid">
-          <button type="button" class="social-btn">
+          <button type="button" class="social-btn" (click)="triggerGoogleSignIn()">
             <svg class="w-4 h-4" viewBox="0 0 24 24">
               <path fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -102,9 +102,15 @@
             </svg>
             <span class="text-sm ml-1">Google</span>
           </button>
-          <asl-google-signin-button size="large" theme="outline" text="signin_with">
-          </asl-google-signin-button>
-
+          <!-- <asl-google-signin-button size="large" theme="outline" text="signin_with">
+          </asl-google-signin-button>  -->
+<!-- Hidden official button to trigger the real Google login -->
+<asl-google-signin-button 
+  style="display: none;"
+  type="standard" 
+  size="large" 
+  text="signin_with">
+</asl-google-signin-button>
           <button type="button" class="social-btn">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path
