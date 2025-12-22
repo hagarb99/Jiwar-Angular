@@ -61,21 +61,21 @@ export class RegisterComponent implements OnInit, OnDestroy {
   roleSlides = [
     {
       id: 'owner',
-      image: '/assets/auth-slider-owner.png',
+      image: 'auth-slider-owner.png',
       title: 'Property Owner',
       subtitle: 'List, manage, and sell your properties easily.',
       icon: 'pi-key'
     },
     {
       id: 'customer',
-      image: '/assets/auth-slider-customer.png',
+      image: 'auth-slider-customer.png',
       title: 'Customer',
       subtitle: 'Discover, explore, and find your perfect home.',
       icon: 'pi-search'
     },
     {
       id: 'designer',
-      image: '/assets/auth-slider-designer.png',
+      image: 'auth-slider-designer.png',
       title: 'Interior Designer',
       subtitle: 'Showcase your designs and connect with property owners.',
       icon: 'pi-palette'

@@ -1,21 +1,21 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NavigationComponent } from '../../../shared/components/navigation/navigation.component';
 import { PropertyCardComponent } from '../../../shared/components/property-card/property-card.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { ButtonModule } from 'primeng/button';
 import { LucideAngularModule, ArrowRight, Star, Shield, Search, BarChart3 } from 'lucide-angular';
+import { NavbarComponent } from "../../../shared/components/navbar/navbar.component";
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [
     CommonModule,
-    NavigationComponent,
     PropertyCardComponent,
     FooterComponent,
     ButtonModule,
-    LucideAngularModule
+    LucideAngularModule,
+    NavbarComponent
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'

@@ -1,21 +1,102 @@
+<nav class="fixed top-0 inset-x-0 z-50 bg-background/98 backdrop-blur-md border-b shadow-luxury">
+  <div class="container mx-auto px-6">
+    <div class="flex items-center justify-between h-20">
 
-<nav class="navbar">
-  <div class="logo">
-    <a routerLink="/"><img src="assets/logo.png" alt="Jiwar"></a>
-  </div>
+      <!-- Logo -->
+      <a routerLink="/" class="flex items-center">
+        <img src="logo2.png" alt="Jiwar" class="nav-logo transition-smooth hover:scale-105" />
+      </a>
 
-  <ul class="nav-links">
-    <li><a routerLink="/home">HOME</a></li>
-    <li><a routerLink="/listings">LISTINGS</a></li>
-    <li><a routerLink="/calculator">CALCULATOR</a></li>
-    <li *ngIf="isLoggedIn"><a routerLink="/dashboard">DASHBOARD</a></li>
-    <li><a routerLink="/about">ABOUT</a></li>
-    <li><a routerLink="/contact">CONTACT</a></li>
-  </ul>
+      <!-- Desktop Menu -->
+      <div class="hidden lg:flex items-center gap-6">
 
-  <div class="nav-actions">
-    <!-- <button (click)="toggleLanguage()">{{ currentLang }}</button> -->
-    <button *ngIf="!isLoggedIn" routerLink="/login">LOGIN</button>
-    <button *ngIf="isLoggedIn" (click)="logout()">LOGOUT</button>
+        <!-- Buy -->
+        <div class="relative" (mouseenter)="setDropdown('buy')" (mouseleave)="setDropdown(null)">
+          <button class="nav-btn">
+            Buy
+            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'buy'">
+            </lucide-angular>
+          </button>
+
+          <div *ngIf="activeDropdown === 'buy'" class="dropdown-card">
+            <a *ngFor="let item of buyDropdownItems" [routerLink]="item.path" class="dropdown-item"  (click)="setDropdown(null)">
+              {{ item.label }}
+            </a>
+          </div>
+        </div>
+
+        <!-- Invest -->
+        <div class="relative" (mouseenter)="setDropdown('invest')" (mouseleave)="setDropdown(null)">
+          <button class="nav-btn">
+            Invest
+            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'invest'">
+            </lucide-angular>
+          </button>
+
+          <div *ngIf="activeDropdown === 'invest'" class="dropdown">
+            <a *ngFor="let item of investDropdownItems" [routerLink]="item.path" class="dropdown-item">
+              {{ item.label }}
+            </a>
+          </div>
+        </div>
+
+        <!-- Renovation -->
+        <div class="relative" (mouseenter)="setDropdown('renovation')" (mouseleave)="setDropdown(null)">
+          <button class="nav-btn">
+            Renovation
+            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'renovation'">
+            </lucide-angular>
+          </button>
+
+          <div *ngIf="activeDropdown === 'renovation'" class="dropdown">
+            <a *ngFor="let item of renovationDropdownItems" [routerLink]="item.path" class="dropdown-item">
+              {{ item.label }}
+            </a>
+          </div>
+        </div>
+
+        <!-- Explore Properties -->
+        <a routerLink="/properties">
+          <button class="gradient-gold text-primary px-4 py-2 rounded-lg">
+            Explore Properties
+          </button>
+        </a>
+      </div>
+
+      <!-- Right -->
+      <div class="hidden lg:flex items-center gap-4">
+        <button (click)="toggleLanguage()" class="flex items-center gap-2">
+          <lucide-angular [img]="Globe"></lucide-angular>
+          EN | AR
+        </button>
+
+        <a routerLink="/login">
+          <button class="text-primary px-4 py-2 rounded-lg border border-primary">
+            Login
+          </button>
+        </a>
+
+        <a routerLink="/register">
+          <button class="gradient-gold text-primary px-4 py-2 rounded-lg">
+            Sign Up
+          </button>
+        </a>
+      </div>
+
+      <!-- Mobile Toggle -->
+      <button class="lg:hidden" (click)="toggleMobileMenu()">
+        <lucide-angular [img]="mobileMenuOpen ? X : Menu"></lucide-angular>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div *ngIf="mobileMenuOpen" class="lg:hidden py-6 space-y-4">
+      <div *ngFor="let item of buyDropdownItems">
+        <a [routerLink]="item.path" (click)="closeMobileMenu()">
+          {{ item.label }}
+        </a>
+      </div>
+    </div>
+
   </div>
 </nav>
