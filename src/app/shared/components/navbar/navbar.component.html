@@ -64,24 +64,35 @@
       </div>
 
       <!-- Right -->
-      <div class="hidden lg:flex items-center gap-4">
-        <button (click)="toggleLanguage()" class="flex items-center gap-2">
-          <lucide-angular [img]="Globe"></lucide-angular>
-          EN | AR
-        </button>
+      <!-- Right Side (Desktop) -->
+<div class="hidden lg:flex items-center gap-4">
+  <!-- Language -->
+  <button (click)="toggleLanguage()" class="flex items-center gap-2">
+    <lucide-angular [img]="Globe"></lucide-angular>
+    EN | AR
+  </button>
 
-        <a routerLink="/login">
-          <button class="text-primary px-4 py-2 rounded-lg border border-primary">
-            Login
-          </button>
-        </a>
+  <!-- Show Login & Sign Up when NOT logged in -->
+  <div *ngIf="!isLoggedIn">
+    <a routerLink="/login">
+      <button class="text-primary px-4 py-2 rounded-lg border border-primary">
+        Login
+      </button>
+    </a>
+    <a routerLink="/register">
+      <button class="gradient-gold text-primary px-4 py-2 rounded-lg">
+        Sign Up
+      </button>
+    </a>
+  </div>
 
-        <a routerLink="/register">
-          <button class="gradient-gold text-primary px-4 py-2 rounded-lg">
-            Sign Up
-          </button>
-        </a>
-      </div>
+  <!-- Show Logout when logged in -->
+  <div *ngIf="isLoggedIn" class="flex items-center gap-4">
+    <button (click)="logout()" class="text-red-600 px-4 py-2 rounded-lg border border-red-600 hover:bg-red-50">
+      Logout
+    </button>
+  </div>
+</div>
 
       <!-- Mobile Toggle -->
       <button class="lg:hidden" (click)="toggleMobileMenu()">

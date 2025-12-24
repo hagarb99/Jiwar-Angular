@@ -9,8 +9,8 @@ import {
   X,
   Globe
 } from 'lucide-angular';
-
 import { ButtonModule } from 'primeng/button';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -35,6 +35,7 @@ export class NavbarComponent {
   activeDropdown: 'buy' | 'invest' | 'renovation' | null = null;
   language: 'EN' | 'AR' = 'EN';
   currentPath = '';
+  isLoggedIn = false;
 
   buyDropdownItems = [
     { path: '/properties', label: 'Apartments for Sale' },
@@ -58,7 +59,9 @@ export class NavbarComponent {
     { path: '/dashboard/owner', label: 'View Recommendations' }
   ];
 
-  constructor(private router: Router) {
+  constructor(private router: Router,
+    private authService: AuthService
+  ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(event => {
@@ -80,6 +83,17 @@ export class NavbarComponent {
 
   closeMobileMenu(): void {
     this.mobileMenuOpen = false;
+  }
+ ngOnInit(): void {
+    // Listen to login status changes
+    this.authService.isLoggedIn$.subscribe(status => {
+      this.isLoggedIn = status;
+    });
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
 }

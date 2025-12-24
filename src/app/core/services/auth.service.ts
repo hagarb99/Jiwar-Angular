@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { ApiBaseService } from './api-base.service';
 import { CookieService } from 'ngx-cookie-service';
 import { GoogleLoginProvider, SocialAuthService } from '@abacritt/angularx-social-login';
+import { BehaviorSubject, Observable} from 'rxjs';
 
 export interface RegisterRequest {
   username: string;
@@ -37,13 +38,18 @@ export interface LoginResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService extends ApiBaseService {
-
   constructor(http: HttpClient, private cookieService: CookieService,
     private socialAuthService: SocialAuthService
   ) {
     super(http);
+    this.isLoggedInSubject = new BehaviorSubject<boolean>(this.isLoggedIn());
+    this.isLoggedIn$ = this.isLoggedInSubject.asObservable();
   }
   
+  private isLoggedInSubject!: BehaviorSubject<boolean>;  // ← ! عشان TypeScript يعرف إنه هيتعين بعدين
+  isLoggedIn$!: Observable<boolean>;
+
+
 googleBackendLogin(idToken: string) {
   return this.httpClient.post(`/api/account/google-signin`, { IdToken: idToken });
 }
@@ -66,10 +72,12 @@ googleBackendLogin(idToken: string) {
 
   logout() {
     this.cookieService.delete('token');
+    this.isLoggedInSubject.next(false);
   }
 
   setToken(token: string) {
     this.cookieService.set('token', token);
+    this.isLoggedInSubject.next(true);
   }
 
   getToken(): string | null {
@@ -83,17 +91,5 @@ googleBackendLogin(idToken: string) {
   googleLogin() {
     return this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
   }
-
-  // googleBackendLogin(idToken: string) {
-  //   return this.httpClient.post<any>(
-  //     `${this.apiBaseUrl}/auth/google-signin`,
-  //     idToken,
-  //     {
-  //       headers: { 'Content-Type': 'application/json' }
-  //     }
-  //   );
-  // }
-
-
   
 }
