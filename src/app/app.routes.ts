@@ -9,7 +9,13 @@ const routes: Routes = [
     component: HomeComponent
   },
   { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent }
+  { path: 'register', component: RegisterComponent },
+  {
+    path: 'renovation',
+    loadChildren: () => import('./features/renovation/renovation.routes').then(m => m.RENOVATION_ROUTES)
+  }
 ]
+
+
 export const router = provideRouter(routes);
 
