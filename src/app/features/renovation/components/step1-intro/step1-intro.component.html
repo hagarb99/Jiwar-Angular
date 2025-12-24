@@ -1,0 +1,77 @@
+<div class="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans">
+
+    <!-- Hero Icon -->
+    <div class="w-20 h-20 rounded-full bg-[#F5F0E6] flex items-center justify-center mb-8">
+        <i class="pi pi-calculator text-2xl text-[#C5A666]"></i>
+    </div>
+
+    <!-- Header -->
+    <h1 class="text-4xl font-bold text-slate-900 text-center mb-4 tracking-tight">
+        Renovation & Development Simulator
+    </h1>
+    <p class="text-slate-500 text-center max-w-2xl text-lg leading-relaxed mb-12">
+        Get personalized recommendations to improve your property's value. Our simulator evaluates your apartment's
+        condition and suggests improvements tailored to your goals and budget.
+    </p>
+
+    <!-- Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl px-4">
+
+        <!-- Card 1: Technical Analysis -->
+        <div
+            class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-start hover:shadow-md transition-shadow duration-300">
+            <div class="w-12 h-12 rounded-xl bg-[#F5F0E6] flex items-center justify-center mb-6">
+                <i class="pi pi-wrench text-[#C5A666] text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-3">Technical Analysis</h3>
+            <p class="text-slate-500 leading-relaxed text-sm">
+                Plumbing, electrical, and structural recommendations.
+            </p>
+        </div>
+
+        <!-- Card 2: Functional Improvements -->
+        <div
+            class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-start hover:shadow-md transition-shadow duration-300">
+            <div class="w-12 h-12 rounded-xl bg-[#F5F0E6] flex items-center justify-center mb-6">
+                <i class="pi pi-home text-[#C5A666] text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-3">Functional Improvements</h3>
+            <p class="text-slate-500 leading-relaxed text-sm">
+                Kitchen, bathroom, and space optimization suggestions.
+            </p>
+        </div>
+
+        <!-- Card 3: Design & Aesthetics -->
+        <div
+            class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-start hover:shadow-md transition-shadow duration-300">
+            <div class="w-12 h-12 rounded-xl bg-[#F5F0E6] flex items-center justify-center mb-6">
+                <i class="pi pi-palette text-[#C5A666] text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-3">Design & Aesthetics</h3>
+            <p class="text-slate-500 leading-relaxed text-sm">
+                Color palettes, furniture layout, and decoration style.
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Disclaimer -->
+    <p class="text-slate-400 text-xs text-center mt-12 mb-8 max-w-3xl">
+        Note: This simulator provides advisory recommendations only. We connect you with professional Interior Designers
+        for implementation.
+    </p>
+
+    <!-- CTA Button -->
+    <button (click)="startSimulation()" [disabled]="isLoading"
+        class="bg-[#DCCCA3] hover:bg-[#D2C090] disabled:opacity-70 disabled:cursor-not-allowed text-slate-900 font-semibold py-3 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 transform hover:scale-[1.02]">
+        <span *ngIf="!isLoading">Start Simulation</span>
+        <span *ngIf="isLoading"><i class="pi pi-spin pi-spinner"></i> Starting...</span>
+        <i *ngIf="!isLoading" class="pi pi-arrow-right text-sm"></i>
+    </button>
+    <!-- Back to Home -->
+    <a href="/"
+        class="mt-4 text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors flex items-center gap-2">
+        <i class="pi pi-arrow-left"></i>
+        Cancel
+    </a>
+</div>

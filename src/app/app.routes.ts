@@ -11,7 +11,16 @@ const routes: Routes = [
   },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+<<<<<<< HEAD
   { path: 'add-property', component: AddPropertyComponent }
+=======
+  {
+    path: 'renovation',
+    loadChildren: () => import('./features/renovation/renovation.routes').then(m => m.RENOVATION_ROUTES)
+  }
+>>>>>>> ce3dbfbf06cb6350d8bf914c65146df445ddcd06
 ]
+
+
 export const router = provideRouter(routes);
 
