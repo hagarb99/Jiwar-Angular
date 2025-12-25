@@ -1,0 +1,79 @@
+<div class="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans">
+
+    <!-- Hero Icon -->
+    <div class="w-20 h-20 rounded-full bg-[#F5F0E6] flex items-center justify-center mb-8">
+        <i class="pi pi-question text-3xl text-[#C5A666]"></i>
+    </div>
+
+    <!-- Header -->
+    <h1 class="text-4xl font-bold text-slate-900 text-center mb-4 tracking-tight">
+        What Would You Like to Do Next?
+    </h1>
+    <p class="text-slate-500 text-center max-w-2xl text-lg leading-relaxed mb-12">
+        You've completed the simulation. Choose your next step to bring your renovation vision to life.
+    </p>
+
+    <!-- Options Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl px-4">
+
+        <!-- Option 1: Consult -->
+        <div
+            class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-lg transition-shadow duration-300 group">
+            <div
+                class="w-16 h-16 rounded-full bg-[#F5F0E6] flex items-center justify-center mb-6 group-hover:bg-[#EBE4D3] transition-colors">
+                <i class="pi pi-user text-2xl text-[#C5A666]"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-3">Consult an Expert</h3>
+            <p class="text-slate-500 text-sm mb-6 leading-relaxed">
+                Connect with professional interior designers to refine your plan.
+            </p>
+            <button
+                class="w-full bg-[#DCCCA3] hover:bg-[#D2C090] text-slate-900 font-semibold py-3 rounded-xl transition-colors">
+                Book Consultation
+            </button>
+        </div>
+
+        <!-- Option 2: Download -->
+        <div
+            class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-lg transition-shadow duration-300 group">
+            <div
+                class="w-16 h-16 rounded-full bg-[#F5F0E6] flex items-center justify-center mb-6 group-hover:bg-[#EBE4D3] transition-colors">
+                <i class="pi pi-download text-2xl text-[#C5A666]"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-3">Download Report</h3>
+            <p class="text-slate-500 text-sm mb-6 leading-relaxed">
+                Save your personalized renovation roadmap and budget estimates.
+            </p>
+            <button
+                class="w-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold py-3 rounded-xl transition-colors">
+                Download PDF
+            </button>
+        </div>
+
+        <!-- Option 3: Start New -->
+        <div
+            class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-lg transition-shadow duration-300 group">
+            <div
+                class="w-16 h-16 rounded-full bg-[#F5F0E6] flex items-center justify-center mb-6 group-hover:bg-[#EBE4D3] transition-colors">
+                <i class="pi pi-refresh text-2xl text-[#C5A666]"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-3">Start New Simulation</h3>
+            <p class="text-slate-500 text-sm mb-6 leading-relaxed">
+                Want to try different parameters? Start a new renovation simulation.
+            </p>
+            <button (click)="restart()"
+                class="w-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold py-3 rounded-xl transition-colors">
+                Restart
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Back to Home -->
+    <a href="#"
+        class="mt-12 text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors flex items-center gap-2">
+        <i class="pi pi-arrow-left"></i>
+        Back to Dashboard
+    </a>
+
+</div>

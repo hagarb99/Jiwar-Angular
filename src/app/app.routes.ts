@@ -7,6 +7,8 @@ import { DashboardComponent } from './features/designer/dashboard/dashboard.comp
 import { ProfileEditingComponent } from './features/designer/profile-editing/profile-editing.component';
 import { AvailableProjectsComponent } from './features/projects/available-projects/available-projects.component';
 
+import { AddPropertyComponent } from './shared/components/add-property/add-property.component';
+import { authGuard } from './core/guards/auth.guard';
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
@@ -14,7 +16,12 @@ const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'profile/edit', component: ProfileEditingComponent },
-  { path: 'projects', component: AvailableProjectsComponent }
+  { path: 'projects', component: AvailableProjectsComponent },
+  { path: 'add-property', component: AddPropertyComponent, canActivate: [authGuard] },
+  {
+    path: 'renovation',
+    loadChildren: () => import('./features/renovation/renovation.routes').then(m => m.RENOVATION_ROUTES)
+  }
 ];
 
 export const router = provideRouter(routes);

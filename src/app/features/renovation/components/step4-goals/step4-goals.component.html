@@ -1,0 +1,141 @@
+<div class="min-h-screen bg-slate-50 flex flex-col items-center p-6 font-sans">
+
+    <!-- Top Navigation / Stepper -->
+    <div class="w-full max-w-4xl flex items-center justify-center mb-12 relative">
+        <div
+            class="absolute h-[2px] bg-slate-200 w-full max-w-2xl top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -z-0">
+        </div>
+        <div class="flex items-center justify-between w-full max-w-2xl relative z-10 bg-slate-50 px-4">
+            <!-- Details Completed -->
+            <div class="flex items-center gap-2 bg-[#DCCCA3] px-4 py-2 rounded-full shadow-sm cursor-pointer hover:bg-[#D2C090] transition-colors"
+                routerLink="/renovation/details">
+                <i class="pi pi-check text-slate-900 text-xs"></i>
+                <span class="font-medium text-slate-900">Details</span>
+            </div>
+            <div class="flex-grow"></div>
+            <!-- Media Completed -->
+            <div class="flex items-center gap-2 bg-[#DCCCA3] px-4 py-2 rounded-full shadow-sm cursor-pointer hover:bg-[#D2C090] transition-colors"
+                routerLink="/renovation/media">
+                <i class="pi pi-check text-slate-900 text-xs"></i>
+                <span class="font-medium text-slate-900">Media</span>
+            </div>
+            <div class="flex-grow"></div>
+            <!-- Goals Active -->
+            <div class="flex items-center gap-2 bg-[#DCCCA3] px-4 py-2 rounded-full shadow-sm transform scale-105 z-20">
+                <i class="pi pi-target text-slate-900"></i>
+                <span class="font-medium text-slate-900">Goals</span>
+            </div>
+            <div class="flex-grow"></div>
+            <!-- Results -->
+            <div class="flex items-center gap-2 text-slate-400 bg-slate-50 px-2 z-20">
+                <i class="pi pi-bolt"></i>
+                <span>Results</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="w-full max-w-2xl text-center mb-8">
+        <h2 class="text-3xl font-bold text-slate-900 mb-2">Renovation Goals & Budget</h2>
+        <p class="text-slate-500">Select your renovation goals and set your budget range.</p>
+    </div>
+
+    <!-- Main Form Card -->
+    <form [formGroup]="goalsForm" (ngSubmit)="onSubmit()"
+        class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 w-full max-w-4xl space-y-8">
+
+        <!-- Renovation Goals Section -->
+        <div>
+            <div class="flex items-center gap-2 mb-4">
+                <i class="pi pi-bullseye text-[#C5A666] text-xl"></i>
+                <h3 class="text-lg font-bold text-slate-900">Renovation Goals</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div *ngFor="let goal of availableGoals" (click)="toggleGoal(goal.value)"
+                    class="cursor-pointer flex items-center gap-4 p-4 rounded-xl border transition-all text-left group select-none"
+                    [class.border-slate-200]="!isSelected(goal.value)" [class.border-[#DCCCA3]]="isSelected(goal.value)"
+                    [class.bg-[#FDFBF7]]="isSelected(goal.value)"
+                    [class.hover:border-[#DCCCA3]]="!isSelected(goal.value)">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center transition-colors"
+                        [ngClass]="isSelected(goal.value) ? 'bg-[#EBE4D3]' : 'bg-slate-100 group-hover:bg-[#EBE4D3]'">
+                        <i [class]="goal.icon"
+                            [ngClass]="isSelected(goal.value) ? 'text-[#BA9F60]' : 'text-slate-500 group-hover:text-[#BA9F60]'"></i>
+                    </div>
+                    <span class="font-medium"
+                        [ngClass]="isSelected(goal.value) ? 'text-slate-900' : 'text-slate-700 group-hover:text-slate-900'">
+                        {{ goal.label }}
+                    </span>
+                    <i *ngIf="isSelected(goal.value)" class="pi pi-check text-[#BA9F60] ml-auto"></i>
+                </div>
+            </div>
+            <div *ngIf="goalsForm.get('goals')?.touched && goalsForm.get('goals')?.invalid"
+                class="text-red-500 text-xs mt-2">At least one goal is required</div>
+        </div>
+
+        <hr class="border-slate-100">
+
+        <!-- Budget & Timeline -->
+        <!-- Note: Backend only has BudgetMin/Max. UI screenshot shows dropdown 'Select budget'. 
+             I'll map dropdown values to min/max ranges or allow manual input?
+             User screenshot: "Select budget" -> "$10k-30k", "$30k-60k".
+             I will use a dropdown and map to min/max. -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-semibold text-slate-900 mb-2">Budget Range</label>
+                <div class="relative">
+                    <select (change)="onBudgetChange($event)"
+                        class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 appearance-none focus:ring-2 focus:ring-[#DCCCA3] outline-none cursor-pointer">
+                        <option [value]="null">Select budget</option>
+                        <option value="10000-30000">$10,000 - $30,000</option>
+                        <option value="30000-60000">$30,000 - $60,000</option>
+                        <option value="60000-999999">$60,000+</option>
+                    </select>
+                    <i
+                        class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                </div>
+            </div>
+            <div>
+                <!-- Timeline not in DTO? Check SimulationGoalsDto.
+                     Goals, BudgetMin, BudgetMax, Notes. 
+                     Timeline is missing in DTO. I will ignore it or append to Notes.
+                     I'll add it to UI but not persist structurally. -->
+                <label class="block text-sm font-semibold text-slate-900 mb-2">Timeline</label>
+                <div class="relative">
+                    <select
+                        class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 appearance-none focus:ring-2 focus:ring-[#DCCCA3] outline-none cursor-pointer">
+                        <option>Select timeline</option>
+                        <option>Immediately</option>
+                        <option>Within 3 months</option>
+                        <option>Within 6 months</option>
+                    </select>
+                    <i
+                        class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">Additional Notes (Optional)</label>
+            <textarea formControlName="notes" rows="4"
+                placeholder="Any specific requirements, preferences, or concerns..."
+                class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-[#DCCCA3] outline-none resize-none"></textarea>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="w-full flex justify-between mt-8">
+            <button type="button" routerLink="/renovation/media"
+                class="bg-white border border-slate-200 text-slate-700 font-medium py-3 px-6 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2">
+                <i class="pi pi-arrow-left text-xs"></i>
+                Back
+            </button>
+            <button type="submit" [disabled]="goalsForm.invalid || isSubmitting"
+                class="bg-[#DCCCA3] hover:bg-[#D2C090] disabled:opacity-70 disabled:cursor-not-allowed text-slate-900 font-semibold py-3 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 shadow-sm">
+                <span *ngIf="!isSubmitting">Generate Recommendations</span>
+                <span *ngIf="isSubmitting">Analyzing...</span>
+                <i *ngIf="!isSubmitting" class="pi pi-sun text-xs"></i>
+            </button>
+        </div>
+    </form>
+</div>

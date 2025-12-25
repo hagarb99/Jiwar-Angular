@@ -1,0 +1,113 @@
+<div class="min-h-screen bg-background pt-24 pb-12">
+  <div class="container mx-auto px-4 max-w-4xl">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl md:text-5xl font-bold text-primary mb-4">
+        Add <span class="text-gradient-gold">Property</span>
+      </h1>
+      <p class="text-lg text-muted-foreground">List your property on Jiwar platform</p>
+    </div>
+
+    <div class="card shadow-luxury p-8">
+      <form [formGroup]="propertyForm" (ngSubmit)="onSubmit()" class="space-y-8">
+        <!-- Required Fields -->
+        <div class="space-y-6">
+          <h3 class="text-2xl font-semibold text-primary border-b pb-3">Required Information</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium mb-2">Title *</label>
+              <input pInputText formControlName="title" placeholder="Enter property title" class="w-full" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Price *</label>
+              <p-inputNumber formControlName="price" mode="currency" currency="SAR" [min]="1" class="w-full" />
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium mb-2">Description *</label>
+              <textarea pInputTextarea formControlName="description" rows="4" placeholder="Detailed description" class="w-full"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Address *</label>
+              <input pInputText formControlName="address" placeholder="Street address" class="w-full" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">City *</label>
+              <input pInputText formControlName="city" placeholder="City" class="w-full" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">District</label>
+              <input pInputText formControlName="district" placeholder="District (optional)" class="w-full" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Category *</label>
+              <p-dropdown
+                formControlName="categoryId"
+                [options]="categories"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select category"
+                class="w-full"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Optional Fields -->
+        <div class="space-y-6">
+          <h3 class="text-2xl font-semibold text-primary border-b pb-3">Optional Information</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label class="block text-sm font-medium mb-2">Area (sqm)</label>
+              <p-inputNumber formControlName="area" [min]="1" suffix=" m²" class="w-full" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Bedrooms</label>
+              <p-inputNumber formControlName="rooms" [min]="0" class="w-full" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Bathrooms</label>
+              <p-inputNumber formControlName="bathrooms" [min]="0" class="w-full" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2">360° Tour URL</label>
+            <input pInputText formControlName="tour360Url" placeholder="https://..." class="w-full" />
+          </div>
+
+          <!-- You can add LocationPicker or image upload later -->
+        </div>
+
+        <!-- Submit -->
+        <div class="flex gap-4 pt-6">
+          <p-button
+            label="Add Property"
+            [loading]="loading"
+            type="submit"
+            class="flex-1 gradient-gold"
+            styleClass="h-12 text-lg font-semibold"
+          />
+          <p-button
+            label="Cancel"
+            severity="secondary"
+            type="button"
+            (click)="router.navigate(['/'])"
+            [disabled]="loading"
+            styleClass="h-12"
+          />
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <p-toast></p-toast>
+</div>
