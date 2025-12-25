@@ -1,0 +1,31 @@
+.gold-button {
+  background: linear-gradient(135deg, #d4af37, #f9e79f, #b8860b) !important;
+  border: none !important;
+  color: #1a1a1a !important;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+  transition: all 0.3s ease;
+}
+
+.gold-button:hover {
+  background: linear-gradient(135deg, #b8860b, #d4af37, #f9e79f) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.6);
+}
+
+.gold-pill-button {
+  background: linear-gradient(135deg, #d4af37, #ffd700, #b8860b) !important;
+  border: none !important;
+  color: #1a1a1a !important;
+  font-weight: 800;
+  border-radius: 50px !important;
+  padding: 1.5rem 3rem !important;
+  box-shadow: 0 8px 30px rgba(212, 175, 55, 0.5);
+  transition: all 0.4s ease;
+}
+
+.gold-pill-button:hover {
+  background: linear-gradient(135deg, #b8860b, #d4af37, #ffd700) !important;
+  transform: scale(1.05);
+  box-shadow: 0 12px 40px rgba(212, 175, 55, 0.7);
+}

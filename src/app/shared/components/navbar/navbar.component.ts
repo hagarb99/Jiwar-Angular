@@ -67,8 +67,7 @@ currentUserEmail: string | null = null;
   ];
 
   sellDropdownItems = [
-    { path: '/sell', label: 'Sell Your Property' },
-    { path: '/sell/property', label: 'Sell Property' },
+    { path: '/add-property', label: 'Sell Your Property' },
     { path: '/sell/rental', label: 'Rent Property' }
   ];
 

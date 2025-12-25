@@ -1,113 +1,172 @@
+<app-navbar></app-navbar>
+
 <div class="min-h-screen bg-background pt-24 pb-12">
-  <div class="container mx-auto px-4 max-w-4xl">
+  <div class="container mx-auto px-4 max-w-5xl">
     <div class="text-center mb-10">
       <h1 class="text-4xl md:text-5xl font-bold text-primary mb-4">
         Add <span class="text-gradient-gold">Property</span>
       </h1>
-      <p class="text-lg text-muted-foreground">List your property on Jiwar platform</p>
+      <p class="text-lg text-muted-foreground">List your property in a few easy steps</p>
     </div>
 
-    <div class="card shadow-luxury p-8">
-      <form [formGroup]="propertyForm" (ngSubmit)="onSubmit()" class="space-y-8">
-        <!-- Required Fields -->
-        <div class="space-y-6">
-          <h3 class="text-2xl font-semibold text-primary border-b pb-3">Required Information</h3>
+    <p-card class="shadow-luxury">
+      <!-- Stepper -->
+      <p-steps [model]="steps" [(activeIndex)]="activeStep" [readonly]="false"></p-steps>
 
+      <form [formGroup]="propertyForm" (ngSubmit)="onSubmit()" class="mt-8 space-y-8">
+
+        <!-- Step 1: Basic Information -->
+        <div *ngIf="activeStep === 0" class="animate-fade-in">
+          <h3 class="text-2xl font-semibold text-primary flex items-center gap-3 mb-6">
+            <i class="pi pi-home text-3xl"></i>
+            Basic Information
+          </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium mb-2">Title *</label>
-              <input pInputText formControlName="title" placeholder="Enter property title" class="w-full" />
+              <input pInputText formControlName="title" placeholder="e.g. Luxury Villa in Riyadh" class="w-full" />
             </div>
-
             <div>
-              <label class="block text-sm font-medium mb-2">Price *</label>
+              <label class="block text-sm font-medium mb-2">Price (SAR) *</label>
               <p-inputNumber formControlName="price" mode="currency" currency="SAR" [min]="1" class="w-full" />
             </div>
-
             <div class="md:col-span-2">
               <label class="block text-sm font-medium mb-2">Description *</label>
-              <textarea pInputTextarea formControlName="description" rows="4" placeholder="Detailed description" class="w-full"></textarea>
+              <textarea pInputTextarea formControlName="description" rows="5" placeholder="Describe your property in detail..." class="w-full"></textarea>
             </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-2">Address *</label>
-              <input pInputText formControlName="address" placeholder="Street address" class="w-full" />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-2">City *</label>
-              <input pInputText formControlName="city" placeholder="City" class="w-full" />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-2">District</label>
-              <input pInputText formControlName="district" placeholder="District (optional)" class="w-full" />
-            </div>
-
             <div>
               <label class="block text-sm font-medium mb-2">Category *</label>
-              <p-dropdown
-                formControlName="categoryId"
-                [options]="categories"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Select category"
-                class="w-full"
-              />
+              <p-dropdown formControlName="categoryId" [options]="categories" optionLabel="label" optionValue="value" placeholder="Select category" class="w-full" />
             </div>
           </div>
         </div>
 
-        <!-- Optional Fields -->
-        <div class="space-y-6">
-          <h3 class="text-2xl font-semibold text-primary border-b pb-3">Optional Information</h3>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Step 2: Location & Details -->
+        <div *ngIf="activeStep === 1" class="animate-fade-in">
+          <h3 class="text-2xl font-semibold text-primary flex items-center gap-3 mb-6">
+            <i class="pi pi-map-marker text-3xl"></i>
+            Location & Details
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-sm font-medium mb-2">Area (sqm)</label>
-              <p-inputNumber formControlName="area" [min]="1" suffix=" m²" class="w-full" />
+              <label class="block text-sm font-medium mb-2">Address *</label>
+              <input pInputText formControlName="address" placeholder="Street address" class="w-full" />
             </div>
-
+            <div>
+              <label class="block text-sm font-medium mb-2">City *</label>
+              <input pInputText formControlName="city" placeholder="e.g. Riyadh" class="w-full" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">District</label>
+              <input pInputText formControlName="district" placeholder="Optional district" class="w-full" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Area (m²)</label>
+              <p-inputNumber formControlName="area" suffix=" m²" [min]="1" class="w-full" />
+            </div>
             <div>
               <label class="block text-sm font-medium mb-2">Bedrooms</label>
               <p-inputNumber formControlName="rooms" [min]="0" class="w-full" />
             </div>
-
             <div>
               <label class="block text-sm font-medium mb-2">Bathrooms</label>
               <p-inputNumber formControlName="bathrooms" [min]="0" class="w-full" />
             </div>
           </div>
+        </div>
 
-          <div>
-            <label class="block text-sm font-medium mb-2">360° Tour URL</label>
-            <input pInputText formControlName="tour360Url" placeholder="https://..." class="w-full" />
+        <!-- Step 3: Images & Tour -->
+        <div *ngIf="activeStep === 2" class="animate-fade-in">
+          <h3 class="text-2xl font-semibold text-primary flex items-center gap-3 mb-6">
+            <i class="pi pi-images text-3xl"></i>
+            Images & Virtual Tour
+          </h3>
+
+          <div class="mb-8">
+            <label class="block text-sm font-medium mb-3">Property Images (Up to 10)</label>
+            <p-fileUpload
+  #fileUpload
+  name="images[]"
+  multiple="true"
+  accept="image/*"
+  maxFileSize="10000000"
+  [auto]="false"
+  chooseLabel="Choose Images"
+  uploadLabel="Upload All"
+  cancelLabel="Clear"
+  mode="advanced"
+  class="w-full"
+  (onUpload)="onUpload($event)"
+>
+              <ng-template pTemplate="header">
+                <div class="p-6 bg-primary/5 rounded-t-lg text-center border-b">
+                  <i class="pi pi-images text-5xl text-primary mb-3"></i>
+                  <p class="text-lg">Drag & drop images here or click to browse</p>
+                  <p class="text-sm text-muted-foreground mt-1">Maximum 10 images, 10MB each</p>
+                </div>
+              </ng-template>
+            </p-fileUpload>
           </div>
 
-          <!-- You can add LocationPicker or image upload later -->
+          <div>
+            <label class="block text-sm font-medium mb-2">360° Virtual Tour URL (Optional)</label>
+            <input pInputText formControlName="tour360Url" placeholder="https://my.matterport.com/show/?m=..." class="w-full" />
+          </div>
         </div>
 
-        <!-- Submit -->
-        <div class="flex gap-4 pt-6">
-          <p-button
-            label="Add Property"
-            [loading]="loading"
-            type="submit"
-            class="flex-1 gradient-gold"
-            styleClass="h-12 text-lg font-semibold"
-          />
-          <p-button
-            label="Cancel"
-            severity="secondary"
-            type="button"
-            (click)="router.navigate(['/'])"
-            [disabled]="loading"
-            styleClass="h-12"
-          />
+        <!-- Step 4: Review -->
+        <div *ngIf="activeStep === 3" class="animate-fade-in">
+          <h3 class="text-2xl font-semibold text-primary flex items-center gap-3 mb-6">
+            <i class="pi pi-check-circle text-3xl"></i>
+            Review & Submit
+          </h3>
+
+          <div class="bg-gray-50 p-6 rounded-xl space-y-4 text-lg">
+            <p><strong>Title:</strong> {{ propertyForm.get('title')?.value || '—' }}</p>
+            <p><strong>Price:</strong> {{ propertyForm.get('price')?.value | currency:'SAR ' }}</p>
+            <p><strong>Location:</strong> {{ propertyForm.get('address')?.value }}, {{ propertyForm.get('city')?.value }} {{ propertyForm.get('district')?.value ? '(' + propertyForm.get('district')?.value + ')' : '' }}</p>
+<p><strong>Category:</strong> {{ selectedCategoryLabel }}</p>            <p><strong>Area:</strong> {{ propertyForm.get('area')?.value ? (propertyForm.get('area')?.value + ' m²') : 'Not specified' }}</p>
+            <p><strong>Rooms:</strong> {{ propertyForm.get('rooms')?.value || 0 }} Bedrooms • {{ propertyForm.get('bathrooms')?.value || 0 }} Bathrooms</p>
+            <p><strong>Description:</strong><br><span class="text-muted-foreground text-base">{{ propertyForm.get('description')?.value || 'No description' }}</span></p>
+            <p><strong>Images:</strong> {{ uploadedFiles || 0 }} images uploaded</p>
+          </div>
         </div>
+ <!-- Navigation Buttons -->
+<div class="flex justify-between items-center mt-12 pt-6 border-t">
+  <p-button
+    label="Previous"
+    severity="secondary"
+    (click)="prev()"
+    [disabled]="activeStep === 0"
+    icon="pi pi-arrow-left"
+    styleClass="px-8 py-3 text-lg font-medium"
+  />
+
+  <div class="flex gap-6">
+    <p-button
+      *ngIf="activeStep < steps.length - 1"
+      label="Next"
+      (click)="next()"
+      icon="pi pi-arrow-right"
+      iconPos="right"
+      styleClass="gold-button px-12 py-4 text-xl font-semibold"
+    />
+
+    <p-button
+      *ngIf="activeStep === steps.length - 1"
+      label="Add Property"
+      [loading]="loading"
+      [disabled]="loading || propertyForm.invalid"
+      styleClass="gold-pill-button px-16 py-5 text-2xl font-bold"
+      (click)="onSubmit()"
+    />
+  </div>
+</div>
       </form>
-    </div>
+    </p-card>
   </div>
 
-  <p-toast></p-toast>
+  <p-toast position="top-right"></p-toast>
 </div>
+
+<app-footer></app-footer>
