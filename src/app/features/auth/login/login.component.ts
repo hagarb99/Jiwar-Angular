@@ -72,7 +72,12 @@ export class LoginComponent implements OnInit, OnDestroy {
         const token = response?.token;
         if (token) {
           this.authService.setToken(token);
+          const returnUrl = this.router.routerState.snapshot.root.queryParams['returnUrl'] || '/';
+          if (returnUrl.startsWith('/')) {
+         this.router.navigate([returnUrl]);
+         } else {
           this.router.navigate(['/']);
+       }
         } else {
           this.errorMessage = 'Login failed: No token received';
         }
@@ -111,7 +116,12 @@ ngOnInit(): void {
 
         if (token) {
           this.authService.setToken(token);
+          const returnUrl = this.router.routerState.snapshot.root.queryParams['returnUrl'] || '/';
+          if (returnUrl.startsWith('/')) {
+          this.router.navigate([returnUrl]);
+          } else {
           this.router.navigate(['/']);
+          }
         } else {
           this.errorMessage = 'Google login failed: No token received';
           console.error('Invalid response:', response);

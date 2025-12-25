@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { filter } from 'rxjs';
+import { OnInit } from '@angular/core';
 import {
   LucideAngularModule,
   ChevronDown,
@@ -24,7 +25,13 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
+  toggleUserDropdown = false;  // ← NEW: لفتح/غلق الـ dropdown
+
+profilePicUrl: string | null = null;
+currentUserName: string | null = null;
+currentUserEmail: string | null = null;
+
   readonly ChevronDown = ChevronDown;
   readonly Menu = Menu;
   readonly X = X;
@@ -32,7 +39,7 @@ export class NavbarComponent {
 
   // State
   mobileMenuOpen = false;
-  activeDropdown: 'buy' | 'invest' | 'renovation' | null = null;
+  activeDropdown: 'buy' | 'invest' | 'sell' | 'renovation' | null = null;
   language: 'EN' | 'AR' = 'EN';
   currentPath = '';
   isLoggedIn = false;
@@ -59,6 +66,12 @@ export class NavbarComponent {
     { path: '/dashboard/owner', label: 'View Recommendations' }
   ];
 
+  sellDropdownItems = [
+    { path: '/sell', label: 'Sell Your Property' },
+    { path: '/sell/property', label: 'Sell Property' },
+    { path: '/sell/rental', label: 'Rent Property' }
+  ];
+
   constructor(private router: Router,
     private authService: AuthService
   ) {
@@ -69,7 +82,8 @@ export class NavbarComponent {
       });
   }
 
-  setDropdown(name: 'buy' | 'invest' | 'renovation' | null): void {
+  
+  setDropdown(name: 'buy' | 'invest' | 'sell' | 'renovation' | null): void {
     this.activeDropdown = name;
   }
 
@@ -88,6 +102,15 @@ export class NavbarComponent {
     // Listen to login status changes
     this.authService.isLoggedIn$.subscribe(status => {
       this.isLoggedIn = status;
+      // if (status) {
+      //   this.profilePicUrl = this.authService.getProfilePicUrl();
+      // this.currentUserName = this.authService.getUserName();
+      // this.currentUserEmail = this.authService.getUserEmail();
+      // } else {
+      //   this.profilePicUrl = null;
+      // this.currentUserName = null;
+      // this.currentUserEmail = null;
+      // }
     });
   }
 

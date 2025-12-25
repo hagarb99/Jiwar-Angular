@@ -50,6 +50,7 @@ export class AuthService extends ApiBaseService {
   isLoggedIn$!: Observable<boolean>;
 
 
+
 googleBackendLogin(idToken: string) {
   return this.httpClient.post(`/api/account/google-signin`, { IdToken: idToken });
 }
@@ -91,5 +92,7 @@ googleBackendLogin(idToken: string) {
   googleLogin() {
     return this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
   }
+
+  
   
 }
