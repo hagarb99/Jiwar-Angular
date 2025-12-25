@@ -492,3 +492,30 @@
 .ml-1 {
   margin-left: 0.25rem;
 }
+/* login.component.css */
+
+/* ستايل للزر الرسمي */
+.custom-google-button {
+  background-color: #ffffff;
+  border: 1px solid #4285f4;
+  border-radius: 4px;
+  color: #4285f4;
+  font-family: Roboto, sans-serif;
+  font-size: 14px;
+  height: 40px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.custom-google-button:hover {
+  background-color: #f8f9fa;
+}
+
+/* لو عايز تخفي الـ SVG الافتراضي أو تعدل */
+.custom-google-button .abcRioButtonIcon {
+  display: none; /* اختياري: لو عايز تخفي أيقونة جوجل الافتراضية */
+}
