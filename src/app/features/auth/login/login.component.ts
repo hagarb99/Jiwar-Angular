@@ -72,6 +72,11 @@ export class LoginComponent implements OnInit, OnDestroy {
         const token = response?.token;
         if (token) {
           this.authService.setToken(token);
+          this.authService.setUserData({
+      name: response.name,
+      email: response.email,
+      profilePicURL: response.profilePicURL
+    });
           const returnUrl = this.router.routerState.snapshot.root.queryParams['returnUrl'] || '/';
           if (returnUrl.startsWith('/')) {
          this.router.navigate([returnUrl]);
@@ -116,6 +121,11 @@ ngOnInit(): void {
 
         if (token) {
           this.authService.setToken(token);
+          this.authService.setUserData({
+        name: response.data?.name || response.name || 'User',
+        email: response.data?.email || response.email || '',
+        profilePicURL: response.data?.profilePicURL || response.profilePicURL || null
+      });
           const returnUrl = this.router.routerState.snapshot.root.queryParams['returnUrl'] || '/';
           if (returnUrl.startsWith('/')) {
           this.router.navigate([returnUrl]);

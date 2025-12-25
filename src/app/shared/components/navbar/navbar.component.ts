@@ -102,17 +102,22 @@ currentUserEmail: string | null = null;
     // Listen to login status changes
     this.authService.isLoggedIn$.subscribe(status => {
       this.isLoggedIn = status;
-      // if (status) {
-      //   this.profilePicUrl = this.authService.getProfilePicUrl();
-      // this.currentUserName = this.authService.getUserName();
-      // this.currentUserEmail = this.authService.getUserEmail();
-      // } else {
-      //   this.profilePicUrl = null;
-      // this.currentUserName = null;
-      // this.currentUserEmail = null;
-      // }
+      if (status) {
+        this.profilePicUrl = this.authService.getProfilePicUrl();
+      this.currentUserName = this.authService.getUserName();
+      this.currentUserEmail = this.authService.getUserEmail();
+      } else {
+        this.profilePicUrl = null;
+      this.currentUserName = null;
+      this.currentUserEmail = null;
+      }
     });
+    if (this.authService.isLoggedIn()) {
+    this.profilePicUrl = this.authService.getProfilePicUrl();
+    this.currentUserName = this.authService.getUserName();
+    this.currentUserEmail = this.authService.getUserEmail();
   }
+  }  
 
   logout(): void {
     this.authService.logout();

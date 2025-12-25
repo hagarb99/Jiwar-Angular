@@ -46,10 +46,40 @@ export class AuthService extends ApiBaseService {
     this.isLoggedIn$ = this.isLoggedInSubject.asObservable();
   }
   
-  private isLoggedInSubject!: BehaviorSubject<boolean>;  // ← ! عشان TypeScript يعرف إنه هيتعين بعدين
+  private isLoggedInSubject!: BehaviorSubject<boolean>;  
   isLoggedIn$!: Observable<boolean>;
 
+private currentUserSubject = new BehaviorSubject<any>(null);
+currentUser$ = this.currentUserSubject.asObservable();
 
+setUserData(userData: {
+  name: string;
+  email: string;
+  profilePicURL: string;
+}) {
+  this.currentUserSubject.next(userData);
+  localStorage.setItem('currentUser', JSON.stringify(userData));
+}
+
+getUserName(): string | null {
+  const user = this.currentUserSubject.value || JSON.parse(localStorage.getItem('currentUser') || 'null');
+  return user?.name || null;
+}
+
+getUserEmail(): string | null {
+  const user = this.currentUserSubject.value || JSON.parse(localStorage.getItem('currentUser') || 'null');
+  return user?.email || null;
+}
+
+getProfilePicUrl(): string | null {
+  const user = this.currentUserSubject.value || JSON.parse(localStorage.getItem('currentUser') || 'null');
+  return user?.profilePicURL || null;
+}
+
+clearUserData() {
+  this.currentUserSubject.next(null);
+  localStorage.removeItem('currentUser');
+}
 
 googleBackendLogin(idToken: string) {
   return this.httpClient.post(`/api/account/google-signin`, { IdToken: idToken });
@@ -57,7 +87,6 @@ googleBackendLogin(idToken: string) {
 
   register(data: RegisterRequest) {
     return this.httpClient.post<RegisterResponse>(
-      // `${this.apiBaseUrl}/account/register`
       `/api/account/register`,
       data
     );
@@ -65,7 +94,6 @@ googleBackendLogin(idToken: string) {
 
   login(data: LoginRequest) {
     return this.httpClient.post<LoginResponse>(
-      // `${this.apiBaseUrl}/account/login`
       `/api/account/login`,
       data
     );
@@ -73,6 +101,7 @@ googleBackendLogin(idToken: string) {
 
   logout() {
     this.cookieService.delete('token');
+    this.clearUserData();
     this.isLoggedInSubject.next(false);
   }
 
