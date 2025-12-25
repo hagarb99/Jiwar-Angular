@@ -61,9 +61,9 @@ currentUserEmail: string | null = null;
   ];
 
   renovationDropdownItems = [
-    { path: '/dashboard/owner', label: 'Start Simulation' },
-    { path: '/dashboard/ai-assistant', label: 'Upload Apartment Media' },
-    { path: '/dashboard/owner', label: 'View Recommendations' }
+    { path: '/renovation/intro', label: 'Start Simulation' },
+    { path: '/renovation/intro', label: 'Upload Apartment Media' },
+    { path: '/renovation/intro', label: 'View Recommendations' }
   ];
 
   sellDropdownItems = [

@@ -1,171 +1,161 @@
-<div class="min-h-screen bg-slate-50 flex flex-col items-center p-6 font-sans">
+<div class="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <app-navbar></app-navbar>
 
-    <!-- Top Navigation / Stepper -->
-    <div class="w-full max-w-4xl flex items-center justify-center mb-12 relative">
-        <!-- Connecting Line Background -->
-        <div
-            class="absolute h-[2px] bg-slate-200 w-full max-w-2xl top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -z-0">
+    <div class="flex-grow flex flex-col items-center p-6">
+
+        <!-- Stepper -->
+        <div class="w-full max-w-4xl flex items-center justify-center mb-12">
+            <div class="flex items-center gap-4">
+                <!-- Details (Active) -->
+                <div
+                    class="flex items-center gap-2 bg-[#DCCCA3] text-[#1E293B] px-5 py-2.5 rounded-full shadow-md z-10">
+                    <i class="pi pi-home"></i>
+                    <span class="font-bold text-sm">Details</span>
+                </div>
+
+                <!-- Connector -->
+                <div class="w-12 h-[2px] bg-[#DCCCA3]"></div>
+
+                <!-- Media -->
+                <div
+                    class="flex items-center gap-2 bg-[#F0EAD6] text-[#A69060] px-5 py-2.5 rounded-full z-10 opacity-70">
+                    <i class="pi pi-upload"></i>
+                    <span class="font-bold text-sm">Media</span>
+                </div>
+
+                <!-- Connector -->
+                <div class="w-12 h-[2px] bg-[#F0EAD6]"></div>
+
+                <!-- Goals -->
+                <div
+                    class="flex items-center gap-2 bg-[#F0EAD6] text-[#A69060] px-5 py-2.5 rounded-full z-10 opacity-70">
+                    <i class="pi pi-bullseye"></i>
+                    <span class="font-bold text-sm">Goals</span>
+                </div>
+
+                <!-- Connector -->
+                <div class="w-12 h-[2px] bg-[#F0EAD6]"></div>
+
+                <!-- Results -->
+                <div
+                    class="flex items-center gap-2 bg-[#F0EAD6] text-[#A69060] px-5 py-2.5 rounded-full z-10 opacity-70">
+                    <i class="pi pi-lightbulb"></i>
+                    <span class="font-bold text-sm">Results</span>
+                </div>
+            </div>
         </div>
 
-        <!-- Steps -->
-        <div class="flex items-center justify-between w-full max-w-2xl relative z-10 bg-slate-50 px-4">
-
-            <!-- Step 1: Details (Active) -->
-            <div class="flex items-center gap-2 bg-[#DCCCA3] px-4 py-2 rounded-full shadow-sm z-20">
-                <i class="pi pi-home text-slate-900"></i>
-                <span class="font-medium text-slate-900">Details</span>
-            </div>
-
-            <!-- Connector Spacer -->
-            <div class="flex-grow"></div>
-
-            <!-- Step 2: Media -->
-            <div class="flex items-center gap-2 text-slate-400 bg-slate-50 px-2 z-20">
-                <i class="pi pi-image"></i>
-                <span>Media</span>
-            </div>
-
-            <div class="flex-grow"></div>
-
-            <!-- Step 3: Goals -->
-            <div class="flex items-center gap-2 text-slate-400 bg-slate-50 px-2 z-20">
-                <i class="pi pi-target"></i>
-                <span>Goals</span>
-            </div>
-
-            <div class="flex-grow"></div>
-
-            <!-- Step 4: Results -->
-            <div class="flex items-center gap-2 text-slate-400 bg-slate-50 px-2 z-20">
-                <i class="pi pi-bolt"></i>
-                <span>Results</span>
-            </div>
-
+        <!-- Main Content -->
+        <div class="w-full max-w-2xl text-center mb-8">
+            <h2 class="text-3xl font-bold text-slate-900 mb-2">Apartment Details</h2>
+            <p class="text-slate-500">Tell us about your property to receive accurate recommendations.</p>
         </div>
+
+        <!-- Form Container -->
+        <form [formGroup]="detailsForm" (ngSubmit)="onSubmit()"
+            class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 w-full max-w-3xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Property Type -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-900 mb-2">Property Type</label>
+                    <div class="relative">
+                        <select formControlName="propertyType"
+                            class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 appearance-none focus:ring-2 focus:ring-[#DCCCA3] outline-none cursor-pointer">
+                            <option [ngValue]="null">Select type</option>
+                            <option value="Apartment">Apartment</option>
+                            <option value="Villa">Villa</option>
+                            <option value="Studio">Studio</option>
+                        </select>
+                        <i
+                            class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Size -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-900 mb-2">Size (sqm)</label>
+                    <input type="number" formControlName="size" placeholder="e.g., 120"
+                        class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-[#DCCCA3] outline-none">
+                    <div *ngIf="detailsForm.get('size')?.touched && detailsForm.get('size')?.invalid"
+                        class="text-red-500 text-xs mt-1">Size is required</div>
+                </div>
+
+                <!-- Number of Rooms -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-900 mb-2">Number of Rooms</label>
+                    <div class="relative">
+                        <select formControlName="rooms"
+                            class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 appearance-none focus:ring-2 focus:ring-[#DCCCA3] outline-none cursor-pointer">
+                            <option [ngValue]="null">Select rooms</option>
+                            <option [ngValue]="1">1</option>
+                            <option [ngValue]="2">2</option>
+                            <option [ngValue]="3">3</option>
+                            <option [ngValue]="4">4+</option>
+                        </select>
+                        <i
+                            class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Number of Bathrooms -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-900 mb-2">Number of Bathrooms</label>
+                    <div class="relative">
+                        <select formControlName="bathrooms"
+                            class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 appearance-none focus:ring-2 focus:ring-[#DCCCA3] outline-none cursor-pointer">
+                            <option [ngValue]="null">Select bathrooms</option>
+                            <option [ngValue]="1">1</option>
+                            <option [ngValue]="2">2</option>
+                            <option [ngValue]="3">3+</option>
+                        </select>
+                        <i
+                            class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Current Condition -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-900 mb-2">Current Condition</label>
+                    <div class="relative">
+                        <select formControlName="condition"
+                            class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 appearance-none focus:ring-2 focus:ring-[#DCCCA3] outline-none cursor-pointer">
+                            <option [ngValue]="null">Select condition</option>
+                            <option value="New / Under Construction">New / Under Construction</option>
+                            <option value="Good">Good</option>
+                            <option value="Needs Renovation">Needs Renovation</option>
+                            <option value="Old">Old</option>
+                        </select>
+                        <i
+                            class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Year Built -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-900 mb-2">Year Built (Optional)</label>
+                    <input type="number" formControlName="yearBuilt" placeholder="e.g., 2010"
+                        class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-[#DCCCA3] outline-none">
+                </div>
+
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="w-full flex justify-between mt-8">
+                <button type="button" routerLink="/renovation/intro"
+                    class="bg-white border border-slate-200 text-slate-700 font-medium py-3 px-6 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2">
+                    <i class="pi pi-arrow-left text-xs"></i>
+                    Back
+                </button>
+                <button type="submit" [disabled]="detailsForm.invalid || isSubmitting"
+                    class="bg-[#DCCCA3] hover:bg-[#D2C090] disabled:opacity-70 disabled:cursor-not-allowed text-slate-900 font-semibold py-3 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 shadow-sm">
+                    <span *ngIf="!isSubmitting">Continue</span>
+                    <span *ngIf="isSubmitting">Saving...</span>
+                    <!-- <i *ngIf="!isSubmitting" class="pi pi-arrow-right text-xs"></i> -->
+                </button>
+            </div>
+        </form>
     </div>
 
-    <!-- Main Content -->
-    <div class="w-full max-w-2xl text-center mb-8">
-        <h2 class="text-3xl font-bold text-slate-900 mb-2">Apartment Details</h2>
-        <p class="text-slate-500">Tell us about your property to receive accurate recommendations.</p>
-    </div>
-
-    <!-- Form Container -->
-    <form [formGroup]="detailsForm" (ngSubmit)="onSubmit()"
-        class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 w-full max-w-3xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            <!-- Property Type (UI shows it, DTO doesn't have it explicitly, only size/rooms etc. 
-                 It seems propertyId implies type, or it's not needed for updateDetails? 
-                 Reviewing DTO: UpdateSimulationDetailsDto only maps size, rooms, bathrooms, condition, yearBuilt.
-                 I will keep it in UI but maybe not send it or map if DTO allows?
-                 DTO definition: public decimal Size { get; set; } ... no Type.
-                 I'll include it in form for UI completeness but ignore in payload or add to 'Condition'? 
-                 Actually, I'll just check DTO again. UpdateSimulationDetailsDto doesn't have PropertyType.
-                 I will keep it in UI as a local control for now. -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-900 mb-2">Property Type</label>
-                <div class="relative">
-                    <select formControlName="propertyType"
-                        class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 appearance-none focus:ring-2 focus:ring-[#DCCCA3] outline-none cursor-pointer">
-                        <option [ngValue]="null">Select type</option>
-                        <option value="Apartment">Apartment</option>
-                        <option value="Villa">Villa</option>
-                        <option value="Studio">Studio</option>
-                    </select>
-                    <i
-                        class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                </div>
-            </div>
-
-            <!-- Size -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-900 mb-2">Size (sqm)</label>
-                <input type="number" formControlName="size" placeholder="e.g., 120"
-                    class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-[#DCCCA3] outline-none">
-                <div *ngIf="detailsForm.get('size')?.touched && detailsForm.get('size')?.invalid"
-                    class="text-red-500 text-xs mt-1">Size is required</div>
-            </div>
-
-            <!-- Number of Rooms -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-900 mb-2">Number of Rooms</label>
-                <div class="relative">
-                    <select formControlName="rooms"
-                        class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 appearance-none focus:ring-2 focus:ring-[#DCCCA3] outline-none cursor-pointer">
-                        <option [ngValue]="null">Select rooms</option>
-                        <option [ngValue]="1">1</option>
-                        <option [ngValue]="2">2</option>
-                        <option [ngValue]="3">3</option>
-                        <option [ngValue]="4">4+</option>
-                    </select>
-                    <i
-                        class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                </div>
-                <div *ngIf="detailsForm.get('rooms')?.touched && detailsForm.get('rooms')?.invalid"
-                    class="text-red-500 text-xs mt-1">Required</div>
-            </div>
-
-            <!-- Number of Bathrooms -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-900 mb-2">Number of Bathrooms</label>
-                <div class="relative">
-                    <select formControlName="bathrooms"
-                        class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 appearance-none focus:ring-2 focus:ring-[#DCCCA3] outline-none cursor-pointer">
-                        <option [ngValue]="null">Select bathrooms</option>
-                        <option [ngValue]="1">1</option>
-                        <option [ngValue]="2">2</option>
-                        <option [ngValue]="3">3+</option>
-                    </select>
-                    <i
-                        class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                </div>
-                <div *ngIf="detailsForm.get('bathrooms')?.touched && detailsForm.get('bathrooms')?.invalid"
-                    class="text-red-500 text-xs mt-1">Required</div>
-            </div>
-
-            <!-- Current Condition -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-900 mb-2">Current Condition</label>
-                <div class="relative">
-                    <select formControlName="condition"
-                        class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 appearance-none focus:ring-2 focus:ring-[#DCCCA3] outline-none cursor-pointer">
-                        <option [ngValue]="null">Select condition</option>
-                        <option value="New / Under Construction">New / Under Construction</option>
-                        <option value="Good">Good</option>
-                        <option value="Needs Renovation">Needs Renovation</option>
-                        <option value="Old">Old</option>
-                    </select>
-                    <i
-                        class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                </div>
-                <div *ngIf="detailsForm.get('condition')?.touched && detailsForm.get('condition')?.invalid"
-                    class="text-red-500 text-xs mt-1">Required</div>
-            </div>
-
-            <!-- Year Built -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-900 mb-2">Year Built (Optional)</label>
-                <input type="number" formControlName="yearBuilt" placeholder="e.g., 2010"
-                    class="w-full bg-[#F1F5F9] border-none rounded-xl px-4 py-3 text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-[#DCCCA3] outline-none">
-            </div>
-
-        </div>
-
-        <!-- Navigation Buttons -->
-        <div class="w-full flex justify-between mt-8">
-            <button type="button" routerLink="/renovation"
-                class="bg-white border border-slate-200 text-slate-700 font-medium py-3 px-6 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2">
-                <i class="pi pi-arrow-left text-xs"></i>
-                Back
-            </button>
-            <button type="submit" [disabled]="detailsForm.invalid || isSubmitting"
-                class="bg-[#DCCCA3] hover:bg-[#D2C090] disabled:opacity-70 disabled:cursor-not-allowed text-slate-900 font-semibold py-3 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 shadow-sm">
-                <span *ngIf="!isSubmitting">Continue</span>
-                <span *ngIf="isSubmitting">Saving...</span>
-                <i *ngIf="!isSubmitting" class="pi pi-arrow-right text-xs"></i>
-            </button>
-        </div>
-    </form>
-
+    <app-footer></app-footer>
 </div>

@@ -1,148 +1,164 @@
-<div class="min-h-screen bg-slate-50 flex flex-col items-center p-6 font-sans">
+<div class="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <app-navbar></app-navbar>
 
-    <!-- Top Navigation / Stepper -->
-    <div class="w-full max-w-4xl flex items-center justify-center mb-12 relative">
-        <div
-            class="absolute h-[2px] bg-slate-200 w-full max-w-2xl top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -z-0">
+    <div class="flex-grow flex flex-col items-center p-6 sm:p-10">
+
+        <!-- Stepper -->
+        <div class="w-full max-w-4xl flex items-center justify-center mb-12">
+            <div class="flex items-center gap-4">
+                <!-- Details -->
+                <div class="flex items-center gap-2 bg-[#EBE4D3] text-[#BA9F60] px-5 py-2.5 rounded-full cursor-pointer hover:bg-[#E0D8C0] transition-colors"
+                    routerLink="/renovation/details">
+                    <i class="pi pi-home"></i>
+                    <span class="font-bold text-sm">Details</span>
+                </div>
+
+                <!-- Connector -->
+                <div class="w-12 h-[2px] bg-[#DCCCA3]"></div>
+
+                <!-- Media (Active) -->
+                <div
+                    class="flex items-center gap-2 bg-[#DCCCA3] text-[#1E293B] px-5 py-2.5 rounded-full shadow-md z-10">
+                    <i class="pi pi-upload"></i>
+                    <span class="font-bold text-sm">Media</span>
+                </div>
+
+                <!-- Connector -->
+                <div class="w-12 h-[2px] bg-[#DCCCA3]"></div>
+
+                <!-- Goals -->
+                <div
+                    class="flex items-center gap-2 bg-[#F0EAD6] text-[#A69060] px-5 py-2.5 rounded-full z-10 opacity-70">
+                    <i class="pi pi-bullseye"></i>
+                    <span class="font-bold text-sm">Goals</span>
+                </div>
+
+                <!-- Connector -->
+                <div class="w-12 h-[2px] bg-[#F0EAD6]"></div>
+
+                <!-- Results -->
+                <div
+                    class="flex items-center gap-2 bg-[#F0EAD6] text-[#A69060] px-5 py-2.5 rounded-full z-10 opacity-70">
+                    <i class="pi pi-lightbulb"></i>
+                    <span class="font-bold text-sm">Results</span>
+                </div>
+            </div>
         </div>
-        <div class="flex items-center justify-between w-full max-w-2xl relative z-10 bg-slate-50 px-4">
 
-            <!-- Step 1: Details (Completed) -->
-            <div class="flex items-center gap-2 bg-[#DCCCA3] px-4 py-2 rounded-full shadow-sm cursor-pointer hover:bg-[#D2C090] transition-colors"
-                routerLink="/renovation/details">
-                <i class="pi pi-check text-slate-900 text-xs"></i>
-                <span class="font-medium text-slate-900">Details</span>
+        <!-- Header -->
+        <div class="w-full max-w-2xl text-center mb-10">
+            <h2 class="text-3xl font-bold text-slate-900 mb-2">Upload Media</h2>
+            <p class="text-slate-500 text-lg">Upload photos, 360° videos, or floor plans.</p>
+        </div>
+
+        <!-- Upload Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+
+            <!-- Card 1: Property Images -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 border-dashed flex flex-col items-center text-center hover:border-[#DCCCA3] hover:shadow-md transition-all group cursor-pointer relative"
+                (click)="triggerUpload(0)">
+                <div
+                    class="w-16 h-16 rounded-full bg-[#EBE4D3] flex items-center justify-center mb-6 text-[#BA9F60] group-hover:bg-[#EBE4D3] transition-colors">
+                    <i class="pi pi-images text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-1">Property Images</h3>
+                <p class="text-slate-500 text-sm mb-6">Upload photos of rooms</p>
+                <button
+                    class="bg-white border border-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-xl hover:bg-slate-50 transition-colors w-full flex items-center justify-center gap-2 pointer-events-none">
+                    <i class="pi pi-upload text-xs"></i>
+                    Upload Images
+                </button>
+                <div *ngIf="uploadingType === 0"
+                    class="absolute inset-0 bg-white/90 flex items-center justify-center rounded-3xl backdrop-blur-sm">
+                    <div class="flex flex-col items-center">
+                        <i class="pi pi-spin pi-spinner text-[#BA9F60] text-3xl mb-2"></i>
+                        <span class="text-sm font-bold text-slate-700">Uploading...</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="flex-grow"></div>
-
-            <!-- Step 2: Media (Active) -->
-            <div class="flex items-center gap-2 bg-[#DCCCA3] px-4 py-2 rounded-full shadow-sm transform scale-105 z-20">
-                <i class="pi pi-image text-slate-900"></i>
-                <span class="font-medium text-slate-900">Media</span>
+            <!-- Card 2: 360 Video -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 border-dashed flex flex-col items-center text-center hover:border-[#DCCCA3] hover:shadow-md transition-all group cursor-pointer relative"
+                (click)="triggerUpload(1)">
+                <div
+                    class="w-16 h-16 rounded-full bg-[#EBE4D3] flex items-center justify-center mb-6 text-[#BA9F60] group-hover:bg-[#EBE4D3] transition-colors">
+                    <i class="pi pi-video text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-1">360° Video</h3>
+                <p class="text-slate-500 text-sm mb-6">Upload virtual tour</p>
+                <button
+                    class="bg-white border border-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-xl hover:bg-slate-50 transition-colors w-full flex items-center justify-center gap-2 pointer-events-none">
+                    <i class="pi pi-upload text-xs"></i>
+                    Upload Video
+                </button>
+                <div *ngIf="uploadingType === 1"
+                    class="absolute inset-0 bg-white/90 flex items-center justify-center rounded-3xl backdrop-blur-sm">
+                    <div class="flex flex-col items-center">
+                        <i class="pi pi-spin pi-spinner text-[#BA9F60] text-3xl mb-2"></i>
+                        <span class="text-sm font-bold text-slate-700">Uploading...</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="flex-grow"></div>
-
-            <!-- Step 3: Goals -->
-            <div class="flex items-center gap-2 text-slate-400 bg-slate-50 px-2 z-20">
-                <i class="pi pi-target"></i>
-                <span>Goals</span>
+            <!-- Card 3: Floor Plans -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 border-dashed flex flex-col items-center text-center hover:border-[#DCCCA3] hover:shadow-md transition-all group cursor-pointer relative"
+                (click)="triggerUpload(2)">
+                <div
+                    class="w-16 h-16 rounded-full bg-[#EBE4D3] flex items-center justify-center mb-6 text-[#BA9F60] group-hover:bg-[#EBE4D3] transition-colors">
+                    <i class="pi pi-file text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-1">Floor Plans</h3>
+                <p class="text-slate-500 text-sm mb-6">Upload layout drawings</p>
+                <button
+                    class="bg-white border border-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-xl hover:bg-slate-50 transition-colors w-full flex items-center justify-center gap-2 pointer-events-none">
+                    <i class="pi pi-upload text-xs"></i>
+                    Upload Plans
+                </button>
+                <div *ngIf="uploadingType === 2"
+                    class="absolute inset-0 bg-white/90 flex items-center justify-center rounded-3xl backdrop-blur-sm">
+                    <div class="flex flex-col items-center">
+                        <i class="pi pi-spin pi-spinner text-[#BA9F60] text-3xl mb-2"></i>
+                        <span class="text-sm font-bold text-slate-700">Uploading...</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="flex-grow"></div>
+        </div>
 
-            <!-- Step 4: Results -->
-            <div class="flex items-center gap-2 text-slate-400 bg-slate-50 px-2 z-20">
-                <i class="pi pi-bolt"></i>
-                <span>Results</span>
+        <!-- Hidden Inputs -->
+        <input type="file" #fileInput0 multiple (change)="onFileSelected($event, 0)" class="hidden">
+        <input type="file" #fileInput1 multiple (change)="onFileSelected($event, 1)" class="hidden">
+        <input type="file" #fileInput2 multiple (change)="onFileSelected($event, 2)" class="hidden">
+
+        <!-- Uploaded List Summary -->
+        <div class="w-full max-w-5xl mt-8">
+            <h4 class="text-sm font-bold text-slate-900 mb-3" *ngIf="uploadedFiles.length > 0">Uploaded Files</h4>
+            <div class="flex flex-wrap gap-3">
+                <div *ngFor="let file of uploadedFiles"
+                    class="bg-white border border-slate-200 rounded-xl py-2 px-4 flex items-center gap-3 text-sm text-slate-600 shadow-sm animate-fade-in">
+                    <i class="pi"
+                        [ngClass]="{'pi-image': file.type === 0, 'pi-video': file.type === 1, 'pi-file': file.type === 2}"></i>
+                    <span class="truncate max-w-[150px] font-medium">{{ file.name }}</span>
+                    <i class="pi pi-check-circle text-green-500"></i>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Header -->
-    <div class="w-full max-w-2xl text-center mb-10">
-        <h2 class="text-3xl font-bold text-slate-900 mb-2">Upload Media</h2>
-        <p class="text-slate-500">Upload photos, 360° videos, or floor plans for better recommendations.</p>
-    </div>
 
-    <!-- Upload Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
-
-        <!-- Card 1: Property Images -->
-        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 border-dashed flex flex-col items-center text-center hover:border-[#DCCCA3] transition-colors group cursor-pointer relative"
-            (click)="triggerUpload(0)">
-            <div
-                class="w-16 h-16 rounded-full bg-[#F5F0E6] flex items-center justify-center mb-6 group-hover:bg-[#EBE4D3] transition-colors">
-                <i class="pi pi-images text-2xl text-[#BA9F60]"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-1">Property Images</h3>
-            <p class="text-slate-500 text-sm mb-6">Upload photos of rooms</p>
-            <button
-                class="bg-white border border-slate-200 text-slate-700 font-medium py-2 px-6 rounded-lg hover:bg-slate-50 transition-colors w-full flex items-center justify-center gap-2 pointer-events-none">
-                <i class="pi pi-upload text-xs"></i>
-                Upload Images
+        <!-- Navigation Buttons -->
+        <div class="w-full max-w-5xl flex justify-between mt-12 pt-6 border-t border-slate-100">
+            <button routerLink="/renovation/details"
+                class="text-slate-500 font-bold hover:text-slate-800 transition-colors flex items-center gap-2 px-4 py-2">
+                <i class="pi pi-arrow-left text-xs"></i>
+                Back
             </button>
-            <div *ngIf="uploadingType === 0"
-                class="absolute inset-0 bg-white/80 flex items-center justify-center rounded-2xl">
-                <i class="pi pi-spin pi-spinner text-[#BA9F60] text-2xl"></i>
-            </div>
-        </div>
-
-        <!-- Card 2: 360 Video -->
-        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 border-dashed flex flex-col items-center text-center hover:border-[#DCCCA3] transition-colors group cursor-pointer relative"
-            (click)="triggerUpload(1)">
-            <div
-                class="w-16 h-16 rounded-full bg-[#F5F0E6] flex items-center justify-center mb-6 group-hover:bg-[#EBE4D3] transition-colors">
-                <i class="pi pi-video text-2xl text-[#BA9F60]"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-1">360° Video</h3>
-            <p class="text-slate-500 text-sm mb-6">Upload virtual tour</p>
-            <button
-                class="bg-white border border-slate-200 text-slate-700 font-medium py-2 px-6 rounded-lg hover:bg-slate-50 transition-colors w-full flex items-center justify-center gap-2 pointer-events-none">
-                <i class="pi pi-upload text-xs"></i>
-                Upload Video
+            <button routerLink="/renovation/goals"
+                class="bg-[#DCCCA3] hover:bg-[#D2C090] text-slate-900 font-bold py-3.5 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 shadow-sm transform hover:translate-x-1">
+                Continue to Goals
+                <i class="pi pi-arrow-right text-xs"></i>
             </button>
-            <div *ngIf="uploadingType === 1"
-                class="absolute inset-0 bg-white/80 flex items-center justify-center rounded-2xl">
-                <i class="pi pi-spin pi-spinner text-[#BA9F60] text-2xl"></i>
-            </div>
-        </div>
-
-        <!-- Card 3: Floor Plans -->
-        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 border-dashed flex flex-col items-center text-center hover:border-[#DCCCA3] transition-colors group cursor-pointer relative"
-            (click)="triggerUpload(2)">
-            <div
-                class="w-16 h-16 rounded-full bg-[#F5F0E6] flex items-center justify-center mb-6 group-hover:bg-[#EBE4D3] transition-colors">
-                <i class="pi pi-file text-2xl text-[#BA9F60]"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-1">Floor Plans</h3>
-            <p class="text-slate-500 text-sm mb-6">Upload layout drawings</p>
-            <button
-                class="bg-white border border-slate-200 text-slate-700 font-medium py-2 px-6 rounded-lg hover:bg-slate-50 transition-colors w-full flex items-center justify-center gap-2 pointer-events-none">
-                <i class="pi pi-upload text-xs"></i>
-                Upload Plans
-            </button>
-            <div *ngIf="uploadingType === 2"
-                class="absolute inset-0 bg-white/80 flex items-center justify-center rounded-2xl">
-                <i class="pi pi-spin pi-spinner text-[#BA9F60] text-2xl"></i>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Hidden Inputs -->
-    <input type="file" #fileInput0 multiple (change)="onFileSelected($event, 0)" class="hidden">
-    <input type="file" #fileInput1 multiple (change)="onFileSelected($event, 1)" class="hidden">
-    <input type="file" #fileInput2 multiple (change)="onFileSelected($event, 2)" class="hidden">
-
-    <!-- Uploaded List Summary -->
-    <div class="w-full max-w-5xl mt-6">
-        <h4 class="text-sm font-semibold text-slate-900 mb-2" *ngIf="uploadedFiles.length > 0">Uploaded Files</h4>
-        <div class="flex flex-wrap gap-2">
-            <div *ngFor="let file of uploadedFiles"
-                class="bg-white border border-slate-200 rounded-lg py-1 px-3 flex items-center gap-2 text-sm text-slate-600">
-                <i class="pi"
-                    [ngClass]="{'pi-image': file.type === 0, 'pi-video': file.type === 1, 'pi-file': file.type === 2}"></i>
-                <span class="truncate max-w-[150px]">{{ file.name }}</span>
-                <i class="pi pi-check text-green-500 text-xs"></i>
-            </div>
         </div>
     </div>
 
-
-    <!-- Navigation Buttons -->
-    <div class="w-full max-w-5xl flex justify-between mt-12">
-        <button routerLink="/renovation/details"
-            class="bg-white border border-slate-200 text-slate-700 font-medium py-3 px-6 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2">
-            <i class="pi pi-arrow-left text-xs"></i>
-            Back
-        </button>
-        <button routerLink="/renovation/goals"
-            class="bg-[#DCCCA3] hover:bg-[#D2C090] text-slate-900 font-semibold py-3 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 shadow-sm">
-            Continue
-            <i class="pi pi-arrow-right text-xs"></i>
-        </button>
-    </div>
-
+    <app-footer></app-footer>
 </div>
