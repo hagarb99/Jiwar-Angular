@@ -3,6 +3,8 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { NavbarComponent } from '../../../../shared/components/navbar/navbar.component';
+import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { RenovationApiService } from '../../services/renovation-api.service';
 import { RenovationStateService } from '../../services/renovation-state.service';
 import { UpdateSimulationDetailsDto } from '../../models/renovation.models';
@@ -10,7 +12,7 @@ import { UpdateSimulationDetailsDto } from '../../models/renovation.models';
 @Component({
     selector: 'app-step2-details',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, NavbarComponent, FooterComponent],
     templateUrl: './step2-details.component.html'
 })
 export class Step2DetailsComponent {
@@ -56,5 +58,14 @@ export class Step2DetailsComponent {
                 this.isSubmitting = false;
             }
         });
+    }
+    adjustCount(controlName: string, delta: number) {
+        const control = this.detailsForm.get(controlName);
+        if (control) {
+            const currentVal = (control.value as number) || 0;
+            const newVal = Math.max(0, currentVal + delta);
+            control.setValue(newVal);
+            control.markAsTouched();
+        }
     }
 }
