@@ -1,12 +1,18 @@
 <app-navbar></app-navbar>
 
-<div class="min-h-screen bg-background pt-24 pb-12">
+<div class="min-h-screen relative pt-24 pb-12">
+  <!-- Background Image & Overlay -->
+  <div class="fixed inset-0 z-[-1]">
+    <img src="hero-bg.png" alt="Background" class="w-full h-full object-cover blur-sm" />
+    <div class="absolute inset-0 bg-[#0f172a]/80"></div>
+  </div>
+
   <div class="container mx-auto px-4 max-w-5xl">
     <div class="text-center mb-10">
-      <h1 class="text-4xl md:text-5xl font-bold text-primary mb-4">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
         Add <span class="text-gradient-gold">Property</span>
       </h1>
-      <p class="text-lg text-muted-foreground">List your property in a few easy steps</p>
+      <p class="text-lg text-gray-200">List your property in a few easy steps</p>
     </div>
 
     <p-card class="shadow-luxury">
@@ -32,11 +38,13 @@
             </div>
             <div class="md:col-span-2">
               <label class="block text-sm font-medium mb-2">Description *</label>
-              <textarea pInputTextarea formControlName="description" rows="5" placeholder="Describe your property in detail..." class="w-full"></textarea>
+              <textarea pInputTextarea formControlName="description" rows="5"
+                placeholder="Describe your property in detail..." class="w-full"></textarea>
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">Category *</label>
-              <p-dropdown formControlName="categoryId" [options]="categories" optionLabel="label" optionValue="value" placeholder="Select category" class="w-full" />
+              <p-dropdown formControlName="categoryId" [options]="categories" optionLabel="label" optionValue="value"
+                placeholder="Select category" class="w-full" />
             </div>
           </div>
         </div>
@@ -84,20 +92,9 @@
 
           <div class="mb-8">
             <label class="block text-sm font-medium mb-3">Property Images (Up to 10)</label>
-            <p-fileUpload
-  #fileUpload
-  name="images[]"
-  multiple="true"
-  accept="image/*"
-  maxFileSize="10000000"
-  [auto]="false"
-  chooseLabel="Choose Images"
-  uploadLabel="Upload All"
-  cancelLabel="Clear"
-  mode="advanced"
-  class="w-full"
-  (onUpload)="onUpload($event)"
->
+            <p-fileUpload #fileUpload name="images[]" multiple="true" accept="image/*" maxFileSize="10000000"
+              [auto]="false" chooseLabel="Choose Images" uploadLabel="Upload All" cancelLabel="Clear" mode="advanced"
+              class="w-full" customUpload="true" (uploadHandler)="uploadHandler($event)">
               <ng-template pTemplate="header">
                 <div class="p-6 bg-primary/5 rounded-t-lg text-center border-b">
                   <i class="pi pi-images text-5xl text-primary mb-3"></i>
@@ -110,7 +107,8 @@
 
           <div>
             <label class="block text-sm font-medium mb-2">360° Virtual Tour URL (Optional)</label>
-            <input pInputText formControlName="tour360Url" placeholder="https://my.matterport.com/show/?m=..." class="w-full" />
+            <input pInputText formControlName="tour360Url" placeholder="https://my.matterport.com/show/?m=..."
+              class="w-full" />
           </div>
         </div>
 
@@ -124,44 +122,39 @@
           <div class="bg-gray-50 p-6 rounded-xl space-y-4 text-lg">
             <p><strong>Title:</strong> {{ propertyForm.get('title')?.value || '—' }}</p>
             <p><strong>Price:</strong> {{ propertyForm.get('price')?.value | currency:'SAR ' }}</p>
-            <p><strong>Location:</strong> {{ propertyForm.get('address')?.value }}, {{ propertyForm.get('city')?.value }} {{ propertyForm.get('district')?.value ? '(' + propertyForm.get('district')?.value + ')' : '' }}</p>
-<p><strong>Category:</strong> {{ selectedCategoryLabel }}</p>            <p><strong>Area:</strong> {{ propertyForm.get('area')?.value ? (propertyForm.get('area')?.value + ' m²') : 'Not specified' }}</p>
-            <p><strong>Rooms:</strong> {{ propertyForm.get('rooms')?.value || 0 }} Bedrooms • {{ propertyForm.get('bathrooms')?.value || 0 }} Bathrooms</p>
-            <p><strong>Description:</strong><br><span class="text-muted-foreground text-base">{{ propertyForm.get('description')?.value || 'No description' }}</span></p>
-            <p><strong>Images:</strong> {{ uploadedFiles || 0 }} images uploaded</p>
+            <p><strong>Location:</strong> {{ propertyForm.get('address')?.value }}, {{ propertyForm.get('city')?.value
+              }} {{ propertyForm.get('district')?.value ? '(' + propertyForm.get('district')?.value + ')' : '' }}</p>
+            <p><strong>Category:</strong> {{ selectedCategoryLabel }}</p>
+            <p><strong>Area:</strong> {{ propertyForm.get('area')?.value ? (propertyForm.get('area')?.value + ' m²') :
+              'Not specified' }}</p>
+            <p><strong>Rooms:</strong> {{ propertyForm.get('rooms')?.value || 0 }} Bedrooms • {{
+              propertyForm.get('bathrooms')?.value || 0 }} Bathrooms</p>
+            <p><strong>Description:</strong><br><span class="text-muted-foreground text-base">{{
+                propertyForm.get('description')?.value || 'No description' }}</span></p>
+            <p><strong>Images:</strong> {{ uploadedFiles.length }} images uploaded</p>
           </div>
         </div>
- <!-- Navigation Buttons -->
-<div class="flex justify-between items-center mt-12 pt-6 border-t">
-  <p-button
-    label="Previous"
-    severity="secondary"
-    (click)="prev()"
-    [disabled]="activeStep === 0"
-    icon="pi pi-arrow-left"
-    styleClass="px-8 py-3 text-lg font-medium"
-  />
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between items-center mt-12 pt-6 border-t">
+          <button type="button" (click)="prev()" [disabled]="activeStep === 0"
+            class="btn-gold flex items-center justify-center gap-2">
+            <i class="pi pi-arrow-left"></i> Previous
+          </button>
 
-  <div class="flex gap-6">
-    <p-button
-      *ngIf="activeStep < steps.length - 1"
-      label="Next"
-      (click)="next()"
-      icon="pi pi-arrow-right"
-      iconPos="right"
-      styleClass="gold-button px-12 py-4 text-xl font-semibold"
-    />
+          <div class="flex gap-6">
+            <button *ngIf="activeStep < steps.length - 1" type="button" (click)="next()"
+              class="btn-gold flex items-center justify-center gap-2">
+              Next <i class="pi pi-arrow-right"></i>
+            </button>
 
-    <p-button
-      *ngIf="activeStep === steps.length - 1"
-      label="Add Property"
-      [loading]="loading"
-      [disabled]="loading || propertyForm.invalid"
-      styleClass="gold-pill-button px-16 py-5 text-2xl font-bold"
-      (click)="onSubmit()"
-    />
-  </div>
-</div>
+            <button *ngIf="activeStep === steps.length - 1" type="button" (click)="onSubmit()"
+              [disabled]="loading || propertyForm.invalid"
+              class="btn-gold-pill text-lg flex items-center justify-center gap-2 min-w-[180px]">
+              <i *ngIf="loading" class="pi pi-spin pi-spinner text-xl"></i>
+              <span *ngIf="!loading">Add Property</span>
+            </button>
+          </div>
+        </div>
       </form>
     </p-card>
   </div>

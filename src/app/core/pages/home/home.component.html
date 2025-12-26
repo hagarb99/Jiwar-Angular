@@ -4,7 +4,7 @@
     <section class="relative h-screen flex items-center justify-center text-white"
         [style.backgroundImage]="'url(' + heroBackgroundImage + ')'"
         style="background-size: cover; background-position: center;">
-   <div class="absolute inset-0 bg-navy-overlay pointer-events-none"></div>
+        <div class="absolute inset-0 bg-navy-overlay pointer-events-none"></div>
 
 
         <div class="relative container mx-auto px-4 z-10">
@@ -23,13 +23,15 @@
                 </p>
 
                 <div class="flex gap-4">
-                    <p-button label="Get Your Property Value" styleClass="gradient-gold text-primary font-bold px-8"
-                        iconPos="right">
+                    <button type="button" class="btn-gold flex items-center gap-2">
+                        Get Your Property Value
                         <lucide-angular [img]="ArrowRight" class="ml-2 h-5 w-5"></lucide-angular>
-                    </p-button>
+                    </button>
 
-                    <p-button label="Explore Features" severity="secondary" outlined="true">
-                    </p-button>
+                    <button type="button"
+                        class="px-6 py-3 rounded-lg border border-white/30 text-white hover:bg-white/10 transition-all font-semibold backdrop-blur-sm">
+                        Explore Features
+                    </button>
                 </div>
             </div>
         </div>

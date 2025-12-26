@@ -16,7 +16,7 @@ import { FooterComponent } from '../footer/footer.component';
 import { StepsModule } from 'primeng/steps';
 import { MenuItem } from 'primeng/api';
 import { CardModule } from 'primeng/card';
-import { FileUploadModule } from 'primeng/fileupload'; 
+import { FileUploadModule } from 'primeng/fileupload';
 
 interface PropertyCreateDTO {
   title: string;
@@ -99,7 +99,7 @@ export class AddPropertyComponent {
       locationLang: ['']
     });
   }
-next() {
+  next() {
     if (this.activeStep < this.steps.length - 1 && this.isStepValid(this.activeStep)) {
       this.activeStep++;
     } else if (!this.isStepValid(this.activeStep)) {
@@ -134,19 +134,27 @@ next() {
         return true;
     }
   }
-get selectedCategoryLabel(): string {
-  const categoryId = this.propertyForm.get('categoryId')?.value;
-  if (!categoryId) return '—';
-  const category = this.categories.find(cat => cat.value === categoryId);
-  return category ? category.label : '—';
-}
-uploadedFiles: any[] = [];
+  get selectedCategoryLabel(): string {
+    const categoryId = this.propertyForm.get('categoryId')?.value;
+    if (!categoryId) return '—';
+    const category = this.categories.find(cat => cat.value === categoryId);
+    return category ? category.label : '—';
+  }
+  uploadedFiles: any[] = [];
 
-onUpload(event: any) {
-  this.uploadedFiles = event.files;
-}
+  uploadHandler(event: any) {
+    for (let file of event.files) {
+      this.uploadedFiles.push(file);
+    }
+    this.messageService.add({ severity: 'success', summary: 'Uploaded', detail: `${event.files.length} images added successfully` });
+    // In a real scenario, you might clear the uploader here or leave them as visible thumbnails
+  }
 
- onSubmit() {
+  onUpload(event: any) {
+    this.uploadedFiles = event.files;
+  }
+
+  onSubmit() {
     // تأكد إننا في آخر خطوة
     if (this.activeStep !== this.steps.length - 1) {
       return;
