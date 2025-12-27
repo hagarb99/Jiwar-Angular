@@ -55,6 +55,7 @@ export class AuthService extends ApiBaseService {
     name: string;
     email: string;
     profilePicURL: string;
+    role?: string;
   }) {
     this.currentUserSubject.next(userData);
     localStorage.setItem('currentUser', JSON.stringify(userData));

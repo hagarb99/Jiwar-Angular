@@ -2,17 +2,17 @@
   <div class="p-6 flex flex-col items-center border-b border-gray-50">
     <div
       class="w-16 h-16 rounded-full bg-slate-900 text-white flex items-center justify-center text-xl font-medium mb-3">
-      NE
+      {{ userInitials }}
     </div>
-    <h3 class="font-bold text-gray-900">Nadia El-Sayed</h3>
-    <p class="text-xs text-gray-500">nadia&#64;designer.com</p>
+    <h3 class="font-bold text-gray-900">{{ currentUser || 'User' }}</h3>
+    <p class="text-xs text-gray-500">{{ userEmail || 'user@example.com' }}</p>
     <div class="mt-2 px-3 py-1 bg-amber-50 text-amber-700 text-xs rounded-full border border-amber-100">
       Interior Designer
     </div>
   </div>
 
   <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
-    <a *ngFor="let item of menuItems" [routerLink]="item.path"
+    <a *ngFor="let item of displayedMenuItems" [routerLink]="item.path"
       routerLinkActive="bg-slate-900 text-white shadow-lg shadow-slate-200" [routerLinkActiveOptions]="{exact: false}"
       class="flex items-center px-4 py-3 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-50 transition-all duration-200 group">
       <svg class="w-5 h-5 mr-3 transition-colors" [class.text-white]="rla.isActive"
