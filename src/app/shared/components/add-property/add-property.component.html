@@ -46,6 +46,17 @@
               <p-dropdown formControlName="categoryId" [options]="categories" optionLabel="label" optionValue="value"
                 placeholder="Select category" class="w-full" />
             </div>
+
+            <div>
+  <label class="block text-sm font-medium mb-2">Listing Type *</label>
+  <p-dropdown 
+    formControlName="listingType" 
+    [options]="listingTypes" 
+    optionLabel="label" 
+    optionValue="value" 
+    placeholder="Select listing type"
+    class="w-full" />
+ </div> 
           </div>
         </div>
 
@@ -92,25 +103,53 @@
 
           <div class="mb-8">
             <label class="block text-sm font-medium mb-3">Property Images (Up to 10)</label>
-            <p-fileUpload #fileUpload name="images[]" multiple="true" accept="image/*" maxFileSize="10000000"
-              [auto]="false" chooseLabel="Choose Images" uploadLabel="Upload All" cancelLabel="Clear" mode="advanced"
-              class="w-full" customUpload="true" (uploadHandler)="uploadHandler($event)">
+
+            <!-- الـ p-fileUpload الصحيح -->
+            <p-fileUpload #fileUpload name="images" multiple="true" accept="image/*" maxFileSize="10000000"
+              [auto]="false" chooseLabel="Choose Images" mode="advanced" class="w-full" [files]="uploadedFiles"
+              (onSelect)="onFileSelect($event)" (onRemove)="onFileRemove($event)">
+              <!-- Header مخصص عشان الزر يبقى واضح -->
               <ng-template pTemplate="header">
-                <div class="p-6 bg-primary/5 rounded-t-lg text-center border-b">
-                  <i class="pi pi-images text-5xl text-primary mb-3"></i>
-                  <p class="text-lg">Drag & drop images here or click to browse</p>
-                  <p class="text-sm text-muted-foreground mt-1">Maximum 10 images, 10MB each</p>
+                <div
+                  class="flex flex-col items-center justify-center py-12 bg-primary/5 rounded-t-lg border-b border-gray-200">
+                  <i class="pi pi-images text-6xl text-primary mb-4"></i>
+                  <p class="text-xl font-medium mb-2">Drag & drop images here</p>
+                  <p class="text-lg text-muted-foreground mb-6">or click the button below to browse</p>
+                  <!-- زرار واضح جدًا -->
+                  <button type="button" pButton label="Choose Images" icon="pi pi-folder-open"
+                    class="p-button-outlined p-button-lg p-button-primary" (click)="fileUpload.choose()"></button>
+                  <p class="text-sm text-muted-foreground mt-6">Maximum 10 images, 10MB each</p>
+                </div>
+              </ng-template>
+
+
+              <ng-template pTemplate="content">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                  <div *ngFor="let file of uploadedFiles" class="relative group">
+                    <img [src]="getImagePreview(file)"
+                      class="w-full h-40 object-cover rounded-lg shadow-md border-2 border-primary/20" alt="Preview" />
+                    <button type="button" (click)="removeFile(file)"
+                      class="absolute top-2 right-2 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-red-700 text-xl font-bold">
+                      ×
+                    </button>
+                  </div>
+                </div>
+                <div *ngIf="uploadedFiles.length === 0" class="text-center py-8 text-muted-foreground">
+                  No images selected yet
                 </div>
               </ng-template>
             </p-fileUpload>
           </div>
 
+          <!-- Virtual Tour -->
           <div>
             <label class="block text-sm font-medium mb-2">360° Virtual Tour URL (Optional)</label>
             <input pInputText formControlName="tour360Url" placeholder="https://my.matterport.com/show/?m=..."
               class="w-full" />
           </div>
         </div>
+
+
 
         <!-- Step 4: Review -->
         <div *ngIf="activeStep === 3" class="animate-fade-in">
@@ -132,6 +171,7 @@
             <p><strong>Description:</strong><br><span class="text-muted-foreground text-base">{{
                 propertyForm.get('description')?.value || 'No description' }}</span></p>
             <p><strong>Images:</strong> {{ uploadedFiles.length }} images uploaded</p>
+
           </div>
         </div>
         <!-- Navigation Buttons -->
