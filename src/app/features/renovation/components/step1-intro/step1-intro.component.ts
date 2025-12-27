@@ -2,6 +2,8 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { NavbarComponent } from '../../../../shared/components/navbar/navbar.component';
+import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { RenovationApiService } from '../../services/renovation-api.service';
 import { RenovationStateService } from '../../services/renovation-state.service';
 import { StartSimulationDto } from '../../models/renovation.models';
@@ -9,7 +11,7 @@ import { StartSimulationDto } from '../../models/renovation.models';
 @Component({
     selector: 'app-step1-intro',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, RouterModule, NavbarComponent, FooterComponent],
     templateUrl: './step1-intro.component.html'
 })
 export class Step1IntroComponent {

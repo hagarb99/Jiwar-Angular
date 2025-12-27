@@ -2,6 +2,8 @@
 import { Component, ElementRef, ViewChildren, QueryList, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { NavbarComponent } from '../../../../shared/components/navbar/navbar.component';
+import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { RenovationApiService } from '../../services/renovation-api.service';
 import { RenovationStateService } from '../../services/renovation-state.service';
 import { SimulationMediaTypeEnum, UploadSimulationMediaDto } from '../../models/renovation.models';
@@ -9,7 +11,7 @@ import { SimulationMediaTypeEnum, UploadSimulationMediaDto } from '../../models/
 @Component({
     selector: 'app-step3-media',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, RouterModule, NavbarComponent, FooterComponent],
     templateUrl: './step3-media.component.html'
 })
 export class Step3MediaComponent {

@@ -26,7 +26,7 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent implements OnInit {
-  toggleUserDropdown = false;  // ← NEW: لفتح/غلق الـ dropdown
+  toggleUserDropdown = false;  
 
 profilePicUrl: string | null = null;
 currentUserName: string | null = null;
@@ -61,14 +61,13 @@ currentUserEmail: string | null = null;
   ];
 
   renovationDropdownItems = [
-    { path: '/dashboard/owner', label: 'Start Simulation' },
-    { path: '/dashboard/ai-assistant', label: 'Upload Apartment Media' },
-    { path: '/dashboard/owner', label: 'View Recommendations' }
+    { path: '/renovation/intro', label: 'Start Simulation' },
+    { path: '/renovation/intro', label: 'Upload Apartment Media' },
+    { path: '/renovation/intro', label: 'View Recommendations' }
   ];
 
   sellDropdownItems = [
-    { path: '/sell', label: 'Sell Your Property' },
-    { path: '/sell/property', label: 'Sell Property' },
+    { path: '/add-property', label: 'Sell Your Property' },
     { path: '/sell/rental', label: 'Rent Property' }
   ];
 
@@ -99,7 +98,6 @@ currentUserEmail: string | null = null;
     this.mobileMenuOpen = false;
   }
  ngOnInit(): void {
-    // Listen to login status changes
     this.authService.isLoggedIn$.subscribe(status => {
       this.isLoggedIn = status;
       if (status) {

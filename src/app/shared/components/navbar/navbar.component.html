@@ -109,10 +109,22 @@
             *ngIf="toggleUserDropdown"
             class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden"
           >
-            <div class="px-4 py-3 border-b border-gray-100">
+          <!-- <a routerLink="/dashboard/property-owner" (click)="toggleUserDropdown = false"
+       class="block px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer">
+      <p class="text-sm font-medium text-gray-900">{{ currentUserName || 'User' }}</p>
+      <p class="text-xs text-gray-500 truncate">{{ currentUserEmail }}</p>
+    </a> -->
+      <div class="px-4 py-3 border-b border-gray-100">
               <p class="text-sm font-medium text-gray-900">{{ currentUserName || 'User' }}</p>
               <p class="text-xs text-gray-500 truncate">{{ currentUserEmail }}</p>
             </div>
+    <a routerLink="/dashboard/property-owner" 
+   (click)="toggleUserDropdown = false"
+   class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
+  <i class="pi pi-home mr-3"></i>
+  Dashboard
+</a>
+          
 
             <a routerLink="/change-password" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
               <i class="pi pi-key mr-3"></i>

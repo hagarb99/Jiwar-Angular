@@ -82,19 +82,19 @@ export class AuthService extends ApiBaseService {
   }
 
   googleBackendLogin(idToken: string) {
-    return this.httpClient.post(`/api/account/google-signin`, { IdToken: idToken });
+    return this.httpClient.post(`${this.apiBaseUrl}/account/google-signin`, { IdToken: idToken });
   }
 
   register(data: RegisterRequest) {
     return this.httpClient.post<RegisterResponse>(
-      `/api/account/register`,
+      `${this.apiBaseUrl}/account/register`,
       data
     );
   }
 
   login(data: LoginRequest) {
     return this.httpClient.post<LoginResponse>(
-      `/api/account/login`,
+      `${this.apiBaseUrl}/account/login`,
       data
     );
   }
