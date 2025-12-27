@@ -26,7 +26,7 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent implements OnInit {
-  toggleUserDropdown = false;  // ← NEW: لفتح/غلق الـ dropdown
+  toggleUserDropdown = false;  
 
 profilePicUrl: string | null = null;
 currentUserName: string | null = null;
@@ -98,7 +98,6 @@ currentUserEmail: string | null = null;
     this.mobileMenuOpen = false;
   }
  ngOnInit(): void {
-    // Listen to login status changes
     this.authService.isLoggedIn$.subscribe(status => {
       this.isLoggedIn = status;
       if (status) {
