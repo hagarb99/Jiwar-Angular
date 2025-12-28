@@ -82,33 +82,33 @@ export class LoginComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Login error detailed:', err);
         if (err.status === 401) {
-        this.errorMessage = err.error?.message || 'Invalid email or password';
-      } else if (err.status === 400) {
-        this.errorMessage = 'Invalid input. Please check your details.';
-      } else {
-        // Other errors (network, 500, etc.)
-        this.errorMessage = 'Something went wrong. Please try again later.';
-      }
+          this.errorMessage = err.error?.message || 'Invalid email or password';
+        } else if (err.status === 400) {
+          this.errorMessage = 'Invalid input. Please check your details.';
+        } else {
+          // Other errors (network, 500, etc.)
+          this.errorMessage = 'Something went wrong. Please try again later.';
+        }
         this.loading = false;
       }
     });
   }
 
 
-ngOnInit(): void {
-  this.authSubscription = this.socialAuthService.authState.subscribe((user: SocialUser | null) => {
-    if (!user || !user.idToken) {
-      return; // No login happened
-    }
+  ngOnInit(): void {
+    this.authSubscription = this.socialAuthService.authState.subscribe((user: SocialUser | null) => {
+      if (!user || !user.idToken) {
+        return; // No login happened
+      }
 
-    // Show loading while contacting backend
-    this.loading = true;
-    this.errorMessage = null;
+      // Show loading while contacting backend
+      this.loading = true;
+      this.errorMessage = null;
 
-    this.authService.googleBackendLogin(user.idToken).subscribe({
-      next: (response: any) => {
-        // Now response has: { Success: true, Data: { Token: "...", ... } }
-        const token = response?.data?.token || response?.token;
+      this.authService.googleBackendLogin(user.idToken).subscribe({
+        next: (response: any) => {
+          // Now response has: { Success: true, Data: { Token: "...", ... } }
+          const token = response?.data?.token || response?.token;
 
         if (token) {
           const loginResponse: LoginResponse = {
@@ -138,15 +138,15 @@ this.navigateByRole(loginResponse.role);
   });
 }
 
-googleLogin() {
-  this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
-}
-triggerGoogleSignIn() {
-  // const button = document.querySelector('asl-google-signin-button') as HTMLElement;
-  // button?.click();
-this.googleLogin();
+  googleLogin() {
+    this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
+  }
+  triggerGoogleSignIn() {
+    // const button = document.querySelector('asl-google-signin-button') as HTMLElement;
+    // button?.click();
+    this.googleLogin();
 
-}
+  }
 
   ngOnDestroy(): void {
     this.authSubscription?.unsubscribe();

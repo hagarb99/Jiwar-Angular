@@ -6,6 +6,7 @@ import { ProfileEditingComponent } from './features/designer/profile-editing/pro
 import { AvailableProjectsComponent } from './features/projects/available-projects/available-projects.component';
 import { AddPropertyComponent } from './shared/components/add-property/add-property.component';
 import { authGuard } from './core/guards/auth.guard';
+import { SearchPageComponent } from './core/pages/search-page/search-page.component';
 import { roleGuard } from './core/guards/role.guard';
 import { DashboardLayoutComponent } from './features/dashboard/dashboard-layout/dashboard-layout.component';
 import { PropertyOwnerLayoutComponent } from './features/propertyowner/propertyowner-dashboard/property-owner-layout.component';
@@ -74,7 +75,14 @@ const routes: Routes = [
   {
     path: 'renovation',
     loadChildren: () => import('./features/renovation/renovation.routes').then(m => m.RENOVATION_ROUTES)
-  }
+  },
+  {
+    path: 'properties',
+    component: SearchPageComponent
+  },
 ];
 
 export const router = provideRouter(routes);
+
+
+
