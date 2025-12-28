@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProjectCardComponent } from '../../../shared/components/project-card/project-card.component';
-import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
+import { SidebarComponent } from '../../dashboard/sidebar/sidebar.component';
 
 @Component({
     selector: 'app-available-projects',

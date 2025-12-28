@@ -6,7 +6,6 @@ import { CookieService } from 'ngx-cookie-service';
 import { AuthInterceptor } from './app/core/interceptors/auth.interceptor';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
-
 bootstrapApplication(AppComponent, {
   ...appConfig,
   providers: [

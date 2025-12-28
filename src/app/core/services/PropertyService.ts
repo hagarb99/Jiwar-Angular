@@ -17,7 +17,7 @@ formData.append('description', dto.description);
 formData.append('price', dto.price.toString());
 formData.append('address', dto.address);
 formData.append('city', dto.city);
-formData.append('listingType', dto.listingType);
+formData.append('listingType', dto.listingType.toString());
 if(dto.district) formData.append('district', dto.district);
 if(dto.area) formData.append('area', dto.area.toString());
 if(dto.rooms) formData.append('rooms', dto.rooms.toString());
@@ -27,9 +27,7 @@ if(dto.tour360Url) formData.append('tour360Url', dto.tour360Url);
 if(dto.locationLat) formData.append('locationLat', dto.locationLat.toString());
 if(dto.locationLang) formData.append('locationLang', dto.locationLang.toString());
 
-images.forEach(file => formData.append('images', file, file.name));
-
-
+images.forEach(file => formData.append('Images', file));
     return this.httpClient.post(`${this.apiBaseUrl}/property/add`, formData);
   }
 }

@@ -53,13 +53,40 @@ private currentUserSubject = new BehaviorSubject<any>(null);
 currentUser$ = this.currentUserSubject.asObservable();
 
 setUserData(userData: {
+  id: string;
   name: string;
   email: string;
   profilePicURL: string;
+  role: string;
+  isProfileCompleted: boolean;
 }) {
   this.currentUserSubject.next(userData);
   localStorage.setItem('currentUser', JSON.stringify(userData));
 }
+
+setAuthData(response: LoginResponse): void {
+  this.setToken(response.token);
+
+  this.setUserData({
+    id: response.id,
+    name: response.name,
+    email: response.email,
+    profilePicURL: response.profilePicURL,
+    role: response.role,
+    isProfileCompleted: response.isProfileCompleted
+  });
+
+  this.isLoggedInSubject.next(true);
+}
+
+get userRole(): string | null {
+  const user =
+    this.currentUserSubject.value ??
+    JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+  return user?.role ?? null;
+}
+
 
 getUserName(): string | null {
   const user = this.currentUserSubject.value || JSON.parse(localStorage.getItem('currentUser') || 'null');
@@ -75,6 +102,10 @@ getProfilePicUrl(): string | null {
   const user = this.currentUserSubject.value || JSON.parse(localStorage.getItem('currentUser') || 'null');
   return user?.profilePicURL || null;
 }
+getCurrentUser() {
+  return this.currentUserSubject.value;
+}
+
 
 clearUserData() {
   this.currentUserSubject.next(null);

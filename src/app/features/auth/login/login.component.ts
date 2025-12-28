@@ -61,6 +61,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   get passwordErrors() {
     return this.loginForm.get('password')?.errors;
   }
+
   submit(): void {
     if (this.loginForm.invalid) return;
     this.loading = true;
@@ -71,18 +72,8 @@ export class LoginComponent implements OnInit, OnDestroy {
         console.log('Login Response:', response);
         const token = response?.token;
         if (token) {
-          this.authService.setToken(token);
-          this.authService.setUserData({
-      name: response.name,
-      email: response.email,
-      profilePicURL: response.profilePicURL
-    });
-          const returnUrl = this.router.routerState.snapshot.root.queryParams['returnUrl'] || '/';
-          if (returnUrl.startsWith('/')) {
-         this.router.navigate([returnUrl]);
-         } else {
-          this.router.navigate(['/']);
-       }
+         this.authService.setAuthData(response);
+         this.navigateByRole(response.role);
         } else {
           this.errorMessage = 'Login failed: No token received';
         }
@@ -120,19 +111,19 @@ ngOnInit(): void {
         const token = response?.data?.token || response?.token;
 
         if (token) {
-          this.authService.setToken(token);
-          this.authService.setUserData({
-        name: response.data?.name || response.name || 'User',
-        email: response.data?.email || response.email || '',
-        profilePicURL: response.data?.profilePicURL || response.profilePicURL || null
-      });
-          const returnUrl = this.router.routerState.snapshot.root.queryParams['returnUrl'] || '/';
-          if (returnUrl.startsWith('/')) {
-          this.router.navigate([returnUrl]);
-          } else {
-          this.router.navigate(['/']);
-          }
-        } else {
+          const loginResponse: LoginResponse = {
+  id: response.data.id,
+  name: response.data.name,
+  email: response.data.email,
+  profilePicURL: response.data.profilePicURL,
+  role: response.data.role,
+  token: response.data.token,
+  isProfileCompleted: response.data.isProfileCompleted
+};
+
+this.authService.setAuthData(loginResponse);
+this.navigateByRole(loginResponse.role);
+} else {
           this.errorMessage = 'Google login failed: No token received';
           console.error('Invalid response:', response);
         }
@@ -160,4 +151,28 @@ this.googleLogin();
   ngOnDestroy(): void {
     this.authSubscription?.unsubscribe();
   }
+
+
+
+  private navigateByRole(role: string) {
+  switch (role) {
+    case 'PropertyOwner':
+      this.router.navigate(['propertyowner']);
+      break;
+    case 'Admin':
+      this.router.navigate(['/admin/dashboard']);
+      break;
+    case 'Customer':
+      this.router.navigate(['/customer/home']);
+      break;
+    case 'InteriorDesigner':
+      this.router.navigate(['dashboard']);
+      break;
+    default:
+      this.router.navigate(['/']);
+      break;
+  }
+}
+
+
 }
