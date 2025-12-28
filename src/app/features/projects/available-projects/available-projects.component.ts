@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProjectCardComponent } from '../../../shared/components/project-card/project-card.component';
-import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
+import { SidebarComponent } from '../../dashboard/sidebar/sidebar.component';
 import { DesignRequestService } from '../../../core/services/design-request.service';
 import { DesignRequest } from '../../../core/interfaces/design-request.interface';
 
