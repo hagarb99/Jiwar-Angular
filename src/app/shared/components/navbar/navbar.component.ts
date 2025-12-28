@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { filter } from 'rxjs';
+import { OnInit } from '@angular/core';
 import {
   LucideAngularModule,
   ChevronDown,
@@ -9,8 +10,8 @@ import {
   X,
   Globe
 } from 'lucide-angular';
-
 import { ButtonModule } from 'primeng/button';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -24,7 +25,13 @@ import { ButtonModule } from 'primeng/button';
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
+  toggleUserDropdown = false;  
+
+profilePicUrl: string | null = null;
+currentUserName: string | null = null;
+currentUserEmail: string | null = null;
+
   readonly ChevronDown = ChevronDown;
   readonly Menu = Menu;
   readonly X = X;
@@ -32,9 +39,10 @@ export class NavbarComponent {
 
   // State
   mobileMenuOpen = false;
-  activeDropdown: 'buy' | 'invest' | 'renovation' | null = null;
+  activeDropdown: 'buy' | 'invest' | 'sell' | 'renovation' | null = null;
   language: 'EN' | 'AR' = 'EN';
   currentPath = '';
+  isLoggedIn = false;
 
   buyDropdownItems = [
     { path: '/properties', label: 'Apartments for Sale' },
@@ -53,12 +61,19 @@ export class NavbarComponent {
   ];
 
   renovationDropdownItems = [
-    { path: '/dashboard/owner', label: 'Start Simulation' },
-    { path: '/dashboard/ai-assistant', label: 'Upload Apartment Media' },
-    { path: '/dashboard/owner', label: 'View Recommendations' }
+    { path: '/renovation/intro', label: 'Start Simulation' },
+    { path: '/renovation/intro', label: 'Upload Apartment Media' },
+    { path: '/renovation/intro', label: 'View Recommendations' }
   ];
 
-  constructor(private router: Router) {
+  sellDropdownItems = [
+    { path: '/add-property', label: 'Sell Your Property' },
+    { path: '/sell/rental', label: 'Rent Property' }
+  ];
+
+  constructor(private router: Router,
+    private authService: AuthService
+  ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(event => {
@@ -66,7 +81,8 @@ export class NavbarComponent {
       });
   }
 
-  setDropdown(name: 'buy' | 'invest' | 'renovation' | null): void {
+  
+  setDropdown(name: 'buy' | 'invest' | 'sell' | 'renovation' | null): void {
     this.activeDropdown = name;
   }
 
@@ -80,6 +96,30 @@ export class NavbarComponent {
 
   closeMobileMenu(): void {
     this.mobileMenuOpen = false;
+  }
+ ngOnInit(): void {
+    this.authService.isLoggedIn$.subscribe(status => {
+      this.isLoggedIn = status;
+      if (status) {
+        this.profilePicUrl = this.authService.getProfilePicUrl();
+      this.currentUserName = this.authService.getUserName();
+      this.currentUserEmail = this.authService.getUserEmail();
+      } else {
+        this.profilePicUrl = null;
+      this.currentUserName = null;
+      this.currentUserEmail = null;
+      }
+    });
+    if (this.authService.isLoggedIn()) {
+    this.profilePicUrl = this.authService.getProfilePicUrl();
+    this.currentUserName = this.authService.getUserName();
+    this.currentUserEmail = this.authService.getUserEmail();
+  }
+  }  
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
 }

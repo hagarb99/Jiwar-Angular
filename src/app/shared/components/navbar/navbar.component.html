@@ -1,7 +1,6 @@
 <nav class="fixed top-0 inset-x-0 z-50 bg-background/98 backdrop-blur-md border-b shadow-luxury">
   <div class="container mx-auto px-6">
     <div class="flex items-center justify-between h-20">
-
       <!-- Logo -->
       <a routerLink="/" class="flex items-center">
         <img src="logo2.png" alt="Jiwar" class="nav-logo transition-smooth hover:scale-105" />
@@ -9,17 +8,25 @@
 
       <!-- Desktop Menu -->
       <div class="hidden lg:flex items-center gap-6">
-
+        <div class="relative" (mouseenter)="setDropdown('sell')" (mouseleave)="setDropdown(null)">
+          <button class="nav-btn">
+            Sell
+            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'sell'"></lucide-angular>
+          </button>
+          <div *ngIf="activeDropdown === 'sell'" class="dropdown">
+            <a *ngFor="let item of sellDropdownItems" [routerLink]="item.path" class="dropdown-item">
+              {{ item.label }}
+            </a>
+          </div>
+        </div>
         <!-- Buy -->
         <div class="relative" (mouseenter)="setDropdown('buy')" (mouseleave)="setDropdown(null)">
           <button class="nav-btn">
             Buy
-            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'buy'">
-            </lucide-angular>
+            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'buy'"></lucide-angular>
           </button>
-
           <div *ngIf="activeDropdown === 'buy'" class="dropdown-card">
-            <a *ngFor="let item of buyDropdownItems" [routerLink]="item.path" class="dropdown-item"  (click)="setDropdown(null)">
+            <a *ngFor="let item of buyDropdownItems" [routerLink]="item.path" class="dropdown-item" (click)="setDropdown(null)">
               {{ item.label }}
             </a>
           </div>
@@ -29,10 +36,8 @@
         <div class="relative" (mouseenter)="setDropdown('invest')" (mouseleave)="setDropdown(null)">
           <button class="nav-btn">
             Invest
-            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'invest'">
-            </lucide-angular>
+            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'invest'"></lucide-angular>
           </button>
-
           <div *ngIf="activeDropdown === 'invest'" class="dropdown">
             <a *ngFor="let item of investDropdownItems" [routerLink]="item.path" class="dropdown-item">
               {{ item.label }}
@@ -44,10 +49,8 @@
         <div class="relative" (mouseenter)="setDropdown('renovation')" (mouseleave)="setDropdown(null)">
           <button class="nav-btn">
             Renovation
-            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'renovation'">
-            </lucide-angular>
+            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'renovation'"></lucide-angular>
           </button>
-
           <div *ngIf="activeDropdown === 'renovation'" class="dropdown">
             <a *ngFor="let item of renovationDropdownItems" [routerLink]="item.path" class="dropdown-item">
               {{ item.label }}
@@ -63,24 +66,80 @@
         </a>
       </div>
 
-      <!-- Right -->
+      <!-- Right Side (Desktop) -->
       <div class="hidden lg:flex items-center gap-4">
+        <!-- Language -->
         <button (click)="toggleLanguage()" class="flex items-center gap-2">
           <lucide-angular [img]="Globe"></lucide-angular>
           EN | AR
         </button>
 
-        <a routerLink="/login">
-          <button class="text-primary px-4 py-2 rounded-lg border border-primary">
-            Login
-          </button>
-        </a>
+        <!-- Not Logged In -->
+        <div *ngIf="!isLoggedIn" class="flex items-center gap-4">
+          <a routerLink="/login">
+            <button class="text-primary px-4 py-2 rounded-lg border border-primary">
+              Login
+            </button>
+          </a>
+          <a routerLink="/register">
+            <button class="gradient-gold text-primary px-4 py-2 rounded-lg">
+              Sign Up
+            </button>
+          </a>
+        </div>
 
-        <a routerLink="/register">
-          <button class="gradient-gold text-primary px-4 py-2 rounded-lg">
-            Sign Up
+        <!-- Logged In: Avatar with Dropdown -->
+        <div *ngIf="isLoggedIn" class="relative">
+          <button
+            class="flex items-center gap-3 rounded-full focus:outline-none hover:opacity-90 transition-opacity"
+            (click)="toggleUserDropdown = !toggleUserDropdown"
+          >
+            <img
+              [src]="profilePicUrl || 'avatar.jpg'"
+              alt="Profile"
+              class="w-10 h-10 rounded-full object-cover border-2 border-primary shadow-md"
+            />
+            <lucide-angular [img]="ChevronDown" class="w-4 h-4 text-primary transition-transform"
+              [class.rotate-180]="toggleUserDropdown">
+            </lucide-angular>
           </button>
-        </a>
+
+          <!-- Dropdown Menu -->
+          <div
+            *ngIf="toggleUserDropdown"
+            class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden"
+          >
+          <!-- <a routerLink="/dashboard/property-owner" (click)="toggleUserDropdown = false"
+       class="block px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer">
+      <p class="text-sm font-medium text-gray-900">{{ currentUserName || 'User' }}</p>
+      <p class="text-xs text-gray-500 truncate">{{ currentUserEmail }}</p>
+    </a> -->
+      <div class="px-4 py-3 border-b border-gray-100">
+              <p class="text-sm font-medium text-gray-900">{{ currentUserName || 'User' }}</p>
+              <p class="text-xs text-gray-500 truncate">{{ currentUserEmail }}</p>
+            </div>
+    <a routerLink="/dashboard/property-owner" 
+   (click)="toggleUserDropdown = false"
+   class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
+  <i class="pi pi-home mr-3"></i>
+  Dashboard
+</a>
+          
+
+            <a routerLink="/change-password" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
+              <i class="pi pi-key mr-3"></i>
+              Change Password
+            </a>
+
+            <button
+              (click)="logout(); toggleUserDropdown = false"
+              class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <i class="pi pi-sign-out mr-3"></i>
+              Logout
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Mobile Toggle -->
@@ -97,6 +156,5 @@
         </a>
       </div>
     </div>
-
   </div>
 </nav>

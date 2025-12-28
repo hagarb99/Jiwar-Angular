@@ -63,7 +63,6 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
   submit(): void {
     if (this.loginForm.invalid) return;
-
     this.loading = true;
     this.errorMessage = null;
 
@@ -71,65 +70,95 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: (response: LoginResponse) => {
         console.log('Login Response:', response);
         const token = response?.token;
-
         if (token) {
           this.authService.setToken(token);
-          this.router.navigate(['/']);
+          this.authService.setUserData({
+            name: response.name,
+            email: response.email,
+            profilePicURL: response.profilePicURL,
+            role: response.role
+          });
+          const returnUrl = this.router.routerState.snapshot.root.queryParams['returnUrl'] || '/dashboard';
+          if (returnUrl.startsWith('/')) {
+            this.router.navigate([returnUrl]);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         } else {
-          this.errorMessage = 'Login failed';
+          this.errorMessage = 'Login failed: No token received';
         }
         this.loading = false;
       },
       error: (err) => {
         console.error('Login error detailed:', err);
-        const msg = err.error?.message || err.message || 'Login failed';
-        this.errorMessage = msg;
+        if (err.status === 401) {
+          this.errorMessage = err.error?.message || 'Invalid email or password';
+        } else if (err.status === 400) {
+          this.errorMessage = 'Invalid input. Please check your details.';
+        } else {
+          // Other errors (network, 500, etc.)
+          this.errorMessage = 'Something went wrong. Please try again later.';
+        }
         this.loading = false;
       }
     });
   }
 
 
-ngOnInit(): void {
-  this.authSubscription = this.socialAuthService.authState.subscribe((user: SocialUser | null) => {
-    if (!user || !user.idToken) {
-      return; // No login happened
-    }
-
-    // Show loading while contacting backend
-    this.loading = true;
-    this.errorMessage = null;
-
-    this.authService.googleBackendLogin(user.idToken).subscribe({
-      next: (response: any) => {
-        // Now response has: { Success: true, Data: { Token: "...", ... } }
-        const token = response?.data?.token || response?.token;
-
-        if (token) {
-          this.authService.setToken(token);
-          this.router.navigate(['/']);
-        } else {
-          this.errorMessage = 'Google login failed: No token received';
-          console.error('Invalid response:', response);
-        }
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Google login error:', err);
-        this.errorMessage = err?.error?.message || 'Failed to sign in with Google';
-        this.loading = false;
+  ngOnInit(): void {
+    this.authSubscription = this.socialAuthService.authState.subscribe((user: SocialUser | null) => {
+      if (!user || !user.idToken) {
+        return; // No login happened
       }
-    });
-  });
-}
 
-googleLogin() {
-  this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
-}
-triggerGoogleSignIn() {
-  const button = document.querySelector('asl-google-signin-button') as HTMLElement;
-  button?.click();
-}
+      // Show loading while contacting backend
+      this.loading = true;
+      this.errorMessage = null;
+
+      this.authService.googleBackendLogin(user.idToken).subscribe({
+        next: (response: any) => {
+          // Now response has: { Success: true, Data: { Token: "...", ... } }
+          const token = response?.data?.token || response?.token;
+
+          if (token) {
+            this.authService.setToken(token);
+            this.authService.setUserData({
+              name: response.data?.name || response.name || 'User',
+              email: response.data?.email || response.email || '',
+              profilePicURL: response.data?.profilePicURL || response.profilePicURL || null,
+              role: response.data?.role || response.role || 'Customer'
+            });
+            const returnUrl = this.router.routerState.snapshot.root.queryParams['returnUrl'] || '/dashboard';
+            if (returnUrl.startsWith('/')) {
+              this.router.navigate([returnUrl]);
+            } else {
+              this.router.navigate(['/dashboard']);
+            }
+          } else {
+            this.errorMessage = 'Google login failed: No token received';
+            console.error('Invalid response:', response);
+          }
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Google login error:', err);
+          this.errorMessage = err?.error?.message || 'Failed to sign in with Google';
+          this.loading = false;
+        }
+      });
+    });
+  }
+
+  googleLogin() {
+    this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
+  }
+  triggerGoogleSignIn() {
+    // const button = document.querySelector('asl-google-signin-button') as HTMLElement;
+    // button?.click();
+    this.googleLogin();
+
+  }
+
   ngOnDestroy(): void {
     this.authSubscription?.unsubscribe();
   }

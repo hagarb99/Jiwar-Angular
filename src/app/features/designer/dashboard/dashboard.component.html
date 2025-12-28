@@ -1,0 +1,163 @@
+<div class="flex min-h-screen bg-gray-50 font-sans">
+    <app-sidebar></app-sidebar>
+    <main class="flex-1 ml-64 p-8 transition-all duration-300">
+        <div class="space-y-8 animate-fade-in-up">
+            <!-- Profile & Welcome -->
+            <div
+                class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Welcome back, {{ currentUser }}!</h1>
+                    <p class="text-gray-500 mt-1">Here's your design business overview</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex space-x-3">
+                    <!-- Badges or actions could go here -->
+                </div>
+            </div>
+
+            <!-- Overview Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Show only specific stats based on role is ideal, but for now we keep all placeholders. 
+                      However, we can hide 'Available Requests' for Owners if value is 0 or not relevant. -->
+                <div *ngFor="let stat of overviewStats"
+                    [class]="'p-6 rounded-2xl border border-gray-100 flex items-start justify-between ' + stat.bg">
+                    <div>
+                        <div class="text-sm text-gray-500 font-medium mb-1">{{ stat.label }}</div>
+                        <div class="text-3xl font-bold text-gray-900">{{ stat.value }}</div>
+                        <div *ngIf="stat.sub" class="text-xs text-green-600 mt-1 font-medium">{{ stat.sub }}</div>
+                    </div>
+                    <div class="p-3 bg-white/50 rounded-xl">
+                        <svg class="w-6 h-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                [attr.d]="stat.icon" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financials (Only useful for Designers usually, but maybe Owners too) -->
+            <div
+                class="bg-slate-900 text-white rounded-2xl p-8 flex flex-col md:flex-row justify-between items-center shadow-luxury">
+                <div class="flex flex-col md:flex-row gap-12 w-full">
+                    <div *ngFor="let item of financials">
+                        <div class="text-slate-400 text-sm mb-1">{{ item.label }}</div>
+                        <div [class.text-4xl]="item.main" [class.font-bold]="item.main" [class.text-2xl]="!item.main"
+                            [class.font-semibold]="!item.main">
+                            {{ item.value }}
+                        </div>
+                    </div>
+                </div>
+                <button *ngIf="userRole === 'InteriorDesigner'"
+                    class="mt-6 md:mt-0 bg-amber-200 text-amber-900 px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-amber-300 transition-colors whitespace-nowrap">
+                    Withdraw Funds
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- My Proposals (Designers Only) -->
+                <div *ngIf="userRole === 'InteriorDesigner'" class="bg-white rounded-2xl p-6 border border-gray-100">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            My Proposals
+                        </h3>
+                        <div class="flex bg-gray-100 rounded-lg p-1">
+                            <button class="text-xs font-medium px-3 py-1 bg-white shadow-sm rounded-md">Pending</button>
+                            <button class="text-xs font-medium px-3 py-1 text-gray-500">Accepted</button>
+                            <button class="text-xs font-medium px-3 py-1 text-gray-500">Rejected</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div *ngFor="let prop of proposals"
+                            class="bg-gray-50 p-4 rounded-xl flex justify-between items-center group hover:bg-gray-100 transition-colors">
+                            <div>
+                                <div class="font-bold text-gray-900">{{ prop.title }}</div>
+                                <div class="text-xs text-gray-500">Client: {{ prop.client }}</div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="font-bold text-gray-700">{{ prop.price }}</div>
+                                <span [ngClass]="{
+                                    'text-amber-700 bg-amber-100 border-amber-200': prop.status === 'Pending',
+                                    'text-green-700 bg-green-100 border-green-200': prop.status === 'Accepted',
+                                    'text-red-700 bg-red-100 border-red-200': prop.status === 'Rejected'
+                                }" class="px-2 py-0.5 rounded text-xs font-medium border">{{
+                                    prop.status }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Projects (Or My Requests for Owners) -->
+                <div class="bg-white rounded-2xl p-6 border border-gray-100"
+                    [class.col-span-2]="userRole !== 'InteriorDesigner'">
+                    <h3 class="font-bold text-lg text-gray-800 mb-6 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        {{ userRole === 'InteriorDesigner' ? 'Active Projects' : 'My Requests' }}
+                    </h3>
+                    <div class="space-y-6">
+                        <div *ngFor="let proj of activeProjects">
+                            <div class="flex justify-between mb-2">
+                                <div>
+                                    <div class="font-medium text-gray-900">{{ proj.title }}</div>
+                                    <div class="text-xs text-gray-500">Client: {{ proj.client }}</div>
+                                </div>
+                                <div class="text-xs text-gray-400 font-medium">{{ proj.date }}</div>
+                            </div>
+                            <div class="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="absolute top-0 left-0 h-full bg-slate-800 rounded-full"
+                                    [style.width.%]="proj.progress"></div>
+                            </div>
+                            <div class="flex justify-between mt-2">
+                                <button class="text-xs text-gray-500 hover:text-gray-900 font-medium flex items-center">
+                                    <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    View Details
+                                </button>
+                                <div class="text-xs font-bold text-gray-900">{{ proj.progress }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio Manager & AI (Simplified) - Designers Only -->
+            <div *ngIf="userRole === 'InteriorDesigner'" class="bg-white rounded-2xl p-6 border border-gray-100">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-bold text-lg text-gray-800 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Portfolio Manager
+                    </h3>
+                    <button
+                        class="bg-amber-100 text-amber-800 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors">
+                        + Add Project
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div *ngFor="let i of [1,2,3,4]"
+                        class="aspect-square bg-gray-100 rounded-xl flex items-center justify-center border-dashed border-2 border-gray-200">
+                        <div class="text-gray-300">
+                            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>

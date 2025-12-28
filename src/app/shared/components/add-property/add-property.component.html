@@ -1,0 +1,205 @@
+<app-navbar></app-navbar>
+
+<div class="min-h-screen relative pt-24 pb-12">
+  <!-- Background Image & Overlay -->
+  <div class="fixed inset-0 z-[-1]">
+    <img src="hero-bg.png" alt="Background" class="w-full h-full object-cover blur-sm" />
+    <div class="absolute inset-0 bg-[#0f172a]/80"></div>
+  </div>
+
+  <div class="container mx-auto px-4 max-w-5xl">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+        Add <span class="text-gradient-gold">Property</span>
+      </h1>
+      <p class="text-lg text-gray-200">List your property in a few easy steps</p>
+    </div>
+
+    <p-card class="shadow-luxury">
+      <!-- Stepper -->
+      <p-steps [model]="steps" [(activeIndex)]="activeStep" [readonly]="false"></p-steps>
+
+      <form [formGroup]="propertyForm" (ngSubmit)="onSubmit()" class="mt-8 space-y-8">
+
+        <!-- Step 1: Basic Information -->
+        <div *ngIf="activeStep === 0" class="animate-fade-in">
+          <h3 class="text-2xl font-semibold text-primary flex items-center gap-3 mb-6">
+            <i class="pi pi-home text-3xl"></i>
+            Basic Information
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium mb-2">Title *</label>
+              <input pInputText formControlName="title" placeholder="e.g. Luxury Villa in Riyadh" class="w-full" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Price (SAR) *</label>
+              <p-inputNumber formControlName="price" mode="currency" currency="SAR" [min]="1" class="w-full" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium mb-2">Description *</label>
+              <textarea pInputTextarea formControlName="description" rows="5"
+                placeholder="Describe your property in detail..." class="w-full"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Category *</label>
+              <p-dropdown formControlName="categoryId" [options]="categories" optionLabel="label" optionValue="value"
+                placeholder="Select category" class="w-full" />
+            </div>
+
+            <div>
+  <label class="block text-sm font-medium mb-2">Listing Type *</label>
+  <p-dropdown 
+    formControlName="listingType" 
+    [options]="listingTypes" 
+    optionLabel="label" 
+    optionValue="value" 
+    placeholder="Select listing type"
+    class="w-full" />
+ </div> 
+          </div>
+        </div>
+
+        <!-- Step 2: Location & Details -->
+        <div *ngIf="activeStep === 1" class="animate-fade-in">
+          <h3 class="text-2xl font-semibold text-primary flex items-center gap-3 mb-6">
+            <i class="pi pi-map-marker text-3xl"></i>
+            Location & Details
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium mb-2">Address *</label>
+              <input pInputText formControlName="address" placeholder="Street address" class="w-full" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">City *</label>
+              <input pInputText formControlName="city" placeholder="e.g. Riyadh" class="w-full" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">District</label>
+              <input pInputText formControlName="district" placeholder="Optional district" class="w-full" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Area (m²)</label>
+              <p-inputNumber formControlName="area" suffix=" m²" [min]="1" class="w-full" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Bedrooms</label>
+              <p-inputNumber formControlName="rooms" [min]="0" class="w-full" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Bathrooms</label>
+              <p-inputNumber formControlName="bathrooms" [min]="0" class="w-full" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Images & Tour -->
+        <div *ngIf="activeStep === 2" class="animate-fade-in">
+          <h3 class="text-2xl font-semibold text-primary flex items-center gap-3 mb-6">
+            <i class="pi pi-images text-3xl"></i>
+            Images & Virtual Tour
+          </h3>
+
+          <div class="mb-8">
+            <label class="block text-sm font-medium mb-3">Property Images (Up to 10)</label>
+
+            <!-- الـ p-fileUpload الصحيح -->
+            <p-fileUpload #fileUpload name="images" multiple="true" accept="image/*" maxFileSize="10000000"
+              [auto]="false" chooseLabel="Choose Images" mode="advanced" class="w-full" [files]="uploadedFiles"
+              (onSelect)="onFileSelect($event)" (onRemove)="onFileRemove($event)">
+              <!-- Header مخصص عشان الزر يبقى واضح -->
+              <ng-template pTemplate="header">
+                <div
+                  class="flex flex-col items-center justify-center py-12 bg-primary/5 rounded-t-lg border-b border-gray-200">
+                  <i class="pi pi-images text-6xl text-primary mb-4"></i>
+                  <p class="text-xl font-medium mb-2">Drag & drop images here</p>
+                  <p class="text-lg text-muted-foreground mb-6">or click the button below to browse</p>
+                  <!-- زرار واضح جدًا -->
+                  <button type="button" pButton label="Choose Images" icon="pi pi-folder-open"
+                    class="p-button-outlined p-button-lg p-button-primary" (click)="fileUpload.choose()"></button>
+                  <p class="text-sm text-muted-foreground mt-6">Maximum 10 images, 10MB each</p>
+                </div>
+              </ng-template>
+
+
+              <ng-template pTemplate="content">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                  <div *ngFor="let file of uploadedFiles" class="relative group">
+                    <img [src]="getImagePreview(file)"
+                      class="w-full h-40 object-cover rounded-lg shadow-md border-2 border-primary/20" alt="Preview" />
+                    <button type="button" (click)="removeFile(file)"
+                      class="absolute top-2 right-2 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-red-700 text-xl font-bold">
+                      ×
+                    </button>
+                  </div>
+                </div>
+                <div *ngIf="uploadedFiles.length === 0" class="text-center py-8 text-muted-foreground">
+                  No images selected yet
+                </div>
+              </ng-template>
+            </p-fileUpload>
+          </div>
+
+          <!-- Virtual Tour -->
+          <div>
+            <label class="block text-sm font-medium mb-2">360° Virtual Tour URL (Optional)</label>
+            <input pInputText formControlName="tour360Url" placeholder="https://my.matterport.com/show/?m=..."
+              class="w-full" />
+          </div>
+        </div>
+
+
+
+        <!-- Step 4: Review -->
+        <div *ngIf="activeStep === 3" class="animate-fade-in">
+          <h3 class="text-2xl font-semibold text-primary flex items-center gap-3 mb-6">
+            <i class="pi pi-check-circle text-3xl"></i>
+            Review & Submit
+          </h3>
+
+          <div class="bg-gray-50 p-6 rounded-xl space-y-4 text-lg">
+            <p><strong>Title:</strong> {{ propertyForm.get('title')?.value || '—' }}</p>
+            <p><strong>Price:</strong> {{ propertyForm.get('price')?.value | currency:'SAR ' }}</p>
+            <p><strong>Location:</strong> {{ propertyForm.get('address')?.value }}, {{ propertyForm.get('city')?.value
+              }} {{ propertyForm.get('district')?.value ? '(' + propertyForm.get('district')?.value + ')' : '' }}</p>
+            <p><strong>Category:</strong> {{ selectedCategoryLabel }}</p>
+            <p><strong>Area:</strong> {{ propertyForm.get('area')?.value ? (propertyForm.get('area')?.value + ' m²') :
+              'Not specified' }}</p>
+            <p><strong>Rooms:</strong> {{ propertyForm.get('rooms')?.value || 0 }} Bedrooms • {{
+              propertyForm.get('bathrooms')?.value || 0 }} Bathrooms</p>
+            <p><strong>Description:</strong><br><span class="text-muted-foreground text-base">{{
+                propertyForm.get('description')?.value || 'No description' }}</span></p>
+            <p><strong>Images:</strong> {{ uploadedFiles.length }} images uploaded</p>
+
+          </div>
+        </div>
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between items-center mt-12 pt-6 border-t">
+          <button type="button" (click)="prev()" [disabled]="activeStep === 0"
+            class="btn-gold flex items-center justify-center gap-2">
+            <i class="pi pi-arrow-left"></i> Previous
+          </button>
+
+          <div class="flex gap-6">
+            <button *ngIf="activeStep < steps.length - 1" type="button" (click)="next()"
+              class="btn-gold flex items-center justify-center gap-2">
+              Next <i class="pi pi-arrow-right"></i>
+            </button>
+
+            <button *ngIf="activeStep === steps.length - 1" type="button" (click)="onSubmit()"
+              [disabled]="loading || propertyForm.invalid"
+              class="btn-gold-pill text-lg flex items-center justify-center gap-2 min-w-[180px]">
+              <i *ngIf="loading" class="pi pi-spin pi-spinner text-xl"></i>
+              <span *ngIf="!loading">Add Property</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </p-card>
+  </div>
+
+  <p-toast position="top-right"></p-toast>
+</div>
+
+<app-footer></app-footer>

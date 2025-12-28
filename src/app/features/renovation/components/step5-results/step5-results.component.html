@@ -1,0 +1,169 @@
+<div class="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <app-navbar></app-navbar>
+
+    <div class="flex-grow flex flex-col items-center p-6 sm:p-10">
+        <!-- Stepper -->
+        <div class="w-full max-w-4xl flex items-center justify-center mb-12">
+            <div class="flex items-center gap-4">
+                <!-- Details -->
+                <div class="flex items-center gap-2 bg-[#EBE4D3] text-[#BA9F60] px-5 py-2.5 rounded-full cursor-pointer hover:bg-[#E0D8C0] transition-colors"
+                    routerLink="/renovation/details">
+                    <i class="pi pi-check text-xs"></i>
+                    <span class="font-bold text-sm">Details</span>
+                </div>
+
+                <!-- Connector -->
+                <div class="w-12 h-[2px] bg-[#DCCCA3]"></div>
+
+                <!-- Media -->
+                <div class="flex items-center gap-2 bg-[#EBE4D3] text-[#BA9F60] px-5 py-2.5 rounded-full cursor-pointer hover:bg-[#E0D8C0] transition-colors"
+                    routerLink="/renovation/media">
+                    <i class="pi pi-check text-xs"></i>
+                    <span class="font-bold text-sm">Media</span>
+                </div>
+
+                <!-- Connector -->
+                <div class="w-12 h-[2px] bg-[#DCCCA3]"></div>
+
+                <!-- Goals -->
+                <div class="flex items-center gap-2 bg-[#EBE4D3] text-[#BA9F60] px-5 py-2.5 rounded-full cursor-pointer hover:bg-[#E0D8C0] transition-colors"
+                    routerLink="/renovation/goals">
+                    <i class="pi pi-check text-xs"></i>
+                    <span class="font-bold text-sm">Goals</span>
+                </div>
+
+                <!-- Connector -->
+                <div class="w-12 h-[2px] bg-[#DCCCA3]"></div>
+
+                <!-- Results (Active) -->
+                <div
+                    class="flex items-center gap-2 bg-[#DCCCA3] text-[#1E293B] px-5 py-2.5 rounded-full shadow-md z-10 transform scale-105">
+                    <i class="pi pi-lightbulb"></i>
+                    <span class="font-bold text-sm">Results</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Content -->
+        <div *ngIf="!isLoading && result" class="w-full max-w-6xl space-y-8 pb-12">
+
+            <!-- Value Increase Summary -->
+            <div
+                class="bg-[#F9F6F0] p-8 rounded-3xl border border-[#DCCCA3] text-center max-w-2xl mx-auto transform hover:scale-[1.01] transition-transform">
+                <div class="flex justify-center mb-4">
+                    <div
+                        class="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-sm text-[#BA9F60]">
+                        <i class="pi pi-chart-line text-2xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900 mb-2">Estimated Value Increase</h3>
+                <p class="text-slate-600 mb-4">Implementing these changes could increase your property value by:</p>
+                <div class="text-4xl font-extrabold text-[#BA9F60] font-sans">{{ estimatedValueIncrease }}</div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Technical Improvements -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 h-full">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
+                        <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
+                            <i class="pi pi-wrench text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900">Technical</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div *ngFor="let item of getRecommendations('Technical')"
+                            class="p-4 rounded-xl bg-slate-50 border border-slate-100 group hover:border-[#DCCCA3] transition-colors">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-slate-900 text-sm">{{ item.title }}</h4>
+                                <span
+                                    class="px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wide border bg-white"
+                                    [ngClass]="getSeverityClass(item.severity)">
+                                    {{ getSeverityLabel(item.severity) }}
+                                </span>
+                            </div>
+                            <p class="text-slate-500 text-xs leading-relaxed mb-3">{{ item.description }}</p>
+                            <!-- Cost Estimate removed as not in DTO -->
+                        </div>
+                        <div *ngIf="getRecommendations('Technical').length === 0"
+                            class="text-slate-400 text-sm italic text-center py-4">
+                            No critical technical improvements identified.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Functional Enhancements -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 h-full">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
+                        <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
+                            <i class="pi pi-cog text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900">Functional</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div *ngFor="let item of getRecommendations('Functional')"
+                            class="p-4 rounded-xl bg-slate-50 border border-slate-100 group hover:border-[#DCCCA3] transition-colors">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-slate-900 text-sm">{{ item.title }}</h4>
+                                <span
+                                    class="px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wide border bg-white"
+                                    [ngClass]="getSeverityClass(item.severity)">
+                                    {{ getSeverityLabel(item.severity) }}
+                                </span>
+                            </div>
+                            <p class="text-slate-500 text-xs leading-relaxed mb-3">{{ item.description }}</p>
+                        </div>
+                        <div *ngIf="getRecommendations('Functional').length === 0"
+                            class="text-slate-400 text-sm italic text-center py-4">
+                            No functional enhancements suggested.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Design & Aesthetics -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 h-full">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
+                        <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
+                            <i class="pi pi-palette text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900">Design</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div *ngFor="let item of getRecommendations('Design')"
+                            class="p-4 rounded-xl bg-slate-50 border border-slate-100 group hover:border-[#DCCCA3] transition-colors">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-slate-900 text-sm">{{ item.title }}</h4>
+                                <span
+                                    class="px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wide border bg-white"
+                                    [ngClass]="getSeverityClass(item.severity)">
+                                    {{ getSeverityLabel(item.severity) }}
+                                </span>
+                            </div>
+                            <p class="text-slate-500 text-xs leading-relaxed mb-3">{{ item.description }}</p>
+                        </div>
+                        <div *ngIf="getRecommendations('Design').length === 0"
+                            class="text-slate-400 text-sm italic text-center py-4">
+                            No specific design aesthetics suggested.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex justify-between items-center mt-8 pt-4 border-t border-slate-100">
+            <button routerLink="/renovation/goals"
+                class="bg-white border border-slate-200 text-slate-700 font-bold py-3.5 px-6 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2">
+                <i class="pi pi-arrow-left text-xs"></i>
+                Modify Inputs
+            </button>
+            <button routerLink="/renovation/next"
+                class="bg-[#DCCCA3] hover:bg-[#D2C090] text-slate-900 font-bold py-3.5 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 shadow-sm transform hover:scale-[1.02]">
+                Choose Next Steps
+                <i class="pi pi-arrow-right text-xs"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <app-footer></app-footer>
+</div>
