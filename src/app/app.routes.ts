@@ -12,6 +12,7 @@ import { SearchPageComponent } from './core/pages/search-page/search-page.compon
 
 import { AddPropertyComponent } from './shared/components/add-property/add-property.component';
 import { authGuard } from './core/guards/auth.guard';
+
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
