@@ -7,7 +7,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   standalone: true,
   imports: [HeaderComponent, RouterOutlet, SidebarComponent],
   templateUrl: './dashboard-layout.component.html',
-  styleUrl: './dashboard-layout.component.css'
+  styleUrls: ['./dashboard-layout.component.css']
 })
 
-export class DashboardLayoutComponent {}
+export class DashboardLayoutComponent { }

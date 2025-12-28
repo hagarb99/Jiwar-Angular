@@ -1,12 +1,13 @@
-import { Component, OnInit , inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 interface SidebarMenuItem {
   label: string;
   path: string;
   icon: string;
+  roles: string[];
 }
 
 @Component({
@@ -15,14 +16,14 @@ interface SidebarMenuItem {
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './sidebar.component.html',
 })
-export class SidebarComponent implements OnInit{
+export class SidebarComponent {
   private authService = inject(AuthService);
 
-  userName = '';
-  userEmail = '';
-  userRole = '';
+  private router = inject(Router);
 
-  menuItems = [
+  currentUser$ = this.authService.currentUser$;
+
+  private allMenuItems: SidebarMenuItem[] = [
     {
       label: 'Overview',
       path: '/dashboard',
@@ -67,43 +68,36 @@ export class SidebarComponent implements OnInit{
     },
   ];
 
-  ngOnInit(): void {
-    const currentUser = this.authService.getCurrentUser();
-
-    if (!currentUser) {
-      return;
-    }
-
-    this.userName = currentUser.name;
-    this.userEmail = currentUser.email;
-    this.userRole = currentUser.role;
-
-    if (currentUser.role === 'PropertyOwner') {
-      this.menuItems = [
-        {
-          label: 'Dashboard',
-          path: '/propertyowner/dashboard',
-          icon: 'M3 12l2-2 7-7 7 7 2 2v8a2 2 0 01-2 2h-3'
-        },
-        {
-          label: 'My Properties',
-          path: '/propertyowner/properties',
-          icon: 'M4 6h16M4 10h16M4 14h16M4 18h16'
-        },
-        {
-          label: 'Add Property',
-          path: '/propertyowner/add-property',
-          icon: 'M12 4v16m8-8H4'
-        }
-      ];
-    }
+  getMenuItemsForRole(role: string): SidebarMenuItem[] {
+    return this.allMenuItems.filter(item =>
+      item.roles.includes(role)
+    );
   }
 
-   logout(): void {
+  // if (currentUser.role === 'PropertyOwner') {
+  //   this.menuItems = [
+  //     {
+  //       label: 'Dashboard',
+  //       path: '/propertyowner/dashboard',
+  //       icon: 'M3 12l2-2 7-7 7 7 2 2v8a2 2 0 01-2 2h-3'
+  //     },
+  //     {
+  //       label: 'My Properties',
+  //       path: '/propertyowner/properties',
+  //       icon: 'M4 6h16M4 10h16M4 14h16M4 18h16'
+  //     },
+  //     {
+  //       label: 'Add Property',
+  //       path: '/propertyowner/add-property',
+  //       icon: 'M12 4v16m8-8H4'
+  //     }
+  //   ];
+  // }
+  // }
+
+  logout(): void {
     this.authService.logout();
-  location.href = '/login';
-  
+    this.router.navigate(['/login']);
   }
-  
-  
+
 }
