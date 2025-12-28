@@ -2,12 +2,13 @@
 
 <main class="min-h-screen pt-24 pb-12 bg-gray-50/50">
   <div class="container mx-auto px-4 md:px-6">
-    
+
     <!-- Header -->
     <div class="mb-8">
       <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Find Your Perfect Property</h1>
       <p class="text-gray-500 max-w-2xl">
-        Discover functionality and luxury combined. Search through our exclusive listings to find the home that suits your lifestyle.
+        Discover functionality and luxury combined. Search through our exclusive listings to find the home that suits
+        your lifestyle.
       </p>
     </div>
 
@@ -15,34 +16,30 @@
     <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-12">
       <form [formGroup]="searchForm" (ngSubmit)="onSubmit()">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          
+
           <!-- Search Keyword -->
           <div class="space-y-2 col-span-1 md:col-span-2 lg:col-span-4">
             <label class="text-sm font-medium text-gray-700 flex items-center gap-2">
               <lucide-angular [img]="Search" class="w-4 h-4"></lucide-angular>
               Search Keywords
             </label>
-            <input 
-              type="text" 
-              formControlName="keyword"
-              placeholder="Search by address, ZIP, or neighborhood..." 
-              class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none"
-            >
+            <input type="text" formControlName="keyword" placeholder="Search by address, ZIP, or neighborhood..."
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none">
           </div>
 
           <!-- Status -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Status</label>
             <div class="relative">
-              <select 
-                formControlName="status"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none appearance-none cursor-pointer"
-              >
+              <select formControlName="status"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none appearance-none cursor-pointer">
                 <option value="buy">For Sale</option>
                 <option value="rent">For Rent</option>
               </select>
               <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
               </div>
             </div>
           </div>
@@ -54,10 +51,8 @@
               Property Type
             </label>
             <div class="relative">
-              <select 
-                formControlName="type"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none appearance-none cursor-pointer"
-              >
+              <select formControlName="type"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none appearance-none cursor-pointer">
                 <option value="any">Any Type</option>
                 <option value="apartment">Apartment</option>
                 <option value="house">House</option>
@@ -66,7 +61,9 @@
                 <option value="land">Land</option>
               </select>
               <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
               </div>
             </div>
           </div>
@@ -77,12 +74,8 @@
               <lucide-angular [img]="MapPin" class="w-4 h-4"></lucide-angular>
               Location
             </label>
-            <input 
-              type="text" 
-              formControlName="location"
-              placeholder="City or Area" 
-              class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none"
-            >
+            <input type="text" formControlName="location" placeholder="City or Area"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none">
           </div>
 
           <!-- Price Range -->
@@ -92,19 +85,11 @@
               Price Range
             </label>
             <div class="flex items-center gap-2">
-              <input 
-                type="number" 
-                formControlName="priceMin"
-                placeholder="Min" 
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none"
-              >
+              <input type="number" formControlName="priceMin" placeholder="Min"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none">
               <span class="text-gray-400">-</span>
-              <input 
-                type="number" 
-                formControlName="priceMax"
-                placeholder="Max" 
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none"
-              >
+              <input type="number" formControlName="priceMax" placeholder="Max"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none">
             </div>
           </div>
 
@@ -115,10 +100,8 @@
               Bedrooms
             </label>
             <div class="relative">
-              <select 
-                formControlName="bedrooms"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none appearance-none cursor-pointer"
-              >
+              <select formControlName="bedrooms"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none appearance-none cursor-pointer">
                 <option value="any">Any</option>
                 <option value="1">1+</option>
                 <option value="2">2+</option>
@@ -127,7 +110,9 @@
                 <option value="5">5+</option>
               </select>
               <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
               </div>
             </div>
           </div>
@@ -139,27 +124,25 @@
               Bathrooms
             </label>
             <div class="relative">
-              <select 
-                formControlName="bathrooms"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none appearance-none cursor-pointer"
-              >
+              <select formControlName="bathrooms"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all outline-none appearance-none cursor-pointer">
                 <option value="any">Any</option>
                 <option value="1">1+</option>
                 <option value="2">2+</option>
                 <option value="3">3+</option>
               </select>
               <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
               </div>
             </div>
           </div>
 
           <!-- Search Button -->
           <div class="flex items-end">
-            <button 
-              type="submit"
-              class="w-full bg-[#D4AF37] hover:bg-[#C5A028] text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-yellow-500/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-            >
+            <button type="submit"
+              class="w-full bg-[#D4AF37] hover:bg-[#C5A028] text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-yellow-500/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
               <lucide-angular [img]="Search" class="w-5 h-5"></lucide-angular>
               Search Properties
             </button>
@@ -173,25 +156,44 @@
     <section>
       <div class="flex items-center justify-between mb-8">
         <h2 class="text-2xl font-bold text-gray-900">Properties Found</h2>
-        <span class="text-gray-500" *ngIf="properties.length > 0">{{ properties.length }} Listings</span>
+        <span class="text-gray-500" *ngIf="properties.length > 0 && !isLoading">{{ properties.length }} Listings</span>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="text-center py-24 bg-white rounded-2xl border border-gray-100">
+        <div class="w-16 h-16 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+          <lucide-angular [img]="Search" class="w-8 h-8 text-yellow-500"></lucide-angular>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">Searching Properties...</h3>
+        <p class="text-gray-500 max-w-sm mx-auto">
+          Please wait while we find the best properties for you.
+        </p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="errorMessage && !isLoading" class="text-center py-24 bg-red-50 rounded-2xl border border-red-100">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">Error Loading Properties</h3>
+        <p class="text-red-600 max-w-sm mx-auto">
+          {{ errorMessage }}
+        </p>
       </div>
 
       <!-- Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" *ngIf="properties.length > 0">
-        <app-property-card
-          *ngFor="let prop of properties"
-          [title]="prop.title"
-          [location]="prop.location"
-          [price]="prop.price"
-          [type]="prop.type"
-          [purpose]="prop.purpose"
-          [image]="prop.image"
-          [size]="prop.size"
-        ></app-property-card>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" *ngIf="properties.length > 0 && !isLoading">
+        <app-property-card *ngFor="let prop of properties" [title]="prop.title" [location]="prop.district"
+          [price]="formatPrice(prop.price)" [type]="getPropertyTypeName(prop.propertyType)" [purpose]="'sale'"
+          [image]="''" [size]="'small'"></app-property-card>
       </div>
 
       <!-- No Results State -->
-      <div *ngIf="properties.length === 0" class="text-center py-24 bg-white rounded-2xl border border-dashed border-gray-200">
+      <div *ngIf="properties.length === 0 && !isLoading && !errorMessage"
+        class="text-center py-24 bg-white rounded-2xl border border-dashed border-gray-200">
         <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
           <lucide-angular [img]="Search" class="w-8 h-8 text-gray-300"></lucide-angular>
         </div>

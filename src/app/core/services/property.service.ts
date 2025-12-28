@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 // Define interfaces matching your backend models
 export interface Property {
@@ -39,7 +40,7 @@ export interface PropertyFilterDTO {
     providedIn: 'root'
 })
 export class PropertyService {
-    private apiUrl = 'https://your-api-domain.com/api/property'; // Update with your actual API URL
+    private apiUrl = environment.apiBaseUrl + '/property'; // Uses environment configuration
 
     constructor(private http: HttpClient) { }
 
