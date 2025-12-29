@@ -20,11 +20,14 @@ const routes: Routes = [
   { path: 'profile/edit', component: ProfileEditingComponent },
   { path: 'projects', component: AvailableProjectsComponent },
   { path: 'add-property', component: AddPropertyComponent, canActivate: [authGuard] },
-  {
-  path: 'dashboard',
-  component: DashboardLayoutComponent,
-  canActivate: [authGuard],
-  children: [
+   {
+    path: 'dashboard',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('../app/features/dashboard/dashboard.routes')
+        .then(m => m.DASHBOARD_ROUTES)
+  },
+
     // {
     //   path: 'propertyowner',
     //   canActivate: [roleGuard(['PropertyOwner'])],
@@ -58,8 +61,6 @@ const routes: Routes = [
     //     { path: '', component: AdminDashboardComponent }
     //   ]
     // }
-  ]
-}
 
   // { path: 'propertyowner', component: DashboardLayoutComponent , 
   //   canActivate: [roleGuard(['PropertyOwner'])],
