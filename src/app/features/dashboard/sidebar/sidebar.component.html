@@ -1,4 +1,4 @@
-<aside class="w-64 bg-white border-r flex flex-col h-screen fixed left-0 top-0"
+<aside class="fixed left-0 top-20 w-64 bg-white border-r flex flex-col h-[calc(100vh-5rem)] z-40"
   *ngIf="currentUser$ | async as currentUser">
   <div class="p-6 text-center border-b">
     <div class="w-16 h-16 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center text-xl">
@@ -13,7 +13,7 @@
     </span>
   </div>
 
-  <nav class="flex-1 p-4 space-y-1">
+  <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
     <a *ngFor="let item of getMenuItemsForRole(currentUser.role)" [routerLink]="item.path"
       routerLinkActive="bg-slate-900 text-white" class="flex items-center px-4 py-2 rounded hover:bg-gray-100">
       <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

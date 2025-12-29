@@ -72,8 +72,8 @@ export class LoginComponent implements OnInit, OnDestroy {
         console.log('Login Response:', response);
         const token = response?.token;
         if (token) {
-         this.authService.setAuthData(response);
-         this.navigateByRole(response.role);
+          this.authService.setAuthData(response);
+          this.navigateByRole(response.role);
         } else {
           this.errorMessage = 'Login failed: No token received';
         }
@@ -110,33 +110,33 @@ export class LoginComponent implements OnInit, OnDestroy {
           // Now response has: { Success: true, Data: { Token: "...", ... } }
           const token = response?.data?.token || response?.token;
 
-        if (token) {
-          const loginResponse: LoginResponse = {
-  id: response.data.id,
-  name: response.data.name,
-  email: response.data.email,
-  profilePicURL: response.data.profilePicURL,
-  role: response.data.role,
-  token: response.data.token,
-  isProfileCompleted: response.data.isProfileCompleted
-};
+          if (token) {
+            const loginResponse: LoginResponse = {
+              id: response.data.id,
+              name: response.data.name,
+              email: response.data.email,
+              profilePicURL: response.data.profilePicURL,
+              role: response.data.role,
+              token: response.data.token,
+              isProfileCompleted: response.data.isProfileCompleted
+            };
 
-this.authService.setAuthData(loginResponse);
-this.navigateByRole(loginResponse.role);
-} else {
-          this.errorMessage = 'Google login failed: No token received';
-          console.error('Invalid response:', response);
+            this.authService.setAuthData(loginResponse);
+            this.navigateByRole(loginResponse.role);
+          } else {
+            this.errorMessage = 'Google login failed: No token received';
+            console.error('Invalid response:', response);
+          }
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Google login error:', err);
+          this.errorMessage = err?.error?.message || 'Failed to sign in with Google';
+          this.loading = false;
         }
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Google login error:', err);
-        this.errorMessage = err?.error?.message || 'Failed to sign in with Google';
-        this.loading = false;
-      }
+      });
     });
-  });
-}
+  }
 
   googleLogin() {
     this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
@@ -155,24 +155,22 @@ this.navigateByRole(loginResponse.role);
 
 
   private navigateByRole(role: string) {
-  switch (role) {
-    case 'PropertyOwner':
-      this.router.navigate(['propertyowner']);
-      break;
-    case 'Admin':
-      this.router.navigate(['/admin/dashboard']);
-      break;
-    case 'Customer':
-      this.router.navigate(['/customer/home']);
-      break;
-    case 'InteriorDesigner':
-      this.router.navigate(['dashboard']);
-      break;
-    default:
-      this.router.navigate(['/']);
-      break;
+    switch (role) {
+      case 'PropertyOwner':
+        this.router.navigate(['dashboard']);
+        break;
+      case 'Admin':
+        this.router.navigate(['/admin/dashboard']);
+        break;
+      case 'Customer':
+        this.router.navigate(['/customer/home']);
+        break;
+      case 'InteriorDesigner':
+        this.router.navigate(['dashboard']);
+        break;
+      default:
+        this.router.navigate(['/']);
+        break;
+    }
   }
-}
-
-
 }
