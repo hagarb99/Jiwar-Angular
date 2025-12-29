@@ -13,7 +13,7 @@ export const DASHBOARD_ROUTES: Routes = [
         path: 'designer',
         canActivate: [roleGuard(['InteriorDesigner'])],
         loadChildren: () =>
-          import('../interior-designer/interior-designer.routes')
+          import('././pages/interiordesigner/interior-designer.routes')
             .then(m => m.INTERIOR_DESIGNER_ROUTES)
       },
 
