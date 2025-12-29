@@ -28,13 +28,79 @@ export class SidebarComponent {
       label: 'Overview',
       path: '/dashboard',
       icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
-      roles: ['InteriorDesigner', 'PropertyOwner', 'Customer']
+      roles: ['InteriorDesigner', 'PropertyOwner', 'Customer', 'Admin']
     },
     {
       label: 'My Profile',
       path: '/profile/edit',
       icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-      roles: ['InteriorDesigner', 'PropertyOwner', 'Customer']
+      roles: ['InteriorDesigner', 'PropertyOwner', 'Customer', 'Admin']
+    },
+    {
+      label: 'My Listings',
+      path: '/propertyowner/listings',
+      icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+      roles: ['PropertyOwner', 'Customer']
+    },
+    {
+      label: 'Bookings',
+      path: '/propertyowner/bookings',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+      roles: ['PropertyOwner'] // Only designers see available requests
+    },
+    {
+      label: 'Tenants/Buyers',
+      path: '/propertyowner/tenants-buyers',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+      roles: ['PropertyOwner'] // Only designers see available requests
+    },
+    {
+      label: 'Earnings',
+      path: '/propertyowner/earnings',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+      roles: ['PropertyOwner', 'InteriorDesigner', 'Customer'] // Only designers see available requests
+    },
+    {
+      label: 'Reviews',
+      path: '/propertyowner/reviews',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+      roles: ['PropertyOwner', 'InteriorDesigner'] // Only designers see available requests
+    },
+    {
+      label: 'Ai Insights',
+      path: '/projects',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+      roles: ['PropertyOwner', 'Customer'] // Only designers see available requests
+    },
+    {
+      label: 'My Requests',
+      path: '/propertyowner/my-requests',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+      roles: ['PropertyOwner'] // Only designers see available requests
+    },
+    {
+      label: 'My Requests',
+      path: '/customer/my-requests',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+      roles: ['Customer'] // Only designers see available requests
+    },
+    {
+      label: 'Renovation Simulator',
+      path: '/propertyowner/renovation-simulator',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+      roles: ['InteriorDesigner', 'PropertyOwner'] // Only designers see available requests
+    },
+    {
+      label: 'Investment Insights',
+      path: '/propertyowner/investment-insights',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+      roles: ['PropertyOwner'] // Only designers see available requests
+    },
+    {
+      label: 'Settings',
+      path: '/propertyowner/settings',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+      roles: ['PropertyOwner'] // Only designers see available requests
     },
     {
       label: 'Available Projects',
@@ -47,12 +113,6 @@ export class SidebarComponent {
       path: '/proposals',
       icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
       roles: ['InteriorDesigner'] // Only designers track their sent proposals here
-    },
-    {
-      label: 'My Requests',
-      path: '/my-requests', // You might need to create this route/page
-      icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-      roles: ['PropertyOwner', 'Customer'] // Owners track their created requests
     },
     {
       label: 'Active Projects',
