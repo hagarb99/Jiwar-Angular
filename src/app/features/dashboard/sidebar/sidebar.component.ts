@@ -26,13 +26,25 @@ export class SidebarComponent {
   private allMenuItems: SidebarMenuItem[] = [
     {
       label: 'Overview',
-      path: '/dashboard',
+      path: '/dashboard/interiordesigner',
       icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
-      roles: ['InteriorDesigner', 'PropertyOwner', 'Customer', 'Admin']
+      roles: ['InteriorDesigner']
+    },
+    {
+      label: 'Overview',
+      path: '/propertyowner',
+      icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
+      roles: ['PropertyOwner']
+    },
+    {
+      label: 'Overview',
+      path: '/dashboard',
+      icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
+      roles: ['Customer', 'Admin']
     },
     {
       label: 'My Profile',
-      path: '/profile/edit',
+      path: '/dashboard/profile',
       icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
       roles: ['InteriorDesigner', 'PropertyOwner', 'Customer', 'Admin']
     },
@@ -133,27 +145,6 @@ export class SidebarComponent {
       item.roles.includes(role)
     );
   }
-
-  // if (currentUser.role === 'PropertyOwner') {
-  //   this.menuItems = [
-  //     {
-  //       label: 'Dashboard',
-  //       path: '/propertyowner/dashboard',
-  //       icon: 'M3 12l2-2 7-7 7 7 2 2v8a2 2 0 01-2 2h-3'
-  //     },
-  //     {
-  //       label: 'My Properties',
-  //       path: '/propertyowner/properties',
-  //       icon: 'M4 6h16M4 10h16M4 14h16M4 18h16'
-  //     },
-  //     {
-  //       label: 'Add Property',
-  //       path: '/propertyowner/add-property',
-  //       icon: 'M12 4v16m8-8H4'
-  //     }
-  //   ];
-  // }
-  // }
 
   logout(): void {
     this.authService.logout();
