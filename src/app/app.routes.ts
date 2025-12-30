@@ -71,8 +71,7 @@ const routes: Routes = [
   //     { path: 'settings', component: SettingsComponent },
   //     { path: '', redirectTo: 'profile', pathMatch: 'full' }
   //   ]
-  // }
-  ,
+  // },
   {
     path: 'renovation',
     loadChildren: () => import('./features/renovation/renovation.routes').then(m => m.RENOVATION_ROUTES)
