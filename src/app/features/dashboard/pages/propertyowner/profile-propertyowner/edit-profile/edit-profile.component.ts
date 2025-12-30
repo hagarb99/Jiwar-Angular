@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ProfileService, PropertyOwnerProfile } from '../../profile.service';
+import { ProfileService, PropertyOwnerProfile, EditProfileRequest, CompleteProfilePropertyOwnerRequest } from '../../profile.service';
+import { switchMap } from 'rxjs/operators';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
@@ -129,10 +130,32 @@ export class EditProfilePropertyownerComponent implements OnInit {
         const formValue = this.profileForm.value;
 
         // Clean up arrays (remove empty strings)
-        formValue.specializations = formValue.specializations.filter((s: string) => s && s.trim() !== '');
-        formValue.certifications = formValue.certifications.filter((c: string) => c && c.trim() !== '');
+        const specs = (formValue.specializations || []).filter((s: string) => s && s.trim() !== '');
+        const certs = (formValue.certifications || []).filter((c: string) => c && c.trim() !== '');
 
-        this.profileService.editProfile(formValue).subscribe({
+        // 1. Prepare EditProfileRequest (Basic User Fields)
+        const editProfileReq: EditProfileRequest = {
+            name: formValue.name,
+            email: formValue.email,
+            phoneNumber: formValue.phoneNumber,
+            bio: formValue.bio,
+            location: formValue.location,
+            profilePicURL: formValue.profilePicURL
+        };
+
+        // 2. Prepare CompleteProfilePropertyOwnerRequest (Role Specific Fields)
+        const completeProfileReq: CompleteProfilePropertyOwnerRequest = {
+            specializations: specs,
+            certifications: certs,
+            title: formValue.title,
+            location: formValue.location,
+            bio: formValue.bio
+        };
+
+        // Chain the calls
+        this.profileService.editProfile(editProfileReq).pipe(
+            switchMap(() => this.profileService.completeProfilePropertyOwner(completeProfileReq))
+        ).subscribe({
             next: () => {
                 this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Profile updated successfully' });
                 setTimeout(() => {
@@ -140,6 +163,7 @@ export class EditProfilePropertyownerComponent implements OnInit {
                 }, 1000);
             },
             error: (err) => {
+                console.error('Failed to update profile', err);
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update profile' });
                 this.loading = false;
             }

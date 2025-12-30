@@ -43,4 +43,16 @@ export class ProfileService {
   editProfile(request: EditProfileRequest): Observable<any> {
     return this.httpClient.put(`${this.apiUrl}/edit-profile`, request);
   }
+
+  completeProfilePropertyOwner(request: CompleteProfilePropertyOwnerRequest): Observable<any> {
+    return this.httpClient.post(`${this.apiUrl}/complete-profile/property-owner`, request);
+  }
+}
+
+export interface CompleteProfilePropertyOwnerRequest {
+  specializations: string[];
+  certifications: string[];
+  title: string;
+  location: string;
+  bio: string;
 }
