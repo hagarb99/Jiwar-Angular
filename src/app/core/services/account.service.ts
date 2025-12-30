@@ -8,9 +8,13 @@ export class AccountService {
   private apiUrl = environment.apiBaseUrl;
 
   getMyProfile() {
-    return this.http.get(`${this.apiUrl}/account/edit-profile`);
+    return this.http.get(`${this.apiUrl}/account/profile`);
   }
 
+  editProfile(payload: any) {
+    return this.http.put(`${this.apiUrl}/account/edit-profile`, payload);
+  }
+  
   updatePropertyOwnerProfile(payload: any) {
     return this.http.post(
       `${this.apiUrl}/account/complete-profile/property-owner`,
