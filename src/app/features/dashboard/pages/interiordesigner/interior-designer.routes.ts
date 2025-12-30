@@ -6,6 +6,7 @@ import { ActiveProjectsComponent } from './active-projects/active-projects.compo
 import { DesignerDashboardComponent } from './designer-dashboard/designer-dashboard.component';
 
 export const INTERIOR_DESIGNER_ROUTES: Routes = [
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: 'projects', component: AvailableProjectsComponent },
   { path: 'proposals', component: MyProposalsComponent },
   { path: 'active-projects', component: ActiveProjectsComponent },

@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SidebarComponent } from '../../../sidebar/sidebar.component';
 import { DesignerProposalService } from '../../../../../core/services/designer-proposal.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, SidebarComponent],
+  imports: [CommonModule],
   templateUrl: './designer-dashboard.component.html',
   styleUrls: ['./designer-dashboard.component.css'],
 })
@@ -27,6 +26,9 @@ export class DesignerDashboardComponent implements OnInit {
 
   proposals: any[] = [];
   activeProjects: any[] = [];
+
+  specializations: string[] = ['Modern Design', 'Luxury Interiors', 'Sustainable Design'];
+  certifications: string[] = ['NCIDQ Certified', 'LEED AP'];
 
   constructor(private proposalService: DesignerProposalService) { }
 

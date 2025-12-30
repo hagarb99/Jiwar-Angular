@@ -1,13 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
-   standalone: true,
+  standalone: true,
   imports: [RouterOutlet],
   templateUrl: 'app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'app';
+  private authService = inject(AuthService);
+
+  ngOnInit() {
+    // Trigger auth state restoration from localStorage
+    // This ensures currentUser$ emits the stored user data
+    this.authService.currentUser$.subscribe();
+  }
 }
