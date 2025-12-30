@@ -24,11 +24,26 @@ export class DesignerDashboardComponent implements OnInit {
     { label: 'Withdrawn', value: '$28,500', main: false },
   ];
 
+  specializations: string[] = [
+    'Modern',
+    'Minimal',
+    'Luxury',
+    'Scandinavian',
+    'Modern Design',
+    'Luxury Interiors',
+    'Sustainable Design'
+  ];
+
+  certifications: string[] = [
+    'LEED Certified',
+    'Best Interior Designer 2024',
+    'AI Design Specialist',
+    'NCIDQ Certified',
+    'LEED AP'
+  ];
+
   proposals: any[] = [];
   activeProjects: any[] = [];
-
-  specializations: string[] = ['Modern Design', 'Luxury Interiors', 'Sustainable Design'];
-  certifications: string[] = ['NCIDQ Certified', 'LEED AP'];
 
   constructor(private proposalService: DesignerProposalService) { }
 
@@ -41,6 +56,7 @@ export class DesignerDashboardComponent implements OnInit {
       next: (data) => {
 
         this.proposals = data.map(p => ({
+          id: p.id,
           title: p.title || `Project #${p.designRequestID}`,
           client: p.client || 'Unknown Client',
           price: `$${p.estimatedCost}`,
@@ -57,5 +73,36 @@ export class DesignerDashboardComponent implements OnInit {
       },
       error: (err) => console.error('Failed to load proposals', err)
     });
+  }
+
+  addSpecialization(input: HTMLInputElement) {
+    if (input.value.trim()) {
+      this.specializations.push(input.value.trim());
+      input.value = '';
+    }
+  }
+
+  removeSpecialization(index: number) {
+    this.specializations.splice(index, 1);
+  }
+
+  addCertification(input: HTMLInputElement) {
+    if (input.value.trim()) {
+      this.certifications.push(input.value.trim());
+      input.value = '';
+    }
+  }
+
+  removeCertification(index: number) {
+    this.certifications.splice(index, 1);
+  }
+
+  saveProfile() {
+    console.log('Saving profile...', {
+      specializations: this.specializations,
+      certifications: this.certifications
+    });
+    // In a real app, you'd call a service here
+    alert('Profile saved successfully!');
   }
 }
