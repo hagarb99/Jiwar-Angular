@@ -14,7 +14,16 @@ export interface Property {
     numBedrooms: number;
     numBathrooms: number;
     propertyType: PropertyType;
+    thumbnailUrl?: string; // Returned by browse endpoint
+    propertyMedia?: PropertyMedia[]; // May be returned by detail endpoint
     // Add other properties as needed
+}
+
+export interface PropertyMedia {
+    id: number;
+    mediaURL: string;
+    isDeleted: boolean;
+    order: number;
 }
 
 export enum PropertyType {

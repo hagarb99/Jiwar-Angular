@@ -6,6 +6,7 @@ import { FooterComponent } from '../../../shared/components/footer/footer.compon
 import { PropertyCardComponent } from '../../../shared/components/property-card/property-card.component';
 import { LucideAngularModule, Search, Filter, MapPin, Home, DollarSign, Bed, Bath } from 'lucide-angular';
 import { PropertyService, Property, PropertyType, PropertyFilterDTO } from '../../services/property.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-search-page',
@@ -154,5 +155,62 @@ export class SearchPageComponent implements OnInit {
     };
 
     return typeNames[propertyType] || 'Property';
+  }
+
+
+  /**
+   * Generates the full URL for the property thumbnail
+   */
+  getThumbnailUrl(property: Property): string {
+    // Fallback placeholder
+    const fallbackImage = '/logo2.png'; // Using existing asset that works
+
+    // 1. Check if thumbnailUrl exists (from browse endpoint)
+    if (property.thumbnailUrl) {
+      // If it's already a full URL, use it
+      if (property.thumbnailUrl.startsWith('http')) {
+        return property.thumbnailUrl;
+      }
+
+      // Build full URL from relative path
+      const apiBase = environment.apiBaseUrl;
+      const cleanBase = apiBase.endsWith('/api') ? apiBase.replace('/api', '') : apiBase;
+      const cleanPath = property.thumbnailUrl.startsWith('/') ? property.thumbnailUrl.substring(1) : property.thumbnailUrl;
+      const finalBase = cleanBase.endsWith('/') ? cleanBase.slice(0, -1) : cleanBase;
+
+      return `${finalBase}/${cleanPath}`;
+    }
+
+    // 2. Fallback: Check if propertyMedia exists (from detail endpoint)
+    if (!property.propertyMedia || property.propertyMedia.length === 0) {
+      return fallbackImage;
+    }
+
+    // Filter deleted and sort by order
+    const validMedia = property.propertyMedia
+      .filter(m => !m.isDeleted)
+      .sort((a, b) => a.order - b.order);
+
+    if (validMedia.length === 0) {
+      return fallbackImage;
+    }
+
+    // Get first image
+    const media = validMedia[0];
+
+    // Construct URL
+    if (media.mediaURL.startsWith('http')) {
+      return media.mediaURL;
+    }
+
+    // Base URL from environment (removing /api)
+    const apiBase = environment.apiBaseUrl;
+    const cleanBase = apiBase.endsWith('/api') ? apiBase.replace('/api', '') : apiBase;
+
+    // Ensure properly formed URL
+    const cleanPath = media.mediaURL.startsWith('/') ? media.mediaURL.substring(1) : media.mediaURL;
+    const finalBase = cleanBase.endsWith('/') ? cleanBase.slice(0, -1) : cleanBase;
+
+    return `${finalBase}/${cleanPath}`;
   }
 }

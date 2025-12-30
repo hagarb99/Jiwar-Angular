@@ -1,0 +1,225 @@
+// property-details.component.html
+<div class="min-h-screen bg-gray-50/50">
+    <app-navbar></app-navbar>
+
+    <main class="pt-24 pb-12">
+        <div class="container mx-auto px-4 md:px-6">
+
+            <!-- Loading State -->
+            <div *ngIf="loading" class="text-center py-24">
+                <div
+                    class="w-16 h-16 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <lucide-angular [img]="MapPin" class="w-8 h-8 text-yellow-500"></lucide-angular>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">جاري التحميل...</h3>
+                <p class="text-gray-500">يرجى الانتظار أثناء تحميل تفاصيل العقار</p>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="errorMessage && !loading" class="text-center py-24 bg-red-50 rounded-2xl border border-red-100">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">حدث خطأ</h3>
+                <p class="text-red-600 mb-4">{{ errorMessage }}</p>
+                <button (click)="goBack()"
+                    class="px-6 py-2 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors">
+                    العودة للقائمة
+                </button>
+            </div>
+
+            <!-- Property Content -->
+            <div *ngIf="property && !loading">
+
+                <!-- Back Button -->
+                <button (click)="goBack()"
+                    class="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
+                        </path>
+                    </svg>
+                    العودة للبحث
+                </button>
+
+                <!-- Image Gallery -->
+                <section class="mb-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <!-- Main Image -->
+                        <div class="lg:col-span-2 h-96 lg:h-[600px] rounded-2xl overflow-hidden bg-gray-100">
+                            <img [src]="property.mediaUrls[selectedImageIndex] || '/assets/placeholder.jpg'"
+                                [alt]="property.title" class="w-full h-full object-cover" />
+                        </div>
+
+                        <!-- Thumbnail Grid -->
+                        <div class="grid grid-cols-4 lg:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto">
+                            <div *ngFor="let img of property.mediaUrls; let i = index" (click)="selectImage(i)"
+                                [class.ring-4]="selectedImageIndex === i"
+                                [class.ring-yellow-500]="selectedImageIndex === i"
+                                class="h-32 lg:h-[140px] rounded-xl overflow-hidden cursor-pointer hover:opacity-80 transition-all">
+                                <img [src]="img" [alt]="'صورة ' + (i + 1)" class="w-full h-full object-cover" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                    <!-- Main Content -->
+                    <div class="lg:col-span-2 space-y-8">
+
+                        <!-- Header Section -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex-1">
+                                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">{{ property.title }}
+                                    </h1>
+                                    <div class="flex items-center gap-2 text-gray-600 mb-2">
+                                        <lucide-angular [img]="MapPin" class="w-5 h-5 text-yellow-500"></lucide-angular>
+                                        <span class="text-lg">{{ property.district }}، {{ property.city }}</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500">{{ property.address }}</p>
+                                </div>
+
+                                <div class="flex gap-2">
+                                    <button (click)="handleShare()"
+                                        class="p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                        <lucide-angular [img]="Share2" class="w-5 h-5 text-gray-600"></lucide-angular>
+                                    </button>
+                                    <button (click)="toggleFavorite()" [class.bg-red-50]="isFavorite"
+                                        [class.border-red-200]="isFavorite"
+                                        class="p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                        <lucide-angular [img]="Heart" [class.text-red-500]="isFavorite"
+                                            class="w-5 h-5"></lucide-angular>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Property Stats -->
+                            <div class="flex flex-wrap items-center gap-6 pt-4 border-t border-gray-100">
+                                <div *ngIf="property.area_sqm" class="flex items-center gap-2">
+                                    <lucide-angular [img]="Maximize2" class="w-5 h-5 text-gray-400"></lucide-angular>
+                                    <span class="font-semibold text-gray-900">{{ property.area_sqm }} متر²</span>
+                                </div>
+                                <div *ngIf="property.numBedrooms" class="flex items-center gap-2">
+                                    <lucide-angular [img]="Bed" class="w-5 h-5 text-gray-400"></lucide-angular>
+                                    <span class="font-semibold text-gray-900">{{ property.numBedrooms }} غرف نوم</span>
+                                </div>
+                                <div *ngIf="property.numBathrooms" class="flex items-center gap-2">
+                                    <lucide-angular [img]="Bath" class="w-5 h-5 text-gray-400"></lucide-angular>
+                                    <span class="font-semibold text-gray-900">{{ property.numBathrooms }} حمامات</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">الوصف</h2>
+                            <p class="text-gray-600 leading-relaxed whitespace-pre-line">
+                                {{ property.description || 'لا يوجد وصف متاح.' }}
+                            </p>
+                        </div>
+
+                        <!-- 360 Tour -->
+                        <div *ngIf="property.tour360Url"
+                            class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">جولة 360 درجة</h2>
+                            <div class="aspect-video rounded-xl overflow-hidden bg-gray-100">
+                                <iframe [src]="property.tour360Url" class="w-full h-full" allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+
+                        <!-- Location Map -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">الموقع</h2>
+                            <div class="aspect-video rounded-xl overflow-hidden bg-gray-100">
+                                <!-- يمكنك استخدام Google Maps أو Leaflet هنا -->
+                                <div class="w-full h-full flex items-center justify-center text-gray-500">
+                                    <div class="text-center">
+                                        <lucide-angular [img]="MapPin"
+                                            class="w-12 h-12 mx-auto mb-2 text-gray-300"></lucide-angular>
+                                        <p>خريطة الموقع</p>
+                                        <p class="text-sm mt-1">Lat: {{ property.locationLat }}, Lng: {{
+                                            property.locationLang }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="space-y-6">
+
+                        <!-- Price Card -->
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sticky top-24">
+                            <div class="mb-6">
+                                <p class="text-sm text-gray-500 mb-2">السعر</p>
+                                <p
+                                    class="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-400 bg-clip-text text-transparent">
+                                    {{ formatPrice(property.price) }}
+                                </p>
+                            </div>
+
+                            <div class="space-y-3">
+                                <button (click)="handleBooking()"
+                                    class="w-full bg-[#D4AF37] hover:bg-[#C5A028] text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-yellow-500/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                                    <lucide-angular [img]="Calendar" class="w-5 h-5"></lucide-angular>
+                                    احجز معاينة
+                                </button>
+
+                                <button
+                                    class="w-full border-2 border-gray-200 hover:border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2">
+                                    <lucide-angular [img]="Phone" class="w-5 h-5"></lucide-angular>
+                                    اتصل بنا
+                                </button>
+
+                                <button
+                                    class="w-full border-2 border-gray-200 hover:border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2">
+                                    <lucide-angular [img]="Mail" class="w-5 h-5"></lucide-angular>
+                                    أرسل رسالة
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Owner Info -->
+                        <div *ngIf="property.ownerName"
+                            class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <lucide-angular [img]="User" class="w-5 h-5 text-yellow-500"></lucide-angular>
+                                معلومات المالك
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-yellow-50 rounded-full flex items-center justify-center">
+                                        <lucide-angular [img]="User" class="w-6 h-6 text-yellow-600"></lucide-angular>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">{{ property.ownerName }}</p>
+                                        <p class="text-sm text-gray-500">مالك العقار</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Published Date -->
+                        <div *ngIf="property.publishedAt" class="bg-gray-50 rounded-xl p-4 text-center">
+                            <p class="text-sm text-gray-500">تاريخ النشر</p>
+                            <p class="text-gray-900 font-semibold mt-1">
+                                {{ property.publishedAt | date: 'dd/MM/yyyy' }}
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <app-footer></app-footer>
+</div>
