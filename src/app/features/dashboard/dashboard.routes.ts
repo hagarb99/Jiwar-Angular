@@ -8,13 +8,13 @@ export const DASHBOARD_ROUTES: Routes = [
     component: DashboardLayoutComponent,
     children: [
 
-      // ===== INTERIOR DESIGNER =====
+
       {
         path: 'designer',
         canActivate: [roleGuard(['InteriorDesigner'])],
         loadChildren: () =>
           import('././pages/interiordesigner/interior-designer.routes')
-            .then(m => m.INTERIOR_DESIGNER_ROUTES)
+            .then(m => m.interiorDesignerRoutes)
       },
 
       // ===== PROPERTY OWNER =====

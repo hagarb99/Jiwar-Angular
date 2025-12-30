@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SidebarComponent } from '../../../sidebar/sidebar.component';
 import { DesignerProposalService } from '../../../../../core/services/designer-proposal.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, SidebarComponent],
+  imports: [CommonModule],
   templateUrl: './designer-dashboard.component.html',
   styleUrls: ['./designer-dashboard.component.css'],
 })
@@ -25,6 +24,18 @@ export class DesignerDashboardComponent implements OnInit {
     { label: 'Withdrawn', value: '$28,500', main: false },
   ];
 
+  specializations: string[] = [
+    'Modern',
+    'Minimal',
+    'Luxury',
+    'Scandinavian'
+  ];
+
+  certifications: string[] = [
+    'LEED Certified',
+    'Best Interior Designer 2024',
+    'AI Design Specialist'
+  ];
   proposals: any[] = [];
   activeProjects: any[] = [];
 
