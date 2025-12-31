@@ -24,6 +24,15 @@ export const DASHBOARD_ROUTES: Routes = [
         loadChildren: () =>
           import('./pages/propertyowner/property-owner.routes')
             .then(m => m.propertyOwnerRoutes)
+      },
+
+      // ===== ADMIN =====
+      {
+        path: 'admin',
+        canActivate: [roleGuard(['Admin'])],
+        loadChildren: () =>
+          import('./pages/Admin/admin.routes')
+            .then(m => m.ADMIN_ROUTES)
       }
     ]
   }

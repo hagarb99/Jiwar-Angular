@@ -8,7 +8,8 @@ import {
   ChevronDown,
   Menu,
   X,
-  Globe
+  Globe,
+  Heart
 } from 'lucide-angular';
 import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../../core/services/auth.service';
@@ -36,6 +37,7 @@ export class NavbarComponent implements OnInit {
   readonly Menu = Menu;
   readonly X = X;
   readonly Globe = Globe;
+  readonly Heart = Heart;
 
   // State
   mobileMenuOpen = false;
