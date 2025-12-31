@@ -8,6 +8,7 @@ import { authGuard } from './core/guards/auth.guard';
 import { SearchPageComponent } from './core/pages/search-page/search-page.component';
 import { DashboardLayoutComponent } from './features/dashboard/dashboard-layout/dashboard-layout.component';
 import { PropertyOwnerLayoutComponent } from './features/propertyowner/propertyowner-dashboard/property-owner-layout.component';
+import { PropertyDetailsComponent } from './core/pages/property-details/property-details.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -76,6 +77,10 @@ const routes: Routes = [
   {
     path: 'properties',
     component: SearchPageComponent
+  },
+  {
+    path: 'property-details/:id',
+    component: PropertyDetailsComponent
   }
 ];
 

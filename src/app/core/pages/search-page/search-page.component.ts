@@ -146,7 +146,8 @@ export class SearchPageComponent implements OnInit {
   /**
    * Converts PropertyType enum to readable string
    */
-  getPropertyTypeName(propertyType: PropertyType): string {
+  getPropertyTypeName(propertyType: PropertyType | undefined): string {
+    if (propertyType === undefined) return 'Property';
     const typeNames: { [key in PropertyType]: string } = {
       [PropertyType.Apartment]: 'Apartment',
       [PropertyType.Villa]: 'Villa',
