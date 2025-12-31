@@ -72,7 +72,7 @@
                         </div> -->
 
                         <img [src]="getMediaUrls()[selectedImageIndex] || '/assets/placeholder.jpg'"
-                            [alt]="property?.title || 'صورة العقار'"
+                            [alt]="property.title"
                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             (error)="onImageError($event)" />
 
@@ -94,7 +94,6 @@
                             <div *ngIf="selectedImageIndex === i" class="absolute inset-0 bg-[#D4AF37]/10"></div>
                         </div>
                     </div>
-            </div>
             </section>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">

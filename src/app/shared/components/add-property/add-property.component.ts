@@ -16,7 +16,7 @@ import { StepsModule } from 'primeng/steps';
 import { MenuItem } from 'primeng/api';
 import { CardModule } from 'primeng/card';
 import { FileUploadModule } from 'primeng/fileupload';
-import { PropertyService } from '../../../core/services/PropertyService';
+import { PropertyService } from '../../../core/services/property.service';
   
 interface PropertyCreateDTO {
   title: string;
