@@ -64,13 +64,113 @@
             for implementation.
         </p>
 
-        <!-- CTA Button -->
-        <button (click)="startSimulation()" [disabled]="isLoading"
-            class="bg-[#DCCCA3] hover:bg-[#D2C090] disabled:opacity-70 disabled:cursor-not-allowed text-slate-900 font-semibold py-3 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 transform hover:scale-[1.02]">
-            <span *ngIf="!isLoading">Start Simulation</span>
-            <span *ngIf="isLoading"><i class="pi pi-spin pi-spinner"></i> Starting...</span>
-            <i *ngIf="!isLoading" class="pi pi-arrow-right text-sm"></i>
-        </button>
+        <!-- CTA Flow: Property Existence Question -->
+        <div *ngIf="propertyExists === null" class="mt-8 flex flex-col items-center animate-fade-in">
+            <h2 class="text-lg font-bold text-slate-800 mb-6">Does this property already exist in our system?</h2>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button (click)="setExists(true)"
+                    class="px-10 py-4 rounded-2xl border-2 border-[#DCCCA3] bg-white text-slate-700 font-bold hover:bg-[#FDFBF7] hover:shadow-lg hover:shadow-[#DCCCA3]/20 transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="flex flex-col items-center gap-1">
+                        <i class="pi pi-check-circle text-[#C5A666]"></i>
+                        <span>Yes, it does</span>
+                    </div>
+                </button>
+                <button (click)="setExists(false)"
+                    class="px-10 py-4 rounded-2xl border-2 border-slate-200 bg-white text-slate-600 font-bold hover:bg-slate-50 hover:border-slate-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="flex flex-col items-center gap-1">
+                        <i class="pi pi-plus-circle text-slate-400"></i>
+                        <span>No, enter manually</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- If Yes: Select Property Selection -->
+        <div *ngIf="propertyExists === true"
+            class="mt-8 w-full max-w-xl bg-white p-8 rounded-3xl border border-slate-100 shadow-xl animate-fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-slate-900">Select property</h2>
+                <button (click)="propertyExists = null"
+                    class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-50 transition-colors">
+                    <i class="pi pi-times"></i>
+                </button>
+            </div>
+
+            <div *ngIf="isLoadingProperties" class="flex flex-col items-center py-12 gap-4">
+                <i class="pi pi-spin pi-spinner text-3xl text-[#C5A666]"></i>
+                <p class="text-slate-400 font-medium">Fetching your properties...</p>
+            </div>
+
+            <div *ngIf="!isLoadingProperties && myProperties.length === 0"
+                class="text-center py-12 px-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">
+                <i class="pi pi-info-circle text-2xl text-slate-300 mb-3"></i>
+                <p class="text-slate-500 font-medium mb-4">No properties found in your account.</p>
+                <button (click)="propertyExists = false"
+                    class="bg-[#DCCCA3] text-slate-900 px-6 py-2 rounded-xl font-bold hover:bg-[#C5A666] transition-colors">
+                    Enter details manually
+                </button>
+            </div>
+
+            <div *ngIf="!isLoadingProperties && myProperties.length > 0"
+                class="grid grid-cols-1 gap-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                <div *ngFor="let prop of myProperties" (click)="selectProperty(prop.propertyID)" [ngClass]="{
+                        'border-[#C5A666] bg-[#FDFBF7] shadow-lg shadow-[#C5A666]/10': selectedPropertyId === prop.propertyID,
+                        'border-slate-50': selectedPropertyId !== prop.propertyID
+                    }"
+                    class="group p-5 rounded-2xl border-2 cursor-pointer hover:border-[#DCCCA3] hover:bg-slate-50 transition-all duration-300 flex items-center gap-4">
+
+                    <div
+                        class="w-12 h-12 rounded-xl bg-[#F5F0E6] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                        <i class="pi pi-home text-[#C5A666]"></i>
+                    </div>
+
+                    <div class="flex-grow">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="font-bold text-slate-900">{{ prop.title }}</h4>
+                            <i *ngIf="selectedPropertyId === prop.propertyID"
+                                class="pi pi-check-circle text-[#C5A666]"></i>
+                        </div>
+                        <p class="text-sm text-slate-500 flex items-center gap-1">
+                            <i class="pi pi-map-marker text-xs"></i>
+                            {{ prop.address }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-slate-50 flex justify-end">
+                <button (click)="startSimulation()" [disabled]="!selectedPropertyId || isLoading"
+                    class="bg-[#DCCCA3] hover:bg-[#D2C090] disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 font-bold py-4 px-10 rounded-2xl shadow-lg shadow-[#DCCCA3]/30 transition-all duration-300 flex items-center gap-2 transform active:scale-95">
+                    <span *ngIf="!isLoading">Start Simulation</span>
+                    <i *ngIf="!isLoading" class="pi pi-arrow-right"></i>
+                    <span *ngIf="isLoading"><i class="pi pi-spin pi-spinner"></i> Starting...</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- If No: Confirmation and Start -->
+        <div *ngIf="propertyExists === false"
+            class="mt-8 flex flex-col items-center bg-white p-8 rounded-3xl border border-slate-100 shadow-xl animate-fade-in w-full max-w-lg">
+            <div class="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-6">
+                <i class="pi pi-file-edit text-2xl text-slate-400"></i>
+            </div>
+            <h2 class="text-xl font-bold text-slate-900 mb-2">Manual Entry</h2>
+            <p class="text-slate-500 text-center mb-10 leading-relaxed">You'll walk through a few steps to tell us about
+                your property's size, room count, and current condition.</p>
+
+            <div class="flex gap-4 w-full">
+                <button (click)="propertyExists = null"
+                    class="flex-1 py-4 px-6 rounded-2xl border-2 border-slate-100 text-slate-400 font-bold hover:bg-slate-50 transition-all">
+                    Cancel
+                </button>
+                <button (click)="startSimulation()" [disabled]="isLoading"
+                    class="flex-[2] bg-[#DCCCA3] hover:bg-[#D2C090] disabled:opacity-70 text-slate-900 font-bold py-4 px-8 rounded-2xl shadow-lg shadow-[#DCCCA3]/30 transition-all duration-300 flex items-center justify-center gap-2">
+                    <span *ngIf="!isLoading">Start Simulation</span>
+                    <i *ngIf="!isLoading" class="pi pi-arrow-right"></i>
+                    <span *ngIf="isLoading"><i class="pi pi-spin pi-spinner"></i> Starting...</span>
+                </button>
+            </div>
+        </div>
         <!-- Back to Home -->
         <a href="/"
             class="mt-4 text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors flex items-center gap-2">
