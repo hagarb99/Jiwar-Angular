@@ -48,18 +48,53 @@ export class AuthService extends ApiBaseService {
   private isLoggedInSubject!: BehaviorSubject<boolean>;
   isLoggedIn$!: Observable<boolean>;
 
-  private currentUserSubject = new BehaviorSubject<any>(null);
+  private currentUserSubject = new BehaviorSubject<any>(this.loadUserFromStorage());
   currentUser$ = this.currentUserSubject.asObservable();
 
+  private loadUserFromStorage(): any {
+    try {
+      const userJson = localStorage.getItem('currentUser');
+      return userJson ? JSON.parse(userJson) : null;
+    } catch {
+      return null;
+    }
+  }
+
   setUserData(userData: {
+    id: string;
     name: string;
     email: string;
     profilePicURL: string;
     role?: string;
+    isProfileCompleted: boolean;
   }) {
     this.currentUserSubject.next(userData);
     localStorage.setItem('currentUser', JSON.stringify(userData));
   }
+
+  setAuthData(response: LoginResponse): void {
+    this.setToken(response.token);
+
+    this.setUserData({
+      id: response.id,
+      name: response.name,
+      email: response.email,
+      profilePicURL: response.profilePicURL,
+      role: response.role,
+      isProfileCompleted: response.isProfileCompleted
+    });
+
+    this.isLoggedInSubject.next(true);
+  }
+
+  get userRole(): string | null {
+    const user =
+      this.currentUserSubject.value ??
+      JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+    return user?.role ?? null;
+  }
+
 
   getUserName(): string | null {
     const user = this.currentUserSubject.value || JSON.parse(localStorage.getItem('currentUser') || 'null');

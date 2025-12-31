@@ -8,7 +8,8 @@ import {
   ChevronDown,
   Menu,
   X,
-  Globe
+  Globe,
+  Heart
 } from 'lucide-angular';
 import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../../core/services/auth.service';
@@ -26,16 +27,17 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent implements OnInit {
-  toggleUserDropdown = false;  
+  toggleUserDropdown = false;
 
-profilePicUrl: string | null = null;
-currentUserName: string | null = null;
-currentUserEmail: string | null = null;
+  profilePicUrl: string | null = null;
+  currentUserName: string | null = null;
+  currentUserEmail: string | null = null;
 
   readonly ChevronDown = ChevronDown;
   readonly Menu = Menu;
   readonly X = X;
   readonly Globe = Globe;
+  readonly Heart = Heart;
 
   // State
   mobileMenuOpen = false;
@@ -81,7 +83,7 @@ currentUserEmail: string | null = null;
       });
   }
 
-  
+
   setDropdown(name: 'buy' | 'invest' | 'sell' | 'renovation' | null): void {
     this.activeDropdown = name;
   }
@@ -97,25 +99,25 @@ currentUserEmail: string | null = null;
   closeMobileMenu(): void {
     this.mobileMenuOpen = false;
   }
- ngOnInit(): void {
+  ngOnInit(): void {
     this.authService.isLoggedIn$.subscribe(status => {
       this.isLoggedIn = status;
       if (status) {
         this.profilePicUrl = this.authService.getProfilePicUrl();
-      this.currentUserName = this.authService.getUserName();
-      this.currentUserEmail = this.authService.getUserEmail();
+        this.currentUserName = this.authService.getUserName();
+        this.currentUserEmail = this.authService.getUserEmail();
       } else {
         this.profilePicUrl = null;
-      this.currentUserName = null;
-      this.currentUserEmail = null;
+        this.currentUserName = null;
+        this.currentUserEmail = null;
       }
     });
     if (this.authService.isLoggedIn()) {
-    this.profilePicUrl = this.authService.getProfilePicUrl();
-    this.currentUserName = this.authService.getUserName();
-    this.currentUserEmail = this.authService.getUserEmail();
+      this.profilePicUrl = this.authService.getProfilePicUrl();
+      this.currentUserName = this.authService.getUserName();
+      this.currentUserEmail = this.authService.getUserEmail();
+    }
   }
-  }  
 
   logout(): void {
     this.authService.logout();

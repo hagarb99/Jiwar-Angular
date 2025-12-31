@@ -17,7 +17,7 @@ import { MenuItem } from 'primeng/api';
 import { CardModule } from 'primeng/card';
 import { FileUploadModule } from 'primeng/fileupload';
 import { PropertyService } from '../../../core/services/PropertyService';
-
+  
 interface PropertyCreateDTO {
   title: string;
   description: string;
@@ -32,13 +32,13 @@ interface PropertyCreateDTO {
   tour360Url?: string;
   locationLat?: number;
   locationLang?: number;
+   listingType: number;
 }
 
 export enum ListingTypeEnum {
-  Rent = 'Rent',
-  Sell = 'Sell'
+  Rent = 0,
+  Sell = 1
 }
-
 
 @Component({
   selector: 'app-add-property',
@@ -86,6 +86,7 @@ export class AddPropertyComponent {
   { label: 'Rent', value: ListingTypeEnum.Rent },
   { label: 'Sell', value: ListingTypeEnum.Sell }
 ];
+
 
   constructor(
     private fb: FormBuilder,
@@ -207,6 +208,7 @@ getImagePreview(file: File): string {
     rooms: formValue.rooms ? Number(formValue.rooms) : undefined,
     bathrooms: formValue.bathrooms ? Number(formValue.bathrooms) : undefined,
     categoryId: Number(formValue.categoryId),
+     listingType: Number(formValue.listingType),
     tour360Url: formValue.tour360Url || undefined,
     locationLat: formValue.locationLat ? Number(formValue.locationLat) : undefined,
     locationLang: formValue.locationLang ? Number(formValue.locationLang) : undefined
