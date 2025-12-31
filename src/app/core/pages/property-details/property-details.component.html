@@ -57,7 +57,7 @@
                 <section class="mb-8">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <!-- Main Image -->
-                        <div
+                        <!-- <div
                             class="lg:col-span-2 h-96 lg:h-[550px] rounded-3xl overflow-hidden bg-gray-100 shadow-xl group relative">
                             <img [src]="getMediaUrls()[selectedImageIndex] || '/assets/placeholder.jpg'"
                                 [alt]="property.title"
@@ -69,230 +69,240 @@
                                     {{ selectedImageIndex + 1 }} / {{ getMediaUrls().length }}
                                 </span>
                             </div>
-                        </div>
+                        </div> -->
+
+                        <img [src]="getMediaUrls()[selectedImageIndex] || '/assets/placeholder.jpg'"
+                            [alt]="property?.title || 'صورة العقار'"
+                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            (error)="onImageError($event)" />
 
                         <!-- Thumbnail Grid -->
-                        <div class="grid grid-cols-4 lg:grid-cols-2 gap-4 h-full lg:max-h-[550px] overflow-y-auto pr-1">
+                        <!-- <div class="grid grid-cols-4 lg:grid-cols-2 gap-4 h-full lg:max-h-[550px] overflow-y-auto pr-1">
                             <div *ngFor="let img of getMediaUrls(); let i = index" (click)="selectImage(i)"
                                 [class.ring-2]="selectedImageIndex === i"
                                 [class.ring-[#D4AF37]]="selectedImageIndex === i"
                                 class="h-24 md:h-32 lg:h-[130px] rounded-2xl overflow-hidden cursor-pointer hover:opacity-90 transition-all relative">
                                 <img [src]="img" [alt]="'Image ' + (i + 1)" class="w-full h-full object-cover" />
                                 <div *ngIf="selectedImageIndex === i" class="absolute inset-0 bg-[#D4AF37]/10"></div>
+                            </div> -->
+
+                        <div *ngFor="let img of getMediaUrls(); let i = index" (click)="selectImage(i)"
+                            [class.ring-2]="selectedImageIndex === i" [class.ring-[#D4AF37]]="selectedImageIndex === i"
+                            class="h-24 md:h-32 lg:h-[130px] rounded-2xl overflow-hidden cursor-pointer hover:opacity-90 transition-all relative">
+                            <img [src]="img || '/assets/placeholder.jpg'" [alt]="'صورة ' + (i + 1)"
+                                class="w-full h-full object-cover" (error)="onImageError($event)" />
+                            <div *ngIf="selectedImageIndex === i" class="absolute inset-0 bg-[#D4AF37]/10"></div>
+                        </div>
+                    </div>
+            </div>
+            </section>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- Main Content -->
+                <div class="lg:col-span-2 space-y-8">
+
+                    <!-- Header Section -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                        <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <span
+                                        class="px-3 py-1 bg-yellow-50 text-[#D4AF37] rounded-lg text-sm font-bold border border-yellow-100">
+                                        {{ getPropertyTypeName(property.propertyType) }}
+                                    </span>
+                                    <span class="text-gray-400 text-sm flex items-center gap-1">
+                                        <lucide-angular [img]="Calendar" class="w-4 h-4"></lucide-angular>
+                                        Published on {{ property.publishedAt | date: 'dd MMMM yyyy' }}
+                                    </span>
+                                </div>
+                                <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 leading-tight">
+                                    {{ property.title }}
+                                </h1>
+                                <div class="flex items-center gap-2 text-gray-600">
+                                    <div class="bg-yellow-50 p-2 rounded-lg">
+                                        <lucide-angular [img]="MapPin" class="w-5 h-5 text-[#D4AF37]"></lucide-angular>
+                                    </div>
+                                    <span class="text-lg font-medium">{{ property.district }}, {{ property.city
+                                        }}</span>
+                                </div>
+                                <p class="mt-2 text-gray-400 text-sm pl-11">{{ property.address }}</p>
+                            </div>
+
+                            <div class="flex gap-3">
+                                <button (click)="handleShare()"
+                                    class="p-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all hover:shadow-md group">
+                                    <lucide-angular [img]="Share2"
+                                        class="w-6 h-6 text-gray-500 group-hover:text-[#D4AF37] shadow-sm"></lucide-angular>
+                                </button>
+                                <button (click)="toggleFavorite()" [class.bg-red-50]="isFavorite"
+                                    [class.border-red-100]="isFavorite"
+                                    class="p-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all hover:shadow-md group">
+                                    <lucide-angular [img]="Heart" [class.text-red-500]="isFavorite"
+                                        [class.fill-red-500]="isFavorite"
+                                        class="w-6 h-6 text-gray-500 group-hover:text-red-500"></lucide-angular>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Property Stats -->
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-6 pt-8 border-t border-gray-100">
+                            <div class="flex items-center gap-4 group">
+                                <div
+                                    class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-[#D4AF37] group-hover:bg-yellow-50 transition-colors">
+                                    <lucide-angular [img]="Maximize2" class="w-6 h-6"></lucide-angular>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-400">Area</p>
+                                    <p class="font-bold text-gray-900 text-lg">{{ property.area_sqm }} sqm</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 group">
+                                <div
+                                    class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-[#D4AF37] group-hover:bg-yellow-50 transition-colors">
+                                    <lucide-angular [img]="Bed" class="w-6 h-6"></lucide-angular>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-400">Bedrooms</p>
+                                    <p class="font-bold text-gray-900 text-lg">{{ property.numBedrooms }} Beds</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 group">
+                                <div
+                                    class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-[#D4AF37] group-hover:bg-yellow-50 transition-colors">
+                                    <lucide-angular [img]="Bath" class="w-6 h-6"></lucide-angular>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-400">Bathrooms</p>
+                                    <p class="font-bold text-gray-900 text-lg">{{ property.numBathrooms }} Baths
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </section>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Description -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                            <span class="w-1.5 h-8 bg-[#D4AF37] rounded-full"></span>
+                            Description
+                        </h2>
+                        <p class="text-gray-600 leading-loose text-lg whitespace-pre-line">
+                            {{ property.description || 'No description available for this property.' }}
+                        </p>
+                    </div>
 
-                    <!-- Main Content -->
-                    <div class="lg:col-span-2 space-y-8">
+                    <!-- 360 Tour -->
+                    <div *ngIf="safeTourUrl" class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                            <span class="w-1.5 h-8 bg-[#D4AF37] rounded-full"></span>
+                            360° Virtual Tour
+                        </h2>
+                        <div class="aspect-video rounded-2xl overflow-hidden bg-gray-100 shadow-inner">
+                            <iframe [src]="safeTourUrl" class="w-full h-full border-0" allowfullscreen></iframe>
+                        </div>
+                    </div>
 
-                        <!-- Header Section -->
-                        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                            <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-3 mb-3">
-                                        <span
-                                            class="px-3 py-1 bg-yellow-50 text-[#D4AF37] rounded-lg text-sm font-bold border border-yellow-100">
-                                            {{ getPropertyTypeName(property.propertyType) }}
-                                        </span>
-                                        <span class="text-gray-400 text-sm flex items-center gap-1">
-                                            <lucide-angular [img]="Calendar" class="w-4 h-4"></lucide-angular>
-                                            Published on {{ property.publishedAt | date: 'dd MMMM yyyy' }}
-                                        </span>
-                                    </div>
-                                    <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 leading-tight">
-                                        {{ property.title }}
-                                    </h1>
-                                    <div class="flex items-center gap-2 text-gray-600">
-                                        <div class="bg-yellow-50 p-2 rounded-lg">
-                                            <lucide-angular [img]="MapPin"
-                                                class="w-5 h-5 text-[#D4AF37]"></lucide-angular>
-                                        </div>
-                                        <span class="text-lg font-medium">{{ property.district }}, {{ property.city
-                                            }}</span>
-                                    </div>
-                                    <p class="mt-2 text-gray-400 text-sm pl-11">{{ property.address }}</p>
-                                </div>
-
-                                <div class="flex gap-3">
-                                    <button (click)="handleShare()"
-                                        class="p-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all hover:shadow-md group">
-                                        <lucide-angular [img]="Share2"
-                                            class="w-6 h-6 text-gray-500 group-hover:text-[#D4AF37] shadow-sm"></lucide-angular>
-                                    </button>
-                                    <button (click)="toggleFavorite()" [class.bg-red-50]="isFavorite"
-                                        [class.border-red-100]="isFavorite"
-                                        class="p-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all hover:shadow-md group">
-                                        <lucide-angular [img]="Heart" [class.text-red-500]="isFavorite"
-                                            [class.fill-red-500]="isFavorite"
-                                            class="w-6 h-6 text-gray-500 group-hover:text-red-500"></lucide-angular>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Property Stats -->
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-6 pt-8 border-t border-gray-100">
-                                <div class="flex items-center gap-4 group">
-                                    <div
-                                        class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-[#D4AF37] group-hover:bg-yellow-50 transition-colors">
-                                        <lucide-angular [img]="Maximize2" class="w-6 h-6"></lucide-angular>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-400">Area</p>
-                                        <p class="font-bold text-gray-900 text-lg">{{ property.area_sqm }} sqm</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-4 group">
-                                    <div
-                                        class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-[#D4AF37] group-hover:bg-yellow-50 transition-colors">
-                                        <lucide-angular [img]="Bed" class="w-6 h-6"></lucide-angular>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-400">Bedrooms</p>
-                                        <p class="font-bold text-gray-900 text-lg">{{ property.numBedrooms }} Beds</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-4 group">
-                                    <div
-                                        class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-[#D4AF37] group-hover:bg-yellow-50 transition-colors">
-                                        <lucide-angular [img]="Bath" class="w-6 h-6"></lucide-angular>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-400">Bathrooms</p>
-                                        <p class="font-bold text-gray-900 text-lg">{{ property.numBathrooms }} Baths
-                                        </p>
-                                    </div>
+                    <!-- Location Map -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                            <span class="w-1.5 h-8 bg-[#D4AF37] rounded-full"></span>
+                            Location on Map
+                        </h2>
+                        <div class="aspect-video rounded-2xl overflow-hidden bg-gray-100 shadow-inner relative group">
+                            <iframe *ngIf="safeMapUrl" [src]="safeMapUrl"
+                                class="w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-500"
+                                allowfullscreen loading="lazy"></iframe>
+                            <div *ngIf="!safeMapUrl"
+                                class="w-full h-full flex items-center justify-center text-gray-400">
+                                <div class="text-center">
+                                    <lucide-angular [img]="MapPin"
+                                        class="w-12 h-12 mx-auto mb-2 opacity-20"></lucide-angular>
+                                    <p>Property Location: {{ property.district }}, {{ property.city }}</p>
                                 </div>
                             </div>
                         </div>
+                        <div class="mt-4 flex items-center gap-4 text-sm text-gray-500 bg-gray-50 p-4 rounded-xl">
+                            <lucide-angular [img]="Info" class="w-5 h-5 text-[#D4AF37]"></lucide-angular>
+                            <p>This property is located in a prime area close to all essential services and
+                                amenities.</p>
+                        </div>
+                    </div>
 
-                        <!-- Description -->
-                        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                <span class="w-1.5 h-8 bg-[#D4AF37] rounded-full"></span>
-                                Description
-                            </h2>
-                            <p class="text-gray-600 leading-loose text-lg whitespace-pre-line">
-                                {{ property.description || 'No description available for this property.' }}
+                </div>
+
+                <!-- Sidebar -->
+                <div class="space-y-6">
+
+                    <!-- Booking Card -->
+                    <div
+                        class="bg-white rounded-[2rem] shadow-2xl shadow-yellow-500/5 border border-gray-50 p-8 sticky top-28">
+                        <div class="mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Asking Price
+                            </p>
+                            <p class="text-4xl font-extrabold text-gray-900">
+                                {{ formatPrice(property.price) }}
                             </p>
                         </div>
 
-                        <!-- 360 Tour -->
-                        <div *ngIf="safeTourUrl" class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                <span class="w-1.5 h-8 bg-[#D4AF37] rounded-full"></span>
-                                360° Virtual Tour
-                            </h2>
-                            <div class="aspect-video rounded-2xl overflow-hidden bg-gray-100 shadow-inner">
-                                <iframe [src]="safeTourUrl" class="w-full h-full border-0" allowfullscreen></iframe>
+                        <div class="space-y-4">
+                            <button (click)="handleBooking()"
+                                class="w-full bg-[#D4AF37] hover:bg-[#C5A028] text-white font-bold py-5 px-6 rounded-2xl shadow-xl shadow-yellow-500/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3">
+                                <lucide-angular [img]="Calendar" class="w-6 h-6"></lucide-angular>
+                                <span class="text-lg">Schedule a Viewing</span>
+                            </button>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <a [href]="'tel:+20123456789'"
+                                    class="flex flex-col items-center justify-center gap-2 py-4 px-2 border-2 border-gray-50 hover:border-yellow-100 rounded-2xl text-gray-600 hover:text-[#D4AF37] hover:bg-yellow-50 transition-all">
+                                    <lucide-angular [img]="Phone" class="w-6 h-6"></lucide-angular>
+                                    <span class="text-sm font-bold">Call</span>
+                                </a>
+                                <a [href]="'mailto:info@jiwar.com'"
+                                    class="flex flex-col items-center justify-center gap-2 py-4 px-2 border-2 border-gray-50 hover:border-yellow-100 rounded-2xl text-gray-600 hover:text-[#D4AF37] hover:bg-yellow-50 transition-all">
+                                    <lucide-angular [img]="Mail" class="w-6 h-6"></lucide-angular>
+                                    <span class="text-sm font-bold">Email</span>
+                                </a>
                             </div>
                         </div>
 
-                        <!-- Location Map -->
-                        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                <span class="w-1.5 h-8 bg-[#D4AF37] rounded-full"></span>
-                                Location on Map
-                            </h2>
-                            <div
-                                class="aspect-video rounded-2xl overflow-hidden bg-gray-100 shadow-inner relative group">
-                                <iframe *ngIf="safeMapUrl" [src]="safeMapUrl"
-                                    class="w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-500"
-                                    allowfullscreen loading="lazy"></iframe>
-                                <div *ngIf="!safeMapUrl"
-                                    class="w-full h-full flex items-center justify-center text-gray-400">
-                                    <div class="text-center">
-                                        <lucide-angular [img]="MapPin"
-                                            class="w-12 h-12 mx-auto mb-2 opacity-20"></lucide-angular>
-                                        <p>Property Location: {{ property.district }}, {{ property.city }}</p>
-                                    </div>
+                        <div class="mt-8 pt-8 border-t border-gray-50">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 bg-gradient-to-br from-yellow-100 to-yellow-50 rounded-2xl flex items-center justify-center">
+                                    <lucide-angular [img]="User" class="w-7 h-7 text-[#D4AF37]"></lucide-angular>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 font-bold uppercase mb-0.5">Owner / Agent</p>
+                                    <p class="font-extrabold text-gray-900 text-lg">{{ property.ownerName || 'Jiwar
+                                        Real Estate' }}</p>
                                 </div>
                             </div>
-                            <div class="mt-4 flex items-center gap-4 text-sm text-gray-500 bg-gray-50 p-4 rounded-xl">
-                                <lucide-angular [img]="Info" class="w-5 h-5 text-[#D4AF37]"></lucide-angular>
-                                <p>This property is located in a prime area close to all essential services and
-                                    amenities.</p>
-                            </div>
                         </div>
-
                     </div>
 
-                    <!-- Sidebar -->
-                    <div class="space-y-6">
-
-                        <!-- Booking Card -->
-                        <div
-                            class="bg-white rounded-[2rem] shadow-2xl shadow-yellow-500/5 border border-gray-50 p-8 sticky top-28">
-                            <div class="mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Asking Price
-                                </p>
-                                <p class="text-4xl font-extrabold text-gray-900">
-                                    {{ formatPrice(property.price) }}
-                                </p>
-                            </div>
-
-                            <div class="space-y-4">
-                                <button (click)="handleBooking()"
-                                    class="w-full bg-[#D4AF37] hover:bg-[#C5A028] text-white font-bold py-5 px-6 rounded-2xl shadow-xl shadow-yellow-500/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3">
-                                    <lucide-angular [img]="Calendar" class="w-6 h-6"></lucide-angular>
-                                    <span class="text-lg">Schedule a Viewing</span>
-                                </button>
-
-                                <div class="grid grid-cols-2 gap-3">
-                                    <a [href]="'tel:+20123456789'"
-                                        class="flex flex-col items-center justify-center gap-2 py-4 px-2 border-2 border-gray-50 hover:border-yellow-100 rounded-2xl text-gray-600 hover:text-[#D4AF37] hover:bg-yellow-50 transition-all">
-                                        <lucide-angular [img]="Phone" class="w-6 h-6"></lucide-angular>
-                                        <span class="text-sm font-bold">Call</span>
-                                    </a>
-                                    <a [href]="'mailto:info@jiwar.com'"
-                                        class="flex flex-col items-center justify-center gap-2 py-4 px-2 border-2 border-gray-50 hover:border-yellow-100 rounded-2xl text-gray-600 hover:text-[#D4AF37] hover:bg-yellow-50 transition-all">
-                                        <lucide-angular [img]="Mail" class="w-6 h-6"></lucide-angular>
-                                        <span class="text-sm font-bold">Email</span>
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div class="mt-8 pt-8 border-t border-gray-50">
-                                <div class="flex items-center gap-4">
-                                    <div
-                                        class="w-14 h-14 bg-gradient-to-br from-yellow-100 to-yellow-50 rounded-2xl flex items-center justify-center">
-                                        <lucide-angular [img]="User" class="w-7 h-7 text-[#D4AF37]"></lucide-angular>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs text-gray-400 font-bold uppercase mb-0.5">Owner / Agent</p>
-                                        <p class="font-extrabold text-gray-900 text-lg">{{ property.ownerName || 'Jiwar
-                                            Real Estate' }}</p>
-                                    </div>
-                                </div>
-                            </div>
+                    <!-- Trust Badge -->
+                    <div
+                        class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 text-white text-center shadow-xl">
+                        <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-6 h-6 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
                         </div>
-
-                        <!-- Trust Badge -->
-                        <div
-                            class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 text-white text-center shadow-xl">
-                            <div
-                                class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg class="w-6 h-6 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                        clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                            <h4 class="font-bold mb-2">Verified Property</h4>
-                            <p class="text-xs text-gray-400 leading-relaxed">All data and documents for this property
-                                have been verified by the Jiwar team.</p>
-                        </div>
-
+                        <h4 class="font-bold mb-2">Verified Property</h4>
+                        <p class="text-xs text-gray-400 leading-relaxed">All data and documents for this property
+                            have been verified by the Jiwar team.</p>
                     </div>
+
                 </div>
-
             </div>
 
         </div>
-    </main>
 
-    <app-footer></app-footer>
+</div>
+</main>
+
+<app-footer></app-footer>
 </div>
