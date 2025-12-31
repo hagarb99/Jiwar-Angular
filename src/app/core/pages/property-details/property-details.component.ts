@@ -6,6 +6,7 @@ import { LucideAngularModule, MapPin, Maximize2, Bed, Bath, Heart, Share2, Calen
 import { PropertyService, Property, PropertyType } from '../../services/property.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-property-details',
@@ -71,10 +72,13 @@ export class PropertyDetailsComponent implements OnInit {
         if (data.tour360Url) {
           this.safeTourUrl = this.sanitizer.bypassSecurityTrustResourceUrl(data.tour360Url);
         }
-        if (data.locationLat !== undefined && data.locationLang !== undefined) {
+
+        // Handle map coordinates
+        if (data.locationLat && data.locationLang) {
           const mapUrl = `https://maps.google.com/maps?q=${data.locationLat},${data.locationLang}&z=15&output=embed`;
           this.safeMapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(mapUrl);
         }
+
         this.loading = false;
       },
       error: (error) => {
@@ -136,22 +140,85 @@ export class PropertyDetailsComponent implements OnInit {
     this.router.navigate(['/properties']);
   }
 
+  // getMediaUrls(): string[] {
+  //   if (!this.property) return [];
+  //   let urls: string[] = [];
+
+  //   // Use MediaUrls from DTO if available
+  //   if (this.property.mediaUrls && this.property.mediaUrls.length > 0) {
+  //     urls = this.property.mediaUrls;
+  //   } else {
+  //     // Fallback logic
+  //     if (this.property.thumbnailUrl) {
+  //       urls.push(this.property.thumbnailUrl);
+  //     }
+  //     if (this.property.propertyMedia) {
+  //       this.property.propertyMedia.forEach(m => urls.push(m.mediaURL));
+  //     }
+  //   }
+
+  //   // Fix URLs to be absolute
+  //   return urls.map(url => this.fixUrl(url));
+  // }
+
+  // private fixUrl(url: string): string {
+  //   if (!url) return '';
+  //   if (url.startsWith('http')) return url;
+
+  //   // Remove /api from base URL and constructed absolute path
+  //   const apiBase = environment.apiBaseUrl;
+  //   const cleanBase = apiBase.endsWith('/api') ? apiBase.replace('/api', '') : apiBase;
+  //   const finalBase = cleanBase.endsWith('/') ? cleanBase.slice(0, -1) : cleanBase;
+  //   const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+
+  //   return `${finalBase}/${cleanPath}`;
+  // }
   getMediaUrls(): string[] {
     if (!this.property) return [];
 
-    // Use MediaUrls from DTO if available
+    let urls: string[] = [];
+
+    // الأولوية الأولى: لو الـ backend بعت mediaUrls جاهزة
     if (this.property.mediaUrls && this.property.mediaUrls.length > 0) {
-      return this.property.mediaUrls;
+      urls = this.property.mediaUrls.map(url => this.fixUrl(url));
+    }
+    // الأولوية الثانية: استخدام propertyMedia (مع فلترة المحذوفات وترتيب حسب order)
+    else if (this.property.propertyMedia && this.property.propertyMedia.length > 0) {
+      const validMedia = this.property.propertyMedia
+        .filter(m => !m.isDeleted)                    // تجاهل الصور المحذوفة
+        .sort((a, b) => a.order - b.order);           // ترتيب حسب الأولوية
+
+      if (validMedia.length > 0) {
+        urls = validMedia.map(m => this.fixUrl(m.mediaURL));
+      }
+    }
+    // الأولوية الثالثة: الاعتماد على thumbnailUrl
+    else if (this.property.thumbnailUrl) {
+      urls = [this.fixUrl(this.property.thumbnailUrl)];
     }
 
-    // Fallback logic
-    const urls: string[] = [];
-    if (this.property.thumbnailUrl) {
-      urls.push(this.property.thumbnailUrl);
-    }
-    if (this.property.propertyMedia) {
-      this.property.propertyMedia.forEach(m => urls.push(m.mediaURL));
-    }
+    // لو مفيش صور خالص، هيرجع مصفوفة فاضية (والـ template هيعرض placeholder)
     return urls;
+  }
+  onImageError(event: any) {
+    event.target.src = '/assets/placeholder.jpg'; // أو '/logo2.png' زي صفحة البحث
+  }
+
+
+  private fixUrl(url: string): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+
+    // إزالة /api من base URL لو موجودة
+    const apiBase = environment.apiBaseUrl;
+    const cleanBase = apiBase.endsWith('/api') ? apiBase.replace('/api', '') : apiBase;
+
+    // تنظيف المسار
+    const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+
+    // التأكد من إن الـ base مش منتهي بـ /
+    const finalBase = cleanBase.endsWith('/') ? cleanBase.slice(0, -1) : cleanBase;
+
+    return `${finalBase}/${cleanPath}`;
   }
 }
