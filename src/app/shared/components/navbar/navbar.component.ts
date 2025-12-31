@@ -98,23 +98,25 @@ export class NavbarComponent implements OnInit {
     this.mobileMenuOpen = false;
   }
   ngOnInit(): void {
+    // Subscribe to login status
     this.authService.isLoggedIn$.subscribe(status => {
       this.isLoggedIn = status;
-      if (status) {
-        this.profilePicUrl = this.authService.getProfilePicUrl();
-        this.currentUserName = this.authService.getUserName();
-        this.currentUserEmail = this.authService.getUserEmail();
+    });
+
+    // Subscribe to user data changes
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        this.profilePicUrl = user.profilePicURL || null;
+        this.currentUserName = user.name || null;
+        this.currentUserEmail = user.email || null;
+        this.isLoggedIn = true;
       } else {
         this.profilePicUrl = null;
         this.currentUserName = null;
         this.currentUserEmail = null;
+        this.isLoggedIn = false;
       }
     });
-    if (this.authService.isLoggedIn()) {
-      this.profilePicUrl = this.authService.getProfilePicUrl();
-      this.currentUserName = this.authService.getUserName();
-      this.currentUserEmail = this.authService.getUserEmail();
-    }
   }
 
   logout(): void {
