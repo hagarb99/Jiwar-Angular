@@ -95,4 +95,5 @@ export class PropertyService {
     getPropertyById(id: number): Observable<Property> {
         return this.http.get<Property>(`${this.apiUrl}/${id}`);
     }
+
 }

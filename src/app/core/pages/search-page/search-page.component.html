@@ -189,7 +189,7 @@
         <app-property-card *ngFor="let prop of properties" [id]="prop.id" [propertyID]="prop.propertyID"
           [title]="prop.title" [location]="prop.district" [price]="formatPrice(prop.price)"
           [type]="getPropertyTypeName(prop.propertyType)" [purpose]="'sale'" [image]="getThumbnailUrl(prop)"
-          [size]="'small'"></app-property-card>
+          [size]="'small'" [propertyData]="prop"></app-property-card>
       </div>
 
       <!-- No Results State -->
