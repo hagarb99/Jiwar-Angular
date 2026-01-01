@@ -1,11 +1,12 @@
 import { Routes } from '@angular/router';
 import { ProfilePropertyownerComponent } from './profile-propertyowner/profile-propertyowner.component';
 import { OwnerMyPropertiesComponent } from './owner-my-properties/owner-my-properties.component';
+import { PropertyDashboardComponent } from './property-dashboard/property-dashboard.component';
 
 export const propertyOwnerRoutes: Routes = [
   {
     path: '',
-    redirectTo: 'profile',
+    redirectTo: 'dashboard',
     pathMatch: 'full'
   },
   {
@@ -20,6 +21,10 @@ export const propertyOwnerRoutes: Routes = [
     path: 'my-properties',
     component: OwnerMyPropertiesComponent
   },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./property-dashboard/property-dashboard.component').then(m => m.PropertyDashboardComponent)
+  }
   // {
   //   path: 'properties',
   //   loadComponent: () =>

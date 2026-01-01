@@ -25,39 +25,73 @@ export class OwnerMyPropertiesComponent implements OnInit {
   const fallbackImage = '/logo2.png';
 
   if (!property) {
+    console.log('Property is null/undefined');
     return fallbackImage;
   }
 
-  // Case 1: backend sends thumbnailUrl
-  if (property.thumbnailUrl) {
-    return property.thumbnailUrl.startsWith('/')
-      ? environment.assetsBaseUrl + property.thumbnailUrl
-      : property.thumbnailUrl;
-  }
+  console.log('Property data:', {
+    propertyID: property.propertyID,
+    title: property.title,
+    ThumbnailUrl: property.ThumbnailUrl,
+    thumbnailUrl: property.thumbnailUrl
+  });
 
-  // Case 2: use first property media
-  if (property.propertyMedia?.length) {
-    const media = property.propertyMedia
-      .filter(mediaItem => !mediaItem.isDeleted)
-      .sort((first, second) => first.order - second.order)[0];
-
-    if (media?.mediaURL) {
-      return media.mediaURL.startsWith('/')
-        ? environment.assetsBaseUrl + media.mediaURL
-        : media.mediaURL;
+  // Use ThumbnailUrl from backend (PropertyListBDTO) - similar to other working components
+  if (property.ThumbnailUrl) {
+    console.log('Using ThumbnailUrl:', property.ThumbnailUrl);
+    // If it's already a full URL, use it
+    if (property.ThumbnailUrl.startsWith('http')) {
+      return property.ThumbnailUrl;
     }
+
+    // Build full URL from relative path using API base URL (like other components)
+    const apiBase = environment.apiBaseUrl;
+    const cleanBase = apiBase.endsWith('/api') ? apiBase.replace('/api', '') : apiBase;
+    const cleanPath = property.ThumbnailUrl.startsWith('/') ? property.ThumbnailUrl.substring(1) : property.ThumbnailUrl;
+    const finalBase = cleanBase.endsWith('/') ? cleanBase.slice(0, -1) : cleanBase;
+
+    const result = `${finalBase}/${cleanPath}`;
+    console.log('Final ThumbnailUrl result:', result);
+    return result;
   }
 
+  // Fallback to thumbnailUrl for backward compatibility with other endpoints
+  if (property.thumbnailUrl) {
+    console.log('Using thumbnailUrl:', property.thumbnailUrl);
+    // If it's already a full URL, use it
+    if (property.thumbnailUrl.startsWith('http')) {
+      return property.thumbnailUrl;
+    }
+
+    // Build full URL from relative path using API base URL
+    const apiBase = environment.apiBaseUrl;
+    const cleanBase = apiBase.endsWith('/api') ? apiBase.replace('/api', '') : apiBase;
+    const cleanPath = property.thumbnailUrl.startsWith('/') ? property.thumbnailUrl.substring(1) : property.thumbnailUrl;
+    const finalBase = cleanBase.endsWith('/') ? cleanBase.slice(0, -1) : cleanBase;
+
+    const result = `${finalBase}/${cleanPath}`;
+    console.log('Final thumbnailUrl result:', result);
+    return result;
+  }
+
+  console.log('Using fallback image:', fallbackImage);
   return fallbackImage;
 }
 
- 
-  private loadMyProperties(): void {
+ onImageError(event: any): void {
+  console.log('Image failed to load:', event.target.src);
+  // Set fallback image
+  event.target.src = '/logo2.png';
+}
+
+
+ private loadMyProperties(): void {
     this.isLoading = true;
     this.errorMessage = null;
 
     this.propertyService.getMyProperties().subscribe({
       next: (data) => {
+        console.log('API Response - Properties:', data);
         this.properties = data;
         this.isLoading = false;
       },
@@ -67,6 +101,7 @@ export class OwnerMyPropertiesComponent implements OnInit {
       }
     });
   }
+  
 
 }
 
