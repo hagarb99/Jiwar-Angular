@@ -5,14 +5,9 @@ import { PropertyDashboardComponent } from './property-dashboard/property-dashbo
 
 export const propertyOwnerRoutes: Routes = [
   {
-    path: '',
-    redirectTo: 'dashboard',
-    redirectTo: 'dashboard',
-    pathMatch: 'full'
-  },
-  {
     path: 'dashboard',
-    loadComponent: () => import('./owner-dashboard/owner-dashboard.component').then(m => m.OwnerDashboardComponent)
+    redirectTo: 'property-dashboard',
+    pathMatch: 'full'
   },
   {
     path: 'profile/edit',
@@ -26,10 +21,10 @@ export const propertyOwnerRoutes: Routes = [
     path: 'my-properties',
     component: OwnerMyPropertiesComponent
   },
-  {
+  {  
     path: 'dashboard',
     loadComponent: () => import('./property-dashboard/property-dashboard.component').then(m => m.PropertyDashboardComponent)
-  }
+  },
   {
     path: 'design-requests/create',
     loadComponent: () => import('./create-design-request/create-design-request.component').then(m => m.CreateDesignRequestComponent)
