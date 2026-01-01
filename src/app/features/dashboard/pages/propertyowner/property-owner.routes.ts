@@ -5,8 +5,12 @@ import { OwnerMyPropertiesComponent } from './owner-my-properties/owner-my-prope
 export const propertyOwnerRoutes: Routes = [
   {
     path: '',
-    redirectTo: 'profile',
+    redirectTo: 'dashboard',
     pathMatch: 'full'
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./owner-dashboard/owner-dashboard.component').then(m => m.OwnerDashboardComponent)
   },
   {
     path: 'profile/edit',
