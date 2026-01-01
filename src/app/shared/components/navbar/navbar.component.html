@@ -122,11 +122,18 @@
               <p class="text-sm font-medium text-gray-900">{{ currentUserName || 'User' }}</p>
               <p class="text-xs text-gray-500 truncate">{{ currentUserEmail }}</p>
             </div>
-            <a routerLink="/dashboard" (click)="toggleUserDropdown = false"
+            <!-- <a routerLink="/dashboard/propertyowner/dashboard" (click)="toggleUserDropdown = false"
               class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
               <i class="pi pi-home mr-3"></i>
               Dashboard
-            </a>
+            </a> -->
+            <button
+  (click)="goToDashboard(); toggleUserDropdown = false"
+  class="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
+  <i class="pi pi-home mr-3"></i>
+  Dashboard
+</button>
+
 
 
             <a routerLink="/change-password" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
