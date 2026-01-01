@@ -10,7 +10,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextarea } from 'primeng/inputtextarea';
 import { ChipModule } from 'primeng/chip';
-
+import { environment } from '../../../../../../../environments/environment';
 @Component({
     selector: 'app-edit-profile-propertyowner',
     standalone: true,
@@ -26,6 +26,7 @@ import { ChipModule } from 'primeng/chip';
     templateUrl: './edit-profile.component.html',
 })
 export class EditProfilePropertyownerComponent implements OnInit {
+    protected readonly environment = environment;
     profileForm!: FormGroup;
     loading = false;
     currentProfile: PropertyOwnerProfile | null = null;

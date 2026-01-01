@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { ProfilePropertyownerComponent } from './profile-propertyowner/profile-propertyowner.component';
-import { OwnerMyPropertiesComponent } from './profile-propertyowner/owner-my-properties/owner-my-properties.component';
+import { OwnerMyPropertiesComponent } from './owner-my-properties/owner-my-properties.component';
 
 export const propertyOwnerRoutes: Routes = [
   {

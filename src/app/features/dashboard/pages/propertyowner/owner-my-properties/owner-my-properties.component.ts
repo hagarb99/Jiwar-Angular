@@ -1,7 +1,7 @@
 import { Component , OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Property, PropertyService } from '../../../../../../core/services/property.service';
-import { environment } from '../../../../../../../environments/environment';
+import { Property, PropertyService } from '../../../../../core/services/property.service';
+import { environment } from '../../../../../../environments/environment';
 @Component({
   selector: 'app-owner-my-properties',
    standalone: true,
@@ -21,18 +21,35 @@ export class OwnerMyPropertiesComponent implements OnInit {
     this.loadMyProperties();
   }
  
-  getThumbnailUrl(property: Property): string {
+ getThumbnailUrl(property: Property): string {
   const fallbackImage = '/logo2.png';
+
+  if (!property) {
+    return fallbackImage;
+  }
+
+  // Case 1: backend sends thumbnailUrl
   if (property.thumbnailUrl) {
-    // Always prepend API base if it starts with "/"
     return property.thumbnailUrl.startsWith('/')
-      ? `${environment.apiBaseUrl}${property.thumbnailUrl}`
+      ? environment.assetsBaseUrl + property.thumbnailUrl
       : property.thumbnailUrl;
   }
+
+  // Case 2: use first property media
+  if (property.propertyMedia?.length) {
+    const media = property.propertyMedia
+      .filter(mediaItem => !mediaItem.isDeleted)
+      .sort((first, second) => first.order - second.order)[0];
+
+    if (media?.mediaURL) {
+      return media.mediaURL.startsWith('/')
+        ? environment.assetsBaseUrl + media.mediaURL
+        : media.mediaURL;
+    }
+  }
+
   return fallbackImage;
 }
-
-
 
  
   private loadMyProperties(): void {
