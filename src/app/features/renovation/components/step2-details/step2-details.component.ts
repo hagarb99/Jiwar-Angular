@@ -1,5 +1,5 @@
 
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -15,16 +15,22 @@ import { UpdateSimulationDetailsDto } from '../../models/renovation.models';
     imports: [CommonModule, ReactiveFormsModule, RouterModule, NavbarComponent, FooterComponent],
     templateUrl: './step2-details.component.html'
 })
-export class Step2DetailsComponent {
+export class Step2DetailsComponent implements OnInit {
     private fb = inject(FormBuilder);
     private api = inject(RenovationApiService);
-    private state = inject(RenovationStateService);
+    public state = inject(RenovationStateService);
     private router = inject(Router);
 
     isSubmitting = false;
 
+    ngOnInit() {
+        if (this.state.isExistingProperty()) {
+            this.router.navigate(['/renovation/goals']);
+        }
+    }
+
     detailsForm = this.fb.group({
-        propertyType: [null], // Not in DTO but needed for UI state if we want to persist it locally
+        propertyType: [null],
         size: [null as number | null, [Validators.required, Validators.min(1)]],
         rooms: [null as number | null, [Validators.required]],
         bathrooms: [null as number | null, [Validators.required]],
@@ -59,6 +65,7 @@ export class Step2DetailsComponent {
             }
         });
     }
+
     adjustCount(controlName: string, delta: number) {
         const control = this.detailsForm.get(controlName);
         if (control) {

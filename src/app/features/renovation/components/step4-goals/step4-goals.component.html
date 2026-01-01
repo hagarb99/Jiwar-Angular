@@ -7,20 +7,22 @@
         <div class="w-full max-w-4xl flex items-center justify-center mb-12">
             <div class="flex items-center gap-4">
                 <!-- Details -->
-                <div class="flex items-center gap-2 bg-[#EBE4D3] text-[#BA9F60] px-5 py-2.5 rounded-full cursor-pointer hover:bg-[#E0D8C0] transition-colors"
-                    routerLink="/renovation/details">
-                    <i class="pi pi-check text-xs"></i>
-                    <span class="font-bold text-sm">Details</span>
+                <div class="flex items-center gap-2 bg-[#EBE4D3] text-[#BA9F60] px-5 py-2.5 rounded-full transition-colors"
+                    [ngClass]="{'cursor-pointer hover:bg-[#E0D8C0]': !state.isExistingProperty()}"
+                    [routerLink]="state.isExistingProperty() ? null : '/renovation/details'">
+                    <i class="pi" [class]="state.isExistingProperty() ? 'pi-database' : 'pi-check text-xs'"></i>
+                    <span class="font-bold text-sm">{{ state.isExistingProperty() ? 'System Data' : 'Details' }}</span>
                 </div>
 
                 <!-- Connector -->
                 <div class="w-12 h-[2px] bg-[#DCCCA3]"></div>
 
                 <!-- Media -->
-                <div class="flex items-center gap-2 bg-[#EBE4D3] text-[#BA9F60] px-5 py-2.5 rounded-full cursor-pointer hover:bg-[#E0D8C0] transition-colors"
-                    routerLink="/renovation/media">
-                    <i class="pi pi-check text-xs"></i>
-                    <span class="font-bold text-sm">Media</span>
+                <div class="flex items-center gap-2 bg-[#EBE4D3] text-[#BA9F60] px-5 py-2.5 rounded-full transition-colors"
+                    [ngClass]="{'cursor-pointer hover:bg-[#E0D8C0]': !state.isExistingProperty()}"
+                    [routerLink]="state.isExistingProperty() ? null : '/renovation/media'">
+                    <i class="pi" [class]="state.isExistingProperty() ? 'pi-images' : 'pi-check text-xs'"></i>
+                    <span class="font-bold text-sm">{{ state.isExistingProperty() ? 'System Media' : 'Media' }}</span>
                 </div>
 
                 <!-- Connector -->
@@ -61,10 +63,10 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div *ngFor="let goal of availableGoals" (click)="toggleGoal(goal.value)"
                         class="cursor-pointer flex items-center gap-4 p-4 rounded-xl border transition-all text-left group select-none"
-                        [class.border-slate-100]="!isSelected(goal.value)" [class.bg-white]="!isSelected(goal.value)"
-                        [class.shadow-sm]="!isSelected(goal.value)" [class.border-[#DCCCA3]]="isSelected(goal.value)"
-                        [class.bg-[#FDFBF7]]="isSelected(goal.value)" [class.ring-1]="isSelected(goal.value)"
-                        [class.ring-[#DCCCA3]]="isSelected(goal.value)">
+                        [ngClass]="{
+                            'border-slate-100 bg-white shadow-sm': !isSelected(goal.value),
+                            'border-[#DCCCA3] bg-[#FDFBF7] ring-1 ring-[#DCCCA3]': isSelected(goal.value)
+                        }">
 
                         <div class="w-12 h-12 rounded-full flex items-center justify-center transition-colors shrink-0"
                             [ngClass]="isSelected(goal.value) ? 'bg-[#EBE4D3] text-[#BA9F60]' : 'bg-slate-50 text-slate-400 group-hover:bg-[#F9F6F0] group-hover:text-[#BA9F60]'">
@@ -131,7 +133,7 @@
 
             <!-- Navigation Buttons -->
             <div class="flex justify-between items-center mt-8 pt-4 border-t border-slate-100">
-                <button type="button" routerLink="/renovation/media"
+                <button type="button" (click)="goBack()"
                     class="text-slate-500 font-bold hover:text-slate-800 transition-colors flex items-center gap-2 px-4 py-2">
                     <i class="pi pi-arrow-left text-xs"></i>
                     Back

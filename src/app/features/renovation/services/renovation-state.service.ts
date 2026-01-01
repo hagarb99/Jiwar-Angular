@@ -7,7 +7,8 @@ import { Injectable, signal } from '@angular/core';
 export class RenovationStateService {
     // Using Angular Signals for modern state management
     readonly simulationId = signal<number | null>(null);
-    readonly propertyId = signal<number>(0); // Default or set via route/input
+    readonly propertyId = signal<number>(0);
+    readonly isExistingProperty = signal<boolean>(false);
 
     setSimulationId(id: number) {
         this.simulationId.set(id);
@@ -15,6 +16,10 @@ export class RenovationStateService {
 
     setPropertyId(id: number) {
         this.propertyId.set(id);
+    }
+
+    setIsExistingProperty(value: boolean) {
+        this.isExistingProperty.set(value);
     }
 
     getSimulationIdOrThrow(): number {
@@ -28,5 +33,6 @@ export class RenovationStateService {
     clearState() {
         this.simulationId.set(null);
         this.propertyId.set(0);
+        this.isExistingProperty.set(false);
     }
 }

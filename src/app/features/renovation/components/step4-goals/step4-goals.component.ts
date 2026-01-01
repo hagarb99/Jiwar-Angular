@@ -18,10 +18,18 @@ import { SimulationGoalsDto } from '../../models/renovation.models';
 export class Step4GoalsComponent {
     private fb = inject(FormBuilder);
     private api = inject(RenovationApiService);
-    private state = inject(RenovationStateService);
+    public state = inject(RenovationStateService);
     private router = inject(Router);
 
     isSubmitting = false;
+
+    goBack() {
+        if (this.state.isExistingProperty()) {
+            this.router.navigate(['/renovation/intro']);
+        } else {
+            this.router.navigate(['/renovation/media']);
+        }
+    }
 
     availableGoals = [
         { value: 'Increase Property Value', label: 'Increase Property Value', icon: 'pi pi-chart-line' },
@@ -87,15 +95,28 @@ export class Step4GoalsComponent {
         this.api.setGoals(simulationId, dto).subscribe({
             next: () => {
                 // 2. Complete Simulation
-                this.api.completeSimulation(simulationId).subscribe({
+                //  this.api.completeSimulation(simulationId).subscribe({
+                //  next: () => {
+                //      this.router.navigate(['/renovation/results']);
+                //   },
+                //    error: (err) => {
+                //       console.error('Error completing simulation', err);
+                //       this.isSubmitting = false;
+                //   }
+                //   });
+
+                // 2. AI Analyze
+                this.api.analyzeSimulation(simulationId).subscribe({
                     next: () => {
+                        // backend بيرجع 202 Accepted (async AI)
                         this.router.navigate(['/renovation/results']);
                     },
                     error: (err) => {
-                        console.error('Error completing simulation', err);
+                        console.error('Error analyzing simulation', err);
                         this.isSubmitting = false;
                     }
                 });
+
             },
             error: (err) => {
                 console.error('Error setting goals', err);

@@ -6,20 +6,22 @@
         <div class="w-full max-w-4xl flex items-center justify-center mb-12">
             <div class="flex items-center gap-4">
                 <!-- Details -->
-                <div class="flex items-center gap-2 bg-[#EBE4D3] text-[#BA9F60] px-5 py-2.5 rounded-full cursor-pointer hover:bg-[#E0D8C0] transition-colors"
-                    routerLink="/renovation/details">
-                    <i class="pi pi-check text-xs"></i>
-                    <span class="font-bold text-sm">Details</span>
+                <div class="flex items-center gap-2 bg-[#EBE4D3] text-[#BA9F60] px-5 py-2.5 rounded-full transition-colors"
+                    [ngClass]="{'cursor-pointer hover:bg-[#E0D8C0]': !state.isExistingProperty()}"
+                    [routerLink]="state.isExistingProperty() ? null : '/renovation/details'">
+                    <i class="pi" [class]="state.isExistingProperty() ? 'pi-database' : 'pi-check text-xs'"></i>
+                    <span class="font-bold text-sm">{{ state.isExistingProperty() ? 'System Data' : 'Details' }}</span>
                 </div>
 
                 <!-- Connector -->
                 <div class="w-12 h-[2px] bg-[#DCCCA3]"></div>
 
                 <!-- Media -->
-                <div class="flex items-center gap-2 bg-[#EBE4D3] text-[#BA9F60] px-5 py-2.5 rounded-full cursor-pointer hover:bg-[#E0D8C0] transition-colors"
-                    routerLink="/renovation/media">
-                    <i class="pi pi-check text-xs"></i>
-                    <span class="font-bold text-sm">Media</span>
+                <div class="flex items-center gap-2 bg-[#EBE4D3] text-[#BA9F60] px-5 py-2.5 rounded-full transition-colors"
+                    [ngClass]="{'cursor-pointer hover:bg-[#E0D8C0]': !state.isExistingProperty()}"
+                    [routerLink]="state.isExistingProperty() ? null : '/renovation/media'">
+                    <i class="pi" [class]="state.isExistingProperty() ? 'pi-images' : 'pi-check text-xs'"></i>
+                    <span class="font-bold text-sm">{{ state.isExistingProperty() ? 'System Media' : 'Media' }}</span>
                 </div>
 
                 <!-- Connector -->
