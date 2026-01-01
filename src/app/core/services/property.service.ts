@@ -25,6 +25,7 @@ export interface Property {
     publishedAt?: string;
     propertyType?: PropertyType;
     thumbnailUrl?: string; // Still used by browse endpoint for card display
+    ThumbnailUrl?: string; // Used by /my endpoint (PropertyListBDTO)
     propertyMedia?: PropertyMedia[]; // Still used by some endpoints
 }
 

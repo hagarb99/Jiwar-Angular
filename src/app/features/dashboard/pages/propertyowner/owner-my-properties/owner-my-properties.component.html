@@ -47,10 +47,10 @@
 
         <!-- Image -->
         <img
-          *ngIf="getThumbnailUrl(property)"
           [src]="getThumbnailUrl(property)"
           alt="Property image"
           class="w-full h-48 object-cover"
+          (error)="onImageError($event)"
         />
 
         <!-- Content -->
