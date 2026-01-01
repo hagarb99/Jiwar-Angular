@@ -1,0 +1,80 @@
+<div class="min-h-screen bg-gray-50/50 py-8">
+  <p-toast></p-toast>
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-6">
+      <button (click)="goBack()" 
+              class="mb-4 text-blue-600 hover:text-blue-800 flex items-center gap-2"
+              type="button">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back
+      </button>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Browse Interior Designers</h1>
+      <p class="text-gray-600">Select a designer for your design request</p>
+    </div>
+
+    <!-- Search -->
+    <div class="mb-6">
+      <input 
+        pInputText
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="searchDesigners()"
+        placeholder="Search by name, title, or location..."
+        class="w-full">
+    </div>
+
+    <div *ngIf="loading" class="text-center py-12">
+      <p-progressSpinner></p-progressSpinner>
+      <p class="mt-4 text-gray-500">Loading designers...</p>
+    </div>
+
+    <div *ngIf="!loading && filteredDesigners.length === 0" class="text-center py-12">
+      <p class="text-gray-500">No designers found.</p>
+    </div>
+
+    <div *ngIf="!loading && filteredDesigners.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <p-card *ngFor="let designer of filteredDesigners" class="hover:shadow-lg transition-shadow">
+        <div class="text-center">
+          <img [src]="designer.profilePicURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + designer.name"
+               class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-gray-100"
+               [alt]="designer.name">
+          <h3 class="text-xl font-bold text-gray-900 mb-1">{{ designer.name }}</h3>
+          <p class="text-gray-600 mb-3">{{ designer.title || 'Interior Designer' }}</p>
+          
+          <div *ngIf="designer.location" class="text-sm text-gray-500 mb-4">
+            <svg class="w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {{ designer.location }}
+          </div>
+
+          <div *ngIf="designer.specializations && designer.specializations.length > 0" class="mb-4">
+            <div class="flex flex-wrap gap-1 justify-center">
+              <span *ngFor="let spec of designer.specializations.slice(0, 3)"
+                    class="px-2 py-1 bg-purple-50 text-purple-700 rounded text-xs">
+                {{ spec }}
+              </span>
+            </div>
+          </div>
+
+          <div *ngIf="designer.hourlyRate" class="text-sm text-gray-600 mb-4">
+            <span class="font-semibold">{{ designer.hourlyRate | number }}</span> SAR/hour
+          </div>
+
+          <p-button 
+            label="Select Designer" 
+            icon="pi pi-check"
+            (onClick)="selectDesigner(designer)"
+            class="w-full">
+          </p-button>
+        </div>
+      </p-card>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,170 @@
+<div class="min-h-screen bg-gray-50/50 py-8">
+  <p-toast></p-toast>
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <button routerLink="/dashboard/propertyowner/my-requests" 
+                class="mb-4 text-blue-600 hover:text-blue-800 flex items-center gap-2"
+                type="button">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to My Requests
+        </button>
+        <h1 class="text-3xl font-bold text-gray-900">Design Request Details</h1>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-12">
+      <p-progressSpinner></p-progressSpinner>
+      <p class="mt-4 text-gray-500">Loading request details...</p>
+    </div>
+
+    <div *ngIf="!loading && designRequest" class="space-y-6">
+      <!-- Request Details Card -->
+      <p-card>
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Request #{{ designRequest.id }}</h2>
+            <p-tag [value]="designRequest.status" [severity]="getStatusSeverity(designRequest.status)"></p-tag>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div>
+            <label class="text-sm font-semibold text-gray-500 uppercase">Preferred Style</label>
+            <p class="text-lg text-gray-900 mt-1">{{ designRequest.preferredStyle }}</p>
+          </div>
+          <div *ngIf="designRequest.budget">
+            <label class="text-sm font-semibold text-gray-500 uppercase">Budget</label>
+            <p class="text-lg text-gray-900 mt-1">{{ designRequest.budget | number }} SAR</p>
+          </div>
+          <div *ngIf="designRequest.notes" class="md:col-span-2">
+            <label class="text-sm font-semibold text-gray-500 uppercase">Notes</label>
+            <p class="text-gray-700 mt-1 whitespace-pre-line">{{ designRequest.notes }}</p>
+          </div>
+          <div>
+            <label class="text-sm font-semibold text-gray-500 uppercase">For Sale Enhancement</label>
+            <p class="text-gray-900 mt-1">{{ designRequest.isForSaleEnhancement ? 'Yes' : 'No' }}</p>
+          </div>
+          <div>
+            <label class="text-sm font-semibold text-gray-500 uppercase">Created At</label>
+            <p class="text-gray-900 mt-1">{{ designRequest.createdAt | date:'medium' }}</p>
+          </div>
+        </div>
+
+        <!-- Reference Images -->
+        <div *ngIf="designRequest.referenceImages && designRequest.referenceImages.length > 0" class="mt-6">
+          <label class="text-sm font-semibold text-gray-500 uppercase mb-2 block">Reference Images</label>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <img *ngFor="let imgUrl of designRequest.referenceImages"
+                 [src]="imgUrl"
+                 [alt]="'Reference image'"
+                 class="w-full h-32 object-cover rounded-lg border border-gray-200">
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Proposals Section -->
+      <p-card>
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Incoming Proposals</h3>
+        
+        <div *ngIf="proposals.length === 0" class="text-center py-8">
+          <p class="text-gray-500">No proposals received yet.</p>
+          <p class="text-sm text-gray-400 mt-2">Interior designers will be able to send proposals for this request.</p>
+        </div>
+
+        <div *ngIf="proposals.length > 0" class="space-y-4">
+          <div *ngFor="let proposal of proposals"
+               class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h4 class="font-semibold text-gray-900">Proposal #{{ proposal.id }}</h4>
+                  <p-tag [value]="proposal.status || 'Pending'" 
+                         [severity]="getStatusSeverity(proposal.status || 'Pending')"></p-tag>
+                </div>
+                <p class="text-gray-600 mb-2">{{ proposal.proposalDescription }}</p>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span class="text-gray-500">Estimated Cost:</span>
+                    <span class="font-semibold text-gray-900 ml-2">{{ proposal.estimatedCost | number }} SAR</span>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Estimated Days:</span>
+                    <span class="font-semibold text-gray-900 ml-2">{{ proposal.estimatedDays }} days</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <p-button 
+                  label="View Details" 
+                  icon="pi pi-eye"
+                  (onClick)="viewProposalDetails(proposal)"
+                  [outlined]="true"
+                  size="small">
+                </p-button>
+                <p-button 
+                  *ngIf="proposal.status !== 'Accepted'"
+                  label="Accept" 
+                  icon="pi pi-check"
+                  (onClick)="chooseProposal(proposal.id!)"
+                  severity="success"
+                  size="small">
+                </p-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Proposal Details Dialog -->
+  <p-dialog 
+    [(visible)]="showProposalDialog"
+    [modal]="true"
+    [style]="{width: '600px'}"
+    header="Proposal Details"
+    (onHide)="closeDialog()">
+    <div *ngIf="selectedProposal" class="space-y-4">
+      <div>
+        <label class="text-sm font-semibold text-gray-500 uppercase">Description</label>
+        <p class="text-gray-700 mt-1">{{ selectedProposal.proposalDescription }}</p>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm font-semibold text-gray-500 uppercase">Estimated Cost</label>
+          <p class="text-lg font-bold text-gray-900 mt-1">{{ selectedProposal.estimatedCost | number }} SAR</p>
+        </div>
+        <div>
+          <label class="text-sm font-semibold text-gray-500 uppercase">Estimated Days</label>
+          <p class="text-lg font-bold text-gray-900 mt-1">{{ selectedProposal.estimatedDays }} days</p>
+        </div>
+      </div>
+      <div *ngIf="selectedProposal.sampleDesignURL">
+        <label class="text-sm font-semibold text-gray-500 uppercase mb-2 block">Sample Design</label>
+        <img [src]="selectedProposal.sampleDesignURL" 
+             alt="Sample design"
+             class="w-full rounded-lg border border-gray-200">
+      </div>
+      <div class="flex justify-end gap-2 pt-4">
+        <p-button 
+          label="Close" 
+          (onClick)="closeDialog()"
+          [outlined]="true">
+        </p-button>
+        <p-button 
+          *ngIf="selectedProposal.status !== 'Accepted'"
+          label="Accept Proposal" 
+          icon="pi pi-check"
+          (onClick)="chooseProposal(selectedProposal.id!)"
+          severity="success">
+        </p-button>
+      </div>
+    </div>
+  </p-dialog>
+</div>
+
