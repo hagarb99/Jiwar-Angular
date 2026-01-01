@@ -7,7 +7,12 @@ export const propertyOwnerRoutes: Routes = [
   {
     path: '',
     redirectTo: 'dashboard',
+    redirectTo: 'dashboard',
     pathMatch: 'full'
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./owner-dashboard/owner-dashboard.component').then(m => m.OwnerDashboardComponent)
   },
   {
     path: 'profile/edit',
@@ -25,6 +30,27 @@ export const propertyOwnerRoutes: Routes = [
     path: 'dashboard',
     loadComponent: () => import('./property-dashboard/property-dashboard.component').then(m => m.PropertyDashboardComponent)
   }
+  {
+    path: 'design-requests/create',
+    loadComponent: () => import('./create-design-request/create-design-request.component').then(m => m.CreateDesignRequestComponent)
+  },
+  {
+    path: 'design-requests/:id',
+    loadComponent: () => import('./design-request-details/design-request-details.component').then(m => m.DesignRequestDetailsComponent)
+  },
+  {
+    path: 'browse-designers',
+    loadComponent: () => import('./browse-designers/browse-designers.component').then(m => m.BrowseDesignersComponent)
+  },
+  {
+    path: 'my-requests',
+    loadComponent: () => import('./my-requests/my-requests.component').then(m => m.MyRequestsComponent)
+  },
+  {
+    path: 'design-requests',
+    redirectTo: 'my-requests',
+    pathMatch: 'full'
+  },
   // {
   //   path: 'properties',
   //   loadComponent: () =>
