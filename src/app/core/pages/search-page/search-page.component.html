@@ -186,9 +186,10 @@
 
       <!-- Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" *ngIf="properties.length > 0 && !isLoading">
-        <app-property-card *ngFor="let prop of properties" [title]="prop.title" [location]="prop.district"
-          [price]="formatPrice(prop.price)" [type]="getPropertyTypeName(prop.propertyType)" [purpose]="'sale'"
-          [image]="getThumbnailUrl(prop)" [size]="'small'"></app-property-card>
+        <app-property-card *ngFor="let prop of properties" [id]="prop.id" [propertyID]="prop.propertyID"
+          [title]="prop.title" [location]="prop.district" [price]="formatPrice(prop.price)"
+          [type]="getPropertyTypeName(prop.propertyType)" [purpose]="'sale'" [image]="getThumbnailUrl(prop)"
+          [size]="'small'" [propertyData]="prop"></app-property-card>
       </div>
 
       <!-- No Results State -->
