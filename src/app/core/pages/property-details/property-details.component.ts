@@ -31,7 +31,9 @@ import {
   Wallet,
   PieChart,
   TrendingUp,
-  LineChart
+  LineChart,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-angular';
 import { PropertyService, Property, PropertyType } from '../../services/property.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
@@ -90,6 +92,8 @@ export class PropertyDetailsComponent implements OnInit {
   PieChart = PieChart;
   TrendingUp = TrendingUp;
   LineChart = LineChart;
+  ChevronLeft = ChevronLeft;
+  ChevronRight = ChevronRight;
 
   property: Property | null = null;
   recommendedProperties: Property[] = [];
@@ -99,6 +103,7 @@ export class PropertyDetailsComponent implements OnInit {
 
   selectedImageIndex = 0;
   isFavorite = false;
+  isImageModalOpen = false;
 
   safeTourUrl: SafeResourceUrl | null = null;
   safeMapUrl: SafeResourceUrl | null = null;
@@ -265,6 +270,31 @@ export class PropertyDetailsComponent implements OnInit {
 
   selectImage(index: number): void {
     this.selectedImageIndex = index;
+  }
+
+  openImageModal(index: number): void {
+    this.selectedImageIndex = index;
+    this.isImageModalOpen = true;
+  }
+
+  closeImageModal(): void {
+    this.isImageModalOpen = false;
+  }
+
+  previousImage(): void {
+    if (this.selectedImageIndex > 0) {
+      this.selectedImageIndex--;
+    } else {
+      this.selectedImageIndex = this.getMediaUrls().length - 1;
+    }
+  }
+
+  nextImage(): void {
+    if (this.selectedImageIndex < this.getMediaUrls().length - 1) {
+      this.selectedImageIndex++;
+    } else {
+      this.selectedImageIndex = 0;
+    }
   }
 
   toggleFavorite(): void {

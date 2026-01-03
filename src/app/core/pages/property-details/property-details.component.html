@@ -115,32 +115,57 @@
                             1 / {{ getMediaUrls().length }}
                         </span>
                     </div>
+
+                    <!-- Thumbnail Grid -->
+                    <div class="mt-6 grid grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
+                        <div *ngFor="let img of getMediaUrls(); let i = index" (click)="openImageModal(i)"
+                            [class.ring-2]="selectedImageIndex === i" [class.ring-[#D4AF37]]="selectedImageIndex === i"
+                            class="aspect-square rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-all relative">
+                            <img [src]="img || '/assets/placeholder.jpg'" [alt]="'صورة ' + (i + 1)"
+                                class="w-full h-full object-cover" (error)="onImageError($event)" />
+                            <div *ngIf="selectedImageIndex === i" class="absolute inset-0 bg-[#D4AF37]/10"></div>
+                        </div>
+                    </div>
                 </section>
-            </div> -->
 
-            <img [src]="getMediaUrls()[selectedImageIndex] || '/assets/placeholder.jpg'" [alt]="property.title"
-                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                (error)="onImageError($event)" />
+            <!-- Image Viewer Modal -->
+            <div *ngIf="isImageModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                <div class="relative max-w-4xl max-h-[90vh] w-full">
+                    <!-- Close Button -->
+                    <button (click)="closeImageModal()"
+                        class="absolute -top-12 right-0 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10">
+                        <lucide-angular [img]="X" class="w-5 h-5"></lucide-angular>
+                    </button>
 
-            <!-- Thumbnail Grid -->
-            <!-- <div class="grid grid-cols-4 lg:grid-cols-2 gap-4 h-full lg:max-h-[550px] overflow-y-auto pr-1">
-                            <div *ngFor="let img of getMediaUrls(); let i = index" (click)="selectImage(i)"
-                                [class.ring-2]="selectedImageIndex === i"
-                                [class.ring-[#D4AF37]]="selectedImageIndex === i"
-                                class="h-24 md:h-32 lg:h-[130px] rounded-2xl overflow-hidden cursor-pointer hover:opacity-90 transition-all relative">
-                                <img [src]="img" [alt]="'Image ' + (i + 1)" class="w-full h-full object-cover" />
-                                <div *ngIf="selectedImageIndex === i" class="absolute inset-0 bg-[#D4AF37]/10"></div>
-                            </div> -->
+                    <!-- Main Image -->
+                    <div class="relative overflow-hidden rounded-2xl">
+                        <img [src]="getMediaUrls()[selectedImageIndex] || '/assets/placeholder.jpg'" [alt]="property.title"
+                            class="w-full h-auto max-h-[70vh] object-contain"
+                            (error)="onImageError($event)" />
 
-            <div *ngFor="let img of getMediaUrls(); let i = index" (click)="selectImage(i)"
-                [class.ring-2]="selectedImageIndex === i" [class.ring-[#D4AF37]]="selectedImageIndex === i"
-                class="h-24 md:h-32 lg:h-[130px] rounded-2xl overflow-hidden cursor-pointer hover:opacity-90 transition-all relative">
-                <img [src]="img || '/assets/placeholder.jpg'" [alt]="'صورة ' + (i + 1)"
-                    class="w-full h-full object-cover" (error)="onImageError($event)" />
-                <div *ngIf="selectedImageIndex === i" class="absolute inset-0 bg-[#D4AF37]/10"></div>
+                        <!-- Navigation Arrows -->
+                        <button *ngIf="getMediaUrls().length > 1" (click)="previousImage()"
+                            class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors">
+                            <lucide-angular [img]="ChevronLeft" class="w-6 h-6"></lucide-angular>
+                        </button>
+                        <button *ngIf="getMediaUrls().length > 1" (click)="nextImage()"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors">
+                            <lucide-angular [img]="ChevronRight" class="w-6 h-6"></lucide-angular>
+                        </button>
+                    </div>
+
+                    <!-- Thumbnail Strip -->
+                    <div *ngIf="getMediaUrls().length > 1" class="mt-4 flex gap-2 overflow-x-auto pb-2">
+                        <div *ngFor="let img of getMediaUrls(); let i = index" (click)="selectImage(i)"
+                            [class.ring-2]="selectedImageIndex === i" [class.ring-[#D4AF37]]="selectedImageIndex === i"
+                            class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-all relative">
+                            <img [src]="img || '/assets/placeholder.jpg'" [alt]="'صورة ' + (i + 1)"
+                                class="w-full h-full object-cover" (error)="onImageError($event)" />
+                            <div *ngIf="selectedImageIndex === i" class="absolute inset-0 bg-[#D4AF37]/20"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        </section>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
 
@@ -723,4 +748,3 @@
 </div>
 
 <app-footer></app-footer>
-</div>

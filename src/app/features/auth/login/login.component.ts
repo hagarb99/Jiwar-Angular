@@ -157,7 +157,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   private navigateByRole(role: string) {
     switch (role) {
       case 'PropertyOwner':
-        this.router.navigate(['/dashboard/propertyowner']);
+        this.router.navigate(['/dashboard/propertyowner/dashboard']);
         break;
       case 'Admin':
         this.router.navigate(['/dashboard']);
