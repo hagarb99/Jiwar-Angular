@@ -35,6 +35,23 @@ export interface LoginResponse {
   isProfileCompleted: boolean;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordResponse {
+  message: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService extends ApiBaseService {
   constructor(http: HttpClient,
@@ -172,6 +189,20 @@ export class AuthService extends ApiBaseService {
   login(data: LoginRequest) {
     return this.httpClient.post<LoginResponse>(
       `${this.apiBaseUrl}/account/login`,
+      data
+    );
+  }
+
+  changePassword(data: ChangePasswordRequest) {
+    return this.httpClient.post<ChangePasswordResponse>(
+      `${this.apiBaseUrl}/account/change-password`,
+      data
+    );
+  }
+
+  forgotPassword(data: ForgotPasswordRequest) {
+    return this.httpClient.post<ForgotPasswordResponse>(
+      `${this.apiBaseUrl}/account/forgot-password`,
       data
     );
   }
