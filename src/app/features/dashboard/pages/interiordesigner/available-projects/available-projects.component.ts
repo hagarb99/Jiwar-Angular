@@ -14,6 +14,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { AuthService } from '../../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-available-projects',
@@ -45,7 +46,8 @@ export class AvailableProjectsComponent implements OnInit {
     private designRequestService: DesignRequestService,
     private proposalService: DesignerProposalService,
     private fb: FormBuilder,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private authService: AuthService
   ) {
     this.proposalForm = this.fb.group({
       proposalDescription: ['', [Validators.required, Validators.minLength(20)]],
@@ -101,11 +103,17 @@ export class AvailableProjectsComponent implements OnInit {
     }
 
     const proposalData: CreateDesignerProposal = {
-      designRequestID: this.selectedRequest.id,
+      requestID: this.selectedRequest.id,
       proposalDescription: this.proposalForm.value.proposalDescription,
       estimatedCost: this.proposalForm.value.estimatedCost,
       estimatedDays: this.proposalForm.value.estimatedDays,
-      sampleDesignURL: this.proposalForm.value.sampleDesignURL
+      sampleDesignURL: this.proposalForm.value.sampleDesignURL,
+      
+      // Populate backend required fields
+      status: 'Pending',
+      designerName: this.authService.getUserName() || 'Unknown Designer',
+      designerEmail: this.authService.getUserEmail() || undefined,
+      offerDetails: this.proposalForm.value.proposalDescription // Reuse description for details
     };
 
     this.loading = true;
@@ -122,10 +130,27 @@ export class AvailableProjectsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error sending proposal:', err);
+        
+        let errorMessage = 'Failed to send proposal';
+        if (err.error) {
+            if (typeof err.error === 'string') {
+                errorMessage = err.error;
+            } else if (err.error.errors) {
+                // Handle validation errors dictionary
+                const validationErrors = Object.values(err.error.errors).flat().join('\n');
+                errorMessage = validationErrors || 'Validation failed';
+            } else if (err.error.message) {
+                errorMessage = err.error.message;
+            } else if (err.error.title) {
+                errorMessage = err.error.title;
+            }
+        }
+
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: err.error?.message || 'Failed to send proposal'
+          detail: errorMessage,
+          life: 5000
         });
         this.loading = false;
       }

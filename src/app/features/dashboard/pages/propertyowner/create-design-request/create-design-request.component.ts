@@ -246,8 +246,20 @@ export class CreateDesignRequestComponent implements OnInit {
     this.saving = true;
     const formValue = this.requestForm.value;
 
+    const propertyId = this.selectedProperty!.propertyID || this.selectedProperty!.id;
+    
+    if (!propertyId) {
+       this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Selected property does not have a valid ID.'
+      });
+      this.saving = false;
+      return;
+    }
+
     const requestData: any = {
-      propertyID: this.selectedProperty!.propertyID || this.selectedProperty!.id!,
+      propertyID: propertyId,
       preferredStyle: formValue.preferredStyle,
       budget: formValue.budget || undefined,
       notes: formValue.notes || undefined,
@@ -275,10 +287,23 @@ export class CreateDesignRequestComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error creating design request:', err);
+        
+        let errorMessage = 'Failed to create design request. Please try again.';
+        if (err.error) {
+            if (typeof err.error === 'string') {
+                errorMessage = err.error;
+            } else if (err.error.message) {
+                errorMessage = err.error.message;
+            } else if (err.error.title) {
+                errorMessage = err.error.title; // For standard RFC 7807 problem details
+            }
+        }
+
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: err.error?.message || 'Failed to create design request. Please try again.'
+          detail: errorMessage,
+          life: 5000 
         });
         this.saving = false;
       }

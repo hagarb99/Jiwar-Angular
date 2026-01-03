@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DesignService } from '../../../../../core/services/design.service';
 import { DesignerProposalService } from '../../../../../core/services/designer-proposal.service';
@@ -60,7 +60,8 @@ export class UploadDesignComponent implements OnInit {
     private proposalService: DesignerProposalService,
     private designRequestService: DesignRequestService,
     private fb: FormBuilder,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private route: ActivatedRoute
   ) {
     this.designForm = this.fb.group({
       proposalID: [null, [Validators.required]],
@@ -80,14 +81,22 @@ export class UploadDesignComponent implements OnInit {
     this.proposalService.getMyProposals().subscribe({
       next: (proposals) => {
         this.acceptedProposals = proposals.filter(p => p.status === 'Accepted');
-        if (this.acceptedProposals.length > 0) {
-          // Auto-select first proposal if available
-          const firstProposal = this.acceptedProposals[0];
-          this.designForm.patchValue({
-            proposalID: firstProposal.id,
-            propertyID: firstProposal.designRequestID // Assuming this maps to propertyID
-          });
-        }
+        
+        // check for query params
+        this.route.queryParams.subscribe(params => {
+             const preSelectedId = params['proposalId'];
+             if (preSelectedId) {
+                 const found = this.acceptedProposals.find(p => p.id == preSelectedId);
+                 if (found) {
+                     this.designForm.patchValue({ proposalID: found.id });
+                     this.onProposalChange(); // Trigger property fetch
+                 }
+             } else if (this.acceptedProposals.length > 0) {
+                 // Fallback optional: select first if none selected
+                 // this.designForm.patchValue({ proposalID: this.acceptedProposals[0].id });
+                 // this.onProposalChange();
+             }
+        });
       },
       error: (err) => {
         console.error('Error loading proposals:', err);
