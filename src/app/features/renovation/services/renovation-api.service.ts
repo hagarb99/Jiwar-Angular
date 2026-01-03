@@ -2,23 +2,31 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+// import { environment } from '../../../../environments/environment';
+
 import {
     StartSimulationDto,
     UpdateSimulationDetailsDto,
     UploadSimulationMediaDto,
     SimulationGoalsDto,
-    SimulationResultDto
+    SimulationResultDto,
+    Property
 } from '../models/renovation.models';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
 })
 export class RenovationApiService {
     private http = inject(HttpClient);
-    private readonly baseUrl = '/api/renovation-simulations';
+    private readonly baseUrl = `${environment.apiBaseUrl}/renovation-simulations`;
 
     startSimulation(dto: StartSimulationDto): Observable<{ simulationId: number }> {
         return this.http.post<{ simulationId: number }>(`${this.baseUrl}/start`, dto);
+    }
+
+    getUserProperties(): Observable<Property[]> {
+        return this.http.get<Property[]>(`${environment.apiBaseUrl}/property/owner`);
     }
 
     updateDetails(id: number, dto: UpdateSimulationDetailsDto): Observable<void> {
@@ -35,6 +43,12 @@ export class RenovationApiService {
 
     completeSimulation(id: number): Observable<void> {
         return this.http.post<void>(`${this.baseUrl}/${id}/complete`, {});
+    }
+    analyzeSimulation(id: number) {
+        return this.http.post(
+            `${this.baseUrl}/${id}/analyze`,
+            {}
+        );
     }
 
     generateRecommendations(id: number): Observable<void> {

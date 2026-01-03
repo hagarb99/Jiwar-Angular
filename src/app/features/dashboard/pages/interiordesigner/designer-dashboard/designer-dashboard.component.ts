@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DesignerProposalService } from '../../../../../core/services/designer-proposal.service';
+import { DesignService } from '../../../../../core/services/design.service';
+import { ProfileService } from '../profile-interiordesigner/profile.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,90 +22,99 @@ export class DesignerDashboardComponent implements OnInit {
   ];
 
   financials = [
-    { label: 'Current Balance', value: '$14,850', main: true },
-    { label: 'Pending', value: '$3,200', main: false },
-    { label: 'Withdrawn', value: '$28,500', main: false },
+    { label: 'Current Balance', value: '$0', main: true },
+    { label: 'Pending', value: '$0', main: false },
+    { label: 'Withdrawn', value: '$0', main: false },
   ];
 
-  specializations: string[] = [
-    'Modern',
-    'Minimal',
-    'Luxury',
-    'Scandinavian',
-    'Modern Design',
-    'Luxury Interiors',
-    'Sustainable Design'
-  ];
-
-  certifications: string[] = [
-    'LEED Certified',
-    'Best Interior Designer 2024',
-    'AI Design Specialist',
-    'NCIDQ Certified',
-    'LEED AP'
-  ];
-
+  profile: any = null;
   proposals: any[] = [];
   activeProjects: any[] = [];
+  loading = true;
 
-  constructor(private proposalService: DesignerProposalService) { }
+  constructor(
+    private proposalService: DesignerProposalService,
+    private designService: DesignService,
+    private profileService: ProfileService,
+    private authService: AuthService
+  ) { }
 
   ngOnInit() {
-    this.loadProposals();
+    this.loadDashboardData();
   }
 
-  loadProposals() {
+  loadDashboardData() {
+    this.loading = true;
+
+    // Load profile
+    this.profileService.getProfile().subscribe({
+      next: (profile) => {
+        this.profile = profile;
+      },
+      error: (err) => {
+        console.error('Error loading profile:', err);
+      }
+    });
+
+    // Load proposals
     this.proposalService.getMyProposals().subscribe({
       next: (data) => {
-
         this.proposals = data.map(p => ({
           id: p.id,
-          title: p.title || `Project #${p.designRequestID}`,
-          client: p.client || 'Unknown Client',
-          price: `$${p.estimatedCost}`,
+          title: `Request #${p.designRequestID}`,
+          client: p.designerName || 'Unknown Client',
+          price: `${p.estimatedCost} SAR`,
           status: p.status
         }));
 
+        // Update stats
         this.overviewStats[0].value = data.length.toString();
+
+        // Count accepted proposals (active projects)
+        const acceptedCount = data.filter(p => p.status === 'Accepted').length;
+        this.overviewStats[1].value = acceptedCount.toString();
+
+        // Count completed (you might need to check designs for this)
+        const completedCount = data.filter(p => p.status === 'Completed').length;
+        this.overviewStats[2].value = completedCount.toString();
+
 
         // Dummy active projects (until backend provides designs)
         this.activeProjects = [
           { title: 'Luxury Penthouse', client: 'Omar Khalil', progress: 72, date: 'Dec 25, 2024' },
           { title: 'Beach House Design', client: 'Layla Ibrahim', progress: 40, date: 'Jan 10, 2025' }
         ];
+
+        this.loading = false;
       },
-      error: (err) => console.error('Failed to load proposals', err)
+      error: (err) => {
+        console.error('Failed to load proposals', err);
+        this.loading = false;
+      }
+    });
+
+    // Load designs (for active projects)
+    this.designService.getMyDesigns().subscribe({
+      next: (designs) => {
+        this.activeProjects = designs.map(d => ({
+          title: `Design #${d.id}`,
+          client: 'Client',
+          progress: 100, // Completed design
+          date: new Date(d.creationDate).toLocaleDateString()
+        }));
+      },
+      error: (err) => {
+        console.error('Failed to load designs', err);
+      }
     });
   }
 
-  addSpecialization(input: HTMLInputElement) {
-    if (input.value.trim()) {
-      this.specializations.push(input.value.trim());
-      input.value = '';
+  getCurrentUser() {
+    try {
+      const userJson = localStorage.getItem('currentUser');
+      return userJson ? JSON.parse(userJson) : {};
+    } catch {
+      return {};
     }
-  }
-
-  removeSpecialization(index: number) {
-    this.specializations.splice(index, 1);
-  }
-
-  addCertification(input: HTMLInputElement) {
-    if (input.value.trim()) {
-      this.certifications.push(input.value.trim());
-      input.value = '';
-    }
-  }
-
-  removeCertification(index: number) {
-    this.certifications.splice(index, 1);
-  }
-
-  saveProfile() {
-    console.log('Saving profile...', {
-      specializations: this.specializations,
-      certifications: this.certifications
-    });
-    // In a real app, you'd call a service here
-    alert('Profile saved successfully!');
   }
 }

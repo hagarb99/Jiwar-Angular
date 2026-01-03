@@ -16,8 +16,8 @@ import { SimulationResultDto, SimulationRecommendationDto } from '../../models/r
 })
 export class Step5ResultsComponent implements OnInit {
     private api = inject(RenovationApiService);
-    private state = inject(RenovationStateService);
-    // private router = inject(Router); // Not used in TS, used in HTML routerLink
+    public state = inject(RenovationStateService);
+    // private router = inject(Router); 
 
     isLoading = true;
     result: SimulationResultDto | null = null;

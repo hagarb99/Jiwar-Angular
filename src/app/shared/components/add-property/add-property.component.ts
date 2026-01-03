@@ -18,6 +18,7 @@ import { CardModule } from 'primeng/card';
 import { FileUploadModule } from 'primeng/fileupload';
 import { PropertyService } from '../../../core/services/PropertyService';
 
+
 interface PropertyCreateDTO {
   title: string;
   description: string;

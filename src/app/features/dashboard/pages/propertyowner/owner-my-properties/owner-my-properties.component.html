@@ -1,0 +1,104 @@
+<main class="min-h-screen pt-24 pb-12 bg-gray-50/50">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+  <div class="container mx-auto px-4 md:px-6">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+          My Properties
+        </h1>
+        <p class="text-gray-500">
+          Manage and review all properties you have added.
+        </p>
+      </div>
+      <button (click)="navigateToAddProperty()"
+              class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors">
+        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        Add Property
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="isLoading"
+         class="text-center py-24 bg-white rounded-2xl border border-gray-100">
+      <div class="animate-pulse text-gray-400 text-lg">
+        Loading your properties...
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="errorMessage && !isLoading"
+         class="text-center py-24 bg-red-50 rounded-2xl border border-red-100">
+      <p class="text-red-600 font-medium">
+        {{ errorMessage }}
+      </p>
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="!isLoading && !errorMessage && properties.length === 0"
+         class="text-center py-24 bg-white rounded-2xl border border-dashed border-gray-200">
+      <h3 class="text-lg font-bold text-gray-900 mb-2">
+        No properties yet
+      </h3>
+      <p class="text-gray-500">
+        You haven’t added any properties.
+      </p>
+    </div>
+
+    <!-- Properties Grid -->
+    <div *ngIf="!isLoading && !errorMessage && properties.length > 0"
+         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+      <div *ngFor="let property of properties"
+           class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+        <!-- Image -->
+        <img
+          [src]="getThumbnailUrl(property)"
+          alt="Property image"
+          class="w-full h-48 object-cover"
+          (error)="onImageError($event)"
+        />
+
+        <!-- Content -->
+        <div class="p-5">
+          <h3 class="text-lg font-bold text-gray-900 mb-1">
+            {{ property.title }}
+          </h3>
+
+          <p class="text-sm text-gray-500 mb-3">
+            {{ property.address }} - {{ property.city }}
+          </p>
+
+          <div class="flex items-center justify-between">
+            <span class="text-[#D4AF37] font-bold text-lg">
+              {{ property.price }} EGP
+            </span>
+
+            <!-- Actions -->
+            <div class="flex gap-2">
+              <button
+                class="px-3 py-1 text-sm rounded-lg border border-gray-200 hover:bg-gray-100"
+                (click)="onEditProperty(property)"
+                >
+                Edit
+              </button>
+              <button
+                class="px-3 py-1 text-sm rounded-lg border border-red-200 text-red-600 hover:bg-red-50"
+                (click)="onDeleteProperty(property)"
+                >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>

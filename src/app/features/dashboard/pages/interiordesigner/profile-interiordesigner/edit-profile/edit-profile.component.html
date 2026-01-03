@@ -1,0 +1,311 @@
+<div class="min-h-screen bg-gray-50/50 pb-12">
+  <p-toast></p-toast>
+
+  <div *ngIf="loading" class="flex items-center justify-center h-screen text-gray-400">
+    <div class="animate-pulse">Loading profile...</div>
+  </div>
+
+  <div *ngIf="!loading && profile" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+    <!-- Header -->
+    <div class="mb-6 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button routerLink="/dashboard/interiordesigner/profile" 
+          class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Edit Profile</h1>
+          <p class="text-sm text-gray-500">Update your professional information</p>
+        </div>
+      </div>
+      <button 
+        (click)="onSubmit()" 
+        [disabled]="editForm.invalid || saving"
+        class="bg-amber-300 text-amber-900 px-6 py-2 rounded-xl font-bold text-sm hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+        </svg>
+        <span *ngIf="!saving">Save Changes</span>
+        <span *ngIf="saving">Saving...</span>
+      </button>
+    </div>
+
+    <form [formGroup]="editForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- Profile Photo -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-6 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Profile Photo
+        </h3>
+        <div class="flex items-center gap-6">
+          <div class="w-24 h-24 rounded-full bg-slate-900 text-white flex items-center justify-center text-3xl font-medium shadow-md overflow-hidden">
+            <img *ngIf="profilePicPreview" [src]="profilePicPreview" alt="Profile" class="w-full h-full object-cover">
+            <span *ngIf="!profilePicPreview">{{ (editForm.get('name')?.value || 'U').charAt(0).toUpperCase() }}</span>
+          </div>
+          <div>
+            <p-fileUpload 
+              mode="basic" 
+              accept="image/*" 
+              [maxFileSize]="5000000"
+              (onSelect)="onFileSelect($event)"
+              chooseLabel="Upload New Photo"
+              styleClass="p-button-outlined">
+            </p-fileUpload>
+            <p class="text-xs text-gray-400 mt-2">Recommended: 400x400px, JPG or PNG. Max 5MB.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Basic Information -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-6 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          Basic Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Full Name *</label>
+            <input 
+              pInputText 
+              type="text" 
+              formControlName="name"
+              class="w-full"
+              [class.ng-invalid]="editForm.get('name')?.invalid && editForm.get('name')?.touched">
+            <small *ngIf="editForm.get('name')?.invalid && editForm.get('name')?.touched" class="text-red-500">
+              Name is required
+            </small>
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Professional Title *</label>
+            <input 
+              pInputText 
+              type="text" 
+              formControlName="title"
+              placeholder="e.g. Senior Interior Designer"
+              class="w-full"
+              [class.ng-invalid]="editForm.get('title')?.invalid && editForm.get('title')?.touched">
+            <small *ngIf="editForm.get('title')?.invalid && editForm.get('title')?.touched" class="text-red-500">
+              Title is required
+            </small>
+          </div>
+          <div class="col-span-1 md:col-span-2 space-y-2">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Bio *</label>
+            <textarea 
+              pInputTextarea 
+              formControlName="bio" 
+              rows="4"
+              placeholder="Tell us about yourself..."
+              class="w-full"
+              [class.ng-invalid]="editForm.get('bio')?.invalid && editForm.get('bio')?.touched">
+            </textarea>
+            <div class="flex justify-between">
+              <small class="text-gray-500">Minimum 20 characters</small>
+              <small *ngIf="editForm.get('bio')?.invalid && editForm.get('bio')?.touched" class="text-red-500">
+                Bio is required and must be at least 20 characters
+              </small>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Years of Experience</label>
+            <p-inputNumber 
+              formControlName="yearsOfExperience" 
+              [min]="0"
+              placeholder="0"
+              class="w-full">
+            </p-inputNumber>
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Location *</label>
+            <input 
+              pInputText 
+              type="text" 
+              formControlName="location"
+              class="w-full"
+              [class.ng-invalid]="editForm.get('location')?.invalid && editForm.get('location')?.touched">
+            <small *ngIf="editForm.get('location')?.invalid && editForm.get('location')?.touched" class="text-red-500">
+              Location is required
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Information -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-6 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          Contact Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Email Address *</label>
+            <input 
+              pInputText 
+              type="email" 
+              formControlName="email"
+              class="w-full"
+              [class.ng-invalid]="editForm.get('email')?.invalid && editForm.get('email')?.touched">
+            <small *ngIf="editForm.get('email')?.invalid && editForm.get('email')?.touched" class="text-red-500">
+              Valid email is required
+            </small>
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Phone Number *</label>
+            <input 
+              pInputText 
+              type="tel" 
+              formControlName="phoneNumber"
+              class="w-full"
+              [class.ng-invalid]="editForm.get('phoneNumber')?.invalid && editForm.get('phoneNumber')?.touched">
+            <small *ngIf="editForm.get('phoneNumber')?.invalid && editForm.get('phoneNumber')?.touched" class="text-red-500">
+              Phone number is required
+            </small>
+          </div>
+          <div class="col-span-1 md:col-span-2 space-y-2">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Website</label>
+            <input 
+              pInputText 
+              type="url" 
+              formControlName="website"
+              placeholder="www.yourwebsite.com"
+              class="w-full">
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing & Availability -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-6 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Pricing & Availability
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Hourly Rate (USD)</label>
+            <p-inputNumber 
+              formControlName="hourlyRate" 
+              mode="currency" 
+              currency="USD" 
+              [min]="0"
+              placeholder="0"
+              class="w-full">
+            </p-inputNumber>
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Minimum Project Budget (USD)</label>
+            <p-inputNumber 
+              formControlName="projectMinimum" 
+              mode="currency" 
+              currency="USD" 
+              [min]="0"
+              placeholder="0"
+              class="w-full">
+            </p-inputNumber>
+          </div>
+        </div>
+      </div>
+
+      <!-- Specializations -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-6 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          Specializations
+        </h3>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span *ngFor="let spec of specializations; let i = index"
+            class="px-4 py-2 bg-slate-800 text-white rounded-full text-sm font-medium flex items-center">
+            {{ spec }}
+            <button (click)="removeSpecialization(i)" class="ml-2 hover:text-red-300">×</button>
+          </span>
+        </div>
+        <div class="flex gap-2">
+          <input 
+            pInputText 
+            type="text" 
+            [(ngModel)]="newSpecialization"
+            [ngModelOptions]="{standalone: true}"
+            placeholder="Add a specialization..."
+            (keyup.enter)="addSpecialization()"
+            class="flex-1">
+          <p-button 
+            label="Add" 
+            icon="pi pi-plus"
+            (onClick)="addSpecialization()"
+            [outlined]="true">
+          </p-button>
+        </div>
+      </div>
+
+      <!-- Certifications -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-6 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+          </svg>
+          Certifications & Awards
+        </h3>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span *ngFor="let cert of certifications; let i = index"
+            class="px-4 py-2 bg-green-50 text-green-700 rounded-full text-sm font-medium flex items-center border border-green-100">
+            <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
+            </svg>
+            {{ cert }}
+            <button (click)="removeCertification(i)" class="ml-2 hover:text-green-900">×</button>
+          </span>
+        </div>
+        <div class="flex gap-2">
+          <input 
+            pInputText 
+            type="text" 
+            [(ngModel)]="newCertification"
+            [ngModelOptions]="{standalone: true}"
+            placeholder="Add a certification..."
+            (keyup.enter)="addCertification()"
+            class="flex-1">
+          <p-button 
+            label="Add" 
+            icon="pi pi-plus"
+            (onClick)="addCertification()"
+            [outlined]="true">
+          </p-button>
+        </div>
+      </div>
+
+      <!-- Save Button (Bottom) -->
+      <div class="flex justify-end gap-4 pt-4">
+        <p-button 
+          label="Cancel" 
+          [outlined]="true"
+          routerLink="/dashboard/interiordesigner/profile">
+        </p-button>
+        <p-button 
+          label="Save All Changes" 
+          icon="pi pi-save"
+          type="submit"
+          [loading]="saving"
+          [disabled]="editForm.invalid || saving">
+        </p-button>
+      </div>
+    </form>
+  </div>
+</div>

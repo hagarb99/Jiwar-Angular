@@ -13,7 +13,6 @@ import {
 } from 'lucide-angular';
 import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../../core/services/auth.service';
-
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -28,7 +27,7 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class NavbarComponent implements OnInit {
   toggleUserDropdown = false;
-
+  currentUserRole: string | null = null;
   profilePicUrl: string | null = null;
   currentUserName: string | null = null;
   currentUserEmail: string | null = null;
@@ -100,28 +99,54 @@ export class NavbarComponent implements OnInit {
     this.mobileMenuOpen = false;
   }
   ngOnInit(): void {
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUserRole = user?.role ?? null;
+    });
+    
+    // Subscribe to login status
     this.authService.isLoggedIn$.subscribe(status => {
       this.isLoggedIn = status;
-      if (status) {
-        this.profilePicUrl = this.authService.getProfilePicUrl();
-        this.currentUserName = this.authService.getUserName();
-        this.currentUserEmail = this.authService.getUserEmail();
+    });
+
+    // Subscribe to user data changes
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        this.profilePicUrl = user.profilePicURL || null;
+        this.currentUserName = user.name || null;
+        this.currentUserEmail = user.email || null;
+        this.isLoggedIn = true;
       } else {
         this.profilePicUrl = null;
         this.currentUserName = null;
         this.currentUserEmail = null;
+        this.isLoggedIn = false;
       }
     });
-    if (this.authService.isLoggedIn()) {
-      this.profilePicUrl = this.authService.getProfilePicUrl();
-      this.currentUserName = this.authService.getUserName();
-      this.currentUserEmail = this.authService.getUserEmail();
-    }
   }
 
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+
+  goToDashboard(): void {
+    if (!this.currentUserRole) {
+      return;
+    }
+  
+    if (this.currentUserRole === 'PropertyOwner') {
+      this.router.navigate(['/dashboard/propertyowner/dashboard']);
+    }
+  
+    if (this.currentUserRole === 'InteriorDesigner') {
+      this.router.navigate(['/dashboard/interiordesigner/dashboard']);
+    }
+  
+    if (this.currentUserRole === 'Admin') {
+      this.router.navigate(['/dashboard/admin']);
+    }
+  }
+  
+
 
 }

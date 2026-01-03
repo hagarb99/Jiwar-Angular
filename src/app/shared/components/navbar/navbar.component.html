@@ -98,8 +98,13 @@
         <div *ngIf="isLoggedIn" class="relative">
           <button class="flex items-center gap-3 rounded-full focus:outline-none hover:opacity-90 transition-opacity"
             (click)="toggleUserDropdown = !toggleUserDropdown">
-            <img [src]="profilePicUrl || 'avatar.jpg'" alt="Profile"
-              class="w-10 h-10 rounded-full object-cover border-2 border-primary shadow-md" />
+            <div *ngIf="profilePicUrl" class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary shadow-md">
+              <img [src]="profilePicUrl" alt="Profile" class="w-full h-full object-cover" />
+            </div>
+            <div *ngIf="!profilePicUrl" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center border-2 border-primary shadow-md font-semibold">
+              {{ (currentUserName || 'U').charAt(0).toUpperCase() }}
+            </div>
+            <span class="text-primary font-medium hidden md:block">{{ currentUserName || 'User' }}</span>
             <lucide-angular [img]="ChevronDown" class="w-4 h-4 text-primary transition-transform"
               [class.rotate-180]="toggleUserDropdown">
             </lucide-angular>
@@ -117,11 +122,18 @@
               <p class="text-sm font-medium text-gray-900">{{ currentUserName || 'User' }}</p>
               <p class="text-xs text-gray-500 truncate">{{ currentUserEmail }}</p>
             </div>
-            <a routerLink="/dashboard" (click)="toggleUserDropdown = false"
+            <!-- <a routerLink="/dashboard/propertyowner/dashboard" (click)="toggleUserDropdown = false"
               class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
               <i class="pi pi-home mr-3"></i>
               Dashboard
-            </a>
+            </a> -->
+            <button
+  (click)="goToDashboard(); toggleUserDropdown = false"
+  class="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
+  <i class="pi pi-home mr-3"></i>
+  Dashboard
+</button>
+
 
 
             <a routerLink="/change-password" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">

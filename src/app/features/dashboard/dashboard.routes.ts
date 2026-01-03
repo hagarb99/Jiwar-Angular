@@ -1,16 +1,15 @@
 import { Routes } from '@angular/router';
 import { DashboardLayoutComponent } from './dashboard-layout/dashboard-layout.component';
 import { roleGuard } from '../../core/guards/role.guard';
+import { authGuard } from '../../core/guards/auth.guard';
 
 export const DASHBOARD_ROUTES: Routes = [
   {
     path: '',
     component: DashboardLayoutComponent,
     children: [
-
-
-      {
-        path: 'designer',
+      { 
+        path: 'interiordesigner',
         canActivate: [roleGuard(['InteriorDesigner'])],
         loadChildren: () =>
           import('./pages/interiordesigner/interior-designer.routes')
@@ -24,6 +23,15 @@ export const DASHBOARD_ROUTES: Routes = [
         loadChildren: () =>
           import('./pages/propertyowner/property-owner.routes')
             .then(m => m.propertyOwnerRoutes)
+      },
+
+      // ===== ADMIN =====
+      {
+        path: 'admin',
+        canActivate: [roleGuard(['Admin'])],
+        loadChildren: () =>
+          import('./pages/Admin/admin.routes')
+            .then(m => m.ADMIN_ROUTES)
       }
     ]
   }

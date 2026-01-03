@@ -72,6 +72,48 @@ export class AuthService extends ApiBaseService {
     localStorage.setItem('currentUser', JSON.stringify(userData));
   }
 
+  /**
+   * Updates current user data with profile information from API response
+   * @param profileData Updated profile data from API
+   */
+  updateUserFromProfile(profileData: {
+    name?: string;
+    email?: string;
+    profilePicURL?: string;
+    phoneNumber?: string;
+    title?: string;
+    location?: string;
+    bio?: string;
+  }) {
+    const currentUser = this.currentUserSubject.value;
+    if (!currentUser) return;
+
+    // Merge profile data with existing user data
+    const updatedUser = {
+      ...currentUser,
+      name: profileData.name ?? currentUser.name,
+      email: profileData.email ?? currentUser.email,
+      profilePicURL: profileData.profilePicURL ?? currentUser.profilePicURL
+    };
+
+    this.setUserData(updatedUser);
+  }
+
+  /**
+   * Uploads a profile picture file to the server
+   * @param file The image file to upload
+   * @returns Observable with the uploaded image URL
+   */
+  uploadProfilePicture(file: File): Observable<{ profilePicURL: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.httpClient.post<{ profilePicURL: string }>(
+      `${this.apiBaseUrl}/account/upload-profile-picture`,
+      formData
+    );
+  }
+
   setAuthData(response: LoginResponse): void {
     this.setToken(response.token);
 
