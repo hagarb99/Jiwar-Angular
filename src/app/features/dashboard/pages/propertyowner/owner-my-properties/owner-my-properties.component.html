@@ -1,14 +1,25 @@
 <main class="min-h-screen pt-24 pb-12 bg-gray-50/50">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
   <div class="container mx-auto px-4 md:px-6">
 
     <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-        My Properties
-      </h1>
-      <p class="text-gray-500">
-        Manage and review all properties you have added.
-      </p>
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+          My Properties
+        </h1>
+        <p class="text-gray-500">
+          Manage and review all properties you have added.
+        </p>
+      </div>
+      <button (click)="navigateToAddProperty()"
+              class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors">
+        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        Add Property
+      </button>
     </div>
 
     <!-- Loading -->
@@ -71,11 +82,15 @@
             <!-- Actions -->
             <div class="flex gap-2">
               <button
-                class="px-3 py-1 text-sm rounded-lg border border-gray-200 hover:bg-gray-100">
+                class="px-3 py-1 text-sm rounded-lg border border-gray-200 hover:bg-gray-100"
+                (click)="onEditProperty(property)"
+                >
                 Edit
               </button>
               <button
-                class="px-3 py-1 text-sm rounded-lg border border-red-200 text-red-600 hover:bg-red-50">
+                class="px-3 py-1 text-sm rounded-lg border border-red-200 text-red-600 hover:bg-red-50"
+                (click)="onDeleteProperty(property)"
+                >
                 Delete
               </button>
             </div>

@@ -8,7 +8,7 @@ export const propertyOwnerRoutes: Routes = [
     path: 'dashboard',
     redirectTo: 'property-dashboard',
     pathMatch: 'full'
-  },
+  }, 
   {
     path: 'profile/edit',
     loadComponent: () => import('./profile-propertyowner/edit-profile/edit-profile.component').then(m => m.EditProfilePropertyownerComponent)
@@ -20,6 +20,10 @@ export const propertyOwnerRoutes: Routes = [
   {
     path: 'my-properties',
     component: OwnerMyPropertiesComponent
+  },
+  {
+    path: 'edit-property/:id',
+    loadComponent: () => import('./edit-property/edit-property.component').then(m => m.EditPropertyComponent)
   },
   {  
     path: 'dashboard',

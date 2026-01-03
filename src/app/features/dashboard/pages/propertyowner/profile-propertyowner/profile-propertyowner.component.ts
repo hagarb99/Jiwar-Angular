@@ -23,6 +23,13 @@ export class ProfilePropertyownerComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.loadProfile();
+  }
+
+  /**
+   * Loads the profile data from the backend
+   */
+  private loadProfile(): void {
     this.loading = true;
     this.profileService.getProfile().subscribe({
       next: (data) => {
