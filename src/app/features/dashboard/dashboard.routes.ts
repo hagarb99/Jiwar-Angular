@@ -8,9 +8,7 @@ export const DASHBOARD_ROUTES: Routes = [
     path: '',
     component: DashboardLayoutComponent,
     children: [
-
-
-      {
+      { 
         path: 'interiordesigner',
         canActivate: [roleGuard(['InteriorDesigner'])],
         loadChildren: () =>

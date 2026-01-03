@@ -123,6 +123,41 @@ getMyProperties(): Observable<Property[]> {
   return this.http.get<Property[]>(`${this.apiUrl}/my`);
 }
 
+// property.service.ts
 
+updateProperty(id: number, dto: any, images?: File[]): Observable<any> {
+    // Always use FormData for consistency with addProperty
+    const formData = new FormData();
+
+    // Add text fields
+    formData.append('title', dto.title);
+    formData.append('description', dto.description || '');
+    formData.append('price', dto.price.toString());
+    formData.append('address', dto.address);
+    formData.append('city', dto.city);
+    if (dto.district) formData.append('district', dto.district);
+    if (dto.area_sqm !== null && dto.area_sqm !== undefined) {
+        formData.append('area_sqm', dto.area_sqm.toString());
+    }
+    if (dto.numBedrooms !== null && dto.numBedrooms !== undefined) {
+        formData.append('numBedrooms', dto.numBedrooms.toString());
+    }
+    if (dto.numBathrooms !== null && dto.numBathrooms !== undefined) {
+        formData.append('numBathrooms', dto.numBathrooms.toString());
+    }
+    if (dto.tour360Url) formData.append('tour360Url', dto.tour360Url);
+
+    // Add images if provided
+    if (images && images.length > 0) {
+        images.forEach(file => formData.append('Images', file));
+    }
+
+    return this.http.put(`${this.apiUrl}/update/${id}`, formData);
+}
+  
+  deleteProperty(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+  
 
 }

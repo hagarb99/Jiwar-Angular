@@ -1,24 +1,45 @@
-import { Component , OnInit} from '@angular/core';
+import { Component , OnInit, OnDestroy} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { Property, PropertyService } from '../../../../../core/services/property.service';
 import { environment } from '../../../../../../environments/environment';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 @Component({
   selector: 'app-owner-my-properties',
    standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ToastModule],
   templateUrl: './owner-my-properties.component.html',
-  styleUrls: ['./owner-my-properties.component.css']
+  styleUrls: ['./owner-my-properties.component.css'],
+  providers: [MessageService]
 })
-export class OwnerMyPropertiesComponent implements OnInit {
+export class OwnerMyPropertiesComponent implements OnInit, OnDestroy {
     properties: Property[] = [];
   isLoading = false;
   errorMessage: string | null = null;
-  
-  constructor(private propertyService: PropertyService) {}
-  
-  
+
+  constructor(
+    private propertyService: PropertyService,
+    private router: Router,
+    private messageService: MessageService
+  ) {}
+
   ngOnInit(): void {
     this.loadMyProperties();
+
+    // Refresh data when navigating back to this component
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        if (event.url.includes('/my-properties')) {
+          this.loadMyProperties();
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup is handled automatically by Angular
   }
  
  getThumbnailUrl(property: Property): string {
@@ -85,7 +106,7 @@ export class OwnerMyPropertiesComponent implements OnInit {
 }
 
 
- private loadMyProperties(): void {
+  loadMyProperties(): void {
     this.isLoading = true;
     this.errorMessage = null;
 
@@ -102,7 +123,41 @@ export class OwnerMyPropertiesComponent implements OnInit {
     });
   }
   
+  // owner-my-properties.component.ts
 
+  onEditProperty(property: Property) {
+    // Navigate to edit property component with property ID
+    this.router.navigate(['/dashboard/propertyowner/edit-property', property.propertyID]);
+  }
+
+  onDeleteProperty(property: Property) {
+  if (!confirm(`Are you sure you want to delete "${property.title}"?\n\nThis action cannot be undone.`)) return;
+
+  this.propertyService.deleteProperty(property.propertyID).subscribe({
+    next: (response) => {
+      console.log('Delete response:', response);
+      // Remove the property from the local array
+      this.properties = this.properties.filter(p => p.propertyID !== property.propertyID);
+
+      // Show success message
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Property Deleted',
+        detail: `"${property.title}" has been deleted successfully.`
+      });
+    },
+    error: (error) => {
+      console.error('Delete error:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Delete Failed',
+        detail: `Failed to delete "${property.title}". Please try again.`
+      });
+    }
+  });
+  }
+
+  navigateToAddProperty(): void {
+    this.router.navigate(['/add-property']);
+  }
 }
-
-

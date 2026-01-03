@@ -1,0 +1,260 @@
+<div class="min-h-screen bg-gray-50/50 p-6 md:p-10">
+  <p-toast></p-toast>
+
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Edit Property</h1>
+        <p class="mt-2 text-gray-500">Update your property information and images.</p>
+      </div>
+      <div class="flex gap-3">
+        <button
+          (click)="cancel()"
+          class="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition-colors bg-white cursor-pointer">
+          Cancel
+        </button>
+        <button
+          (click)="save()"
+          [disabled]="loading || propertyForm.invalid"
+          class="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+          type="button">
+          <span *ngIf="loading" class="animate-spin">⟳</span>
+          <span>{{ loading ? 'Saving...' : 'Save Changes' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading && !currentProperty" class="flex items-center justify-center h-64">
+      <div class="animate-pulse text-gray-500">Loading property details...</div>
+    </div>
+
+    <!-- Form -->
+    <form *ngIf="!loading || currentProperty" [formGroup]="propertyForm" class="grid gap-8">
+
+      <!-- Property Images -->
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+        <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+          <span class="w-1 h-6 bg-green-500 rounded-full"></span>
+          Property Images
+        </h2>
+
+        <!-- Existing Images -->
+        <div *ngIf="existingImages.length > 0" class="mb-6">
+          <h3 class="text-sm font-medium text-gray-700 mb-3">Current Images</h3>
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div *ngFor="let image of existingImages; let i = index" class="relative group">
+              <img
+                [src]="image"
+                [alt]="'Property image ' + (i + 1)"
+                class="w-full h-24 object-cover rounded-lg border border-gray-200"
+                (error)="onImageError($event)">
+              <button
+                type="button"
+                (click)="removeExistingImage(i)"
+                class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- New Images Upload -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-3">Add New Images</label>
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer"
+               (click)="imageInput.click()">
+            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+              <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <p class="mt-2 text-sm text-gray-600">Click to upload images</p>
+            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB each</p>
+          </div>
+          <input
+            #imageInput
+            type="file"
+            accept="image/*"
+            multiple
+            class="hidden"
+            (change)="onFileSelected($event)">
+        </div>
+
+        <!-- New Images Preview -->
+        <div *ngIf="previewUrls.length > 0" class="mt-6">
+          <h3 class="text-sm font-medium text-gray-700 mb-3">New Images to Upload</h3>
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div *ngFor="let preview of previewUrls; let i = index" class="relative group">
+              <img
+                [src]="preview"
+                [alt]="'New image ' + (i + 1)"
+                class="w-full h-24 object-cover rounded-lg border border-gray-200">
+              <button
+                type="button"
+                (click)="removeNewImage(i)"
+                class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Basic Information -->
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+        <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+          <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+          Basic Information
+        </h2>
+
+        <div class="grid gap-6">
+          <!-- Title -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+            <input
+              pInputText
+              formControlName="title"
+              class="w-full"
+              placeholder="e.g. Modern 3BR Apartment in Dubai Marina"
+              [class.ng-invalid]="isFieldInvalid('title')">
+            <small *ngIf="isFieldInvalid('title')" class="text-red-500">
+              {{ getFieldErrorMessage('title') }}
+            </small>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <textarea
+              pInputTextarea
+              formControlName="description"
+              rows="4"
+              class="w-full"
+              placeholder="Describe your property...">
+            </textarea>
+          </div>
+
+          <!-- Price and Area -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Price (AED) *</label>
+              <p-inputNumber
+                formControlName="price"
+                mode="currency"
+                currency="AED"
+                locale="en-US"
+                class="w-full"
+                [class.ng-invalid]="isFieldInvalid('price')">
+              </p-inputNumber>
+              <small *ngIf="isFieldInvalid('price')" class="text-red-500">
+                {{ getFieldErrorMessage('price') }}
+              </small>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Area (sqm)</label>
+              <p-inputNumber
+                formControlName="area_sqm"
+                suffix=" sqm"
+                class="w-full"
+                [min]="0">
+              </p-inputNumber>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location Information -->
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+        <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+          <span class="w-1 h-6 bg-purple-500 rounded-full"></span>
+          Location Information
+        </h2>
+
+        <div class="grid gap-6">
+          <!-- Address and City -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+              <input
+                pInputText
+                formControlName="address"
+                class="w-full"
+                placeholder="e.g. Dubai Marina, Building 123"
+                [class.ng-invalid]="isFieldInvalid('address')">
+              <small *ngIf="isFieldInvalid('address')" class="text-red-500">
+                {{ getFieldErrorMessage('address') }}
+              </small>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">City *</label>
+              <input
+                pInputText
+                formControlName="city"
+                class="w-full"
+                placeholder="e.g. Dubai"
+                [class.ng-invalid]="isFieldInvalid('city')">
+              <small *ngIf="isFieldInvalid('city')" class="text-red-500">
+                {{ getFieldErrorMessage('city') }}
+              </small>
+            </div>
+          </div>
+
+          <!-- District -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">District/Area</label>
+            <input
+              pInputText
+              formControlName="district"
+              class="w-full"
+              placeholder="e.g. Jumeirah Beach Residence">
+          </div>
+        </div>
+      </div>
+
+      <!-- Property Details -->
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+        <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+          <span class="w-1 h-6 bg-green-500 rounded-full"></span>
+          Property Details
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Bedrooms -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
+            <p-inputNumber
+              formControlName="numBedrooms"
+              class="w-full"
+              [min]="0"
+              placeholder="e.g. 3">
+            </p-inputNumber>
+          </div>
+
+          <!-- Bathrooms -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Bathrooms</label>
+            <p-inputNumber
+              formControlName="numBathrooms"
+              class="w-full"
+              [min]="0"
+              placeholder="e.g. 2">
+            </p-inputNumber>
+          </div>
+
+          <!-- Tour 360 URL -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">360° Tour URL</label>
+            <input
+              pInputText
+              formControlName="tour360Url"
+              class="w-full"
+              placeholder="https://example.com/tour">
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>
