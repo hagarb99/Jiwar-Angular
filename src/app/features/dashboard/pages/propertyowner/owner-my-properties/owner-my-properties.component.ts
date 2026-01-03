@@ -4,15 +4,16 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Property, PropertyService } from '../../../../../core/services/property.service';
 import { environment } from '../../../../../../environments/environment';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 @Component({
   selector: 'app-owner-my-properties',
    standalone: true,
-  imports: [CommonModule, ToastModule],
+  imports: [CommonModule, ToastModule, ConfirmDialogModule],
   templateUrl: './owner-my-properties.component.html',
   styleUrls: ['./owner-my-properties.component.css'],
-  providers: [MessageService]
+  providers: [MessageService, ConfirmationService]
 })
 export class OwnerMyPropertiesComponent implements OnInit, OnDestroy {
     properties: Property[] = [];
@@ -22,7 +23,8 @@ export class OwnerMyPropertiesComponent implements OnInit, OnDestroy {
   constructor(
     private propertyService: PropertyService,
     private router: Router,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -131,30 +133,43 @@ export class OwnerMyPropertiesComponent implements OnInit, OnDestroy {
   }
 
   onDeleteProperty(property: Property) {
-  if (!confirm(`Are you sure you want to delete "${property.title}"?\n\nThis action cannot be undone.`)) return;
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete "${property.title}"?`,
+      header: 'Delete Property',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger p-button-text',
+      rejectButtonStyleClass: 'p-button-text p-button-text',
+      acceptIcon: 'none',
+      rejectIcon: 'none',
+      accept: () => {
+        this.performDelete(property);
+      }
+    });
+  }
 
-  this.propertyService.deleteProperty(property.propertyID).subscribe({
-    next: (response) => {
-      console.log('Delete response:', response);
-      // Remove the property from the local array
-      this.properties = this.properties.filter(p => p.propertyID !== property.propertyID);
+  private performDelete(property: Property) {
+    this.propertyService.deleteProperty(property.propertyID).subscribe({
+      next: (response) => {
+        console.log('Delete response:', response);
+        // Remove the property from the local array
+        this.properties = this.properties.filter(p => p.propertyID !== property.propertyID);
 
-      // Show success message
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Property Deleted',
-        detail: `"${property.title}" has been deleted successfully.`
-      });
-    },
-    error: (error) => {
-      console.error('Delete error:', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Delete Failed',
-        detail: `Failed to delete "${property.title}". Please try again.`
-      });
-    }
-  });
+        // Show success message
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Property Deleted',
+          detail: `"${property.title}" has been deleted successfully.`
+        });
+      },
+      error: (error) => {
+        console.error('Delete error:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Delete Failed',
+          detail: `Failed to delete "${property.title}". Please try again.`
+        });
+      }
+    });
   }
 
   navigateToAddProperty(): void {
