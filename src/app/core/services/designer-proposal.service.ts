@@ -43,5 +43,12 @@ export class DesignerProposalService extends ApiBaseService {
         );
     }
 
+    rejectProposal(proposalId: number): Observable<any> {
+        return this.httpClient.post<any>(
+            `${this.apiBaseUrl}/DesignerProposal/reject/${proposalId}`,
+            {}
+        );
+    }
+
 
 }

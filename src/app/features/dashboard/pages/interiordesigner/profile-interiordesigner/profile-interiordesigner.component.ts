@@ -52,6 +52,18 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
     }
   }
 
+  mapStatus(val: any): string {
+      if (val === undefined || val === null) return 'Pending';
+      if (typeof val === 'string') return val;
+      switch (val) {
+          case 0: return 'Pending';
+          case 1: return 'Accepted';
+          case 2: return 'Rejected';
+          case 3: return 'Completed';
+          default: return 'Pending';
+      }
+  }
+
   fetchProfile(): void {
     this.loading = true;
     
@@ -59,27 +71,30 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
     forkJoin({
       profile: this.profileService.getProfile(),
       proposals: this.proposalService.getMyProposals().pipe(
-        // Handle errors gracefully - return empty array if proposals fail
         catchError(() => of([]))
       ),
       designs: this.designService.getMyDesigns().pipe(
-        // Handle errors gracefully - return empty array if designs fail
         catchError(() => of([]))
       )
     }).subscribe({
       next: ({ profile, proposals, designs }) => {
         console.log('Profile data received from backend:', profile);
-        console.log('Specializations:', profile?.specializations);
-        console.log('Certifications:', profile?.certifications);
-        console.log('Bio:', profile?.bio);
         
+        // Normalize proposal data (PascalCase -> camelCase) using mapStatus
+        const normalizedProposals = (proposals || []).map((p: any) => ({
+             ...p,
+             id: p.id || p.Id,
+             status: this.mapStatus(p.status || p.Status || p.proposalStatus?.toString()),
+             designRequestID: p.designRequestID || p.DesignRequestID || p.requestID || p.RequestID
+        }));
+
         // Calculate stats from real data
-        const totalProposals = proposals?.length || 0;
-        const acceptedProposals = proposals?.filter(p => p.status === 'Accepted').length || 0;
+        const totalProposals = normalizedProposals.length;
+        const acceptedProposals = normalizedProposals.filter(p => p.status === 'Accepted').length;
         const completedDesigns = designs?.length || 0;
-        const activeProjects = proposals?.filter(p => 
+        const activeProjects = normalizedProposals.filter(p => 
           p.status === 'Accepted' && !designs?.some(d => d.proposalID === p.id)
-        ).length || 0;
+        ).length;
 
         // Map backend data to our interface with proper defaults
         this.profile = {

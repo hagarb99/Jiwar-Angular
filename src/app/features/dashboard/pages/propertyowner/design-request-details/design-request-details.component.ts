@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DesignRequestService } from '../../../../../core/services/design-request.service';
 import { DesignerProposalService } from '../../../../../core/services/designer-proposal.service';
+import { DesignService } from '../../../../../core/services/design.service';
 import { DesignRequest } from '../../../../../core/interfaces/design-request.interface';
 import { DesignerProposal } from '../../../../../core/interfaces/designer-proposal.interface';
+import { Design } from '../../../../../core/interfaces/design.interface';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
@@ -30,10 +32,12 @@ import { DialogModule } from 'primeng/dialog';
   templateUrl: './design-request-details.component.html',
   styleUrls: ['./design-request-details.component.css']
 })
+
 export class DesignRequestDetailsComponent implements OnInit {
   requestId!: number;
   designRequest: DesignRequest | null = null;
   proposals: DesignerProposal[] = [];
+  submittedDesigns: Design[] = [];
   loading = true;
   showProposalDialog = false;
   selectedProposal: DesignerProposal | null = null;
@@ -43,8 +47,24 @@ export class DesignRequestDetailsComponent implements OnInit {
     private router: Router,
     private designRequestService: DesignRequestService,
     private proposalService: DesignerProposalService,
+    private designService: DesignService,
     private messageService: MessageService
   ) {}
+
+// ... (existing ngOnInit/loadRequestDetails)
+
+  loadSubmittedDesigns(propertyId: number): void {
+      this.designService.getDesignsByProperty(propertyId).subscribe({
+          next: (designs) => {
+              // Filter designs that might belong to accepted proposals for THIS request, if possible.
+              // For now, simpler: show all designs for this property.
+              this.submittedDesigns = designs; 
+          },
+          error: (err) => {
+              console.error('Error loading designs:', err);
+          }
+      });
+  }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -59,6 +79,9 @@ export class DesignRequestDetailsComponent implements OnInit {
     this.designRequestService.getDesignRequestById(this.requestId).subscribe({
       next: (request) => {
         this.designRequest = request;
+        if (request.propertyID) {
+             this.loadSubmittedDesigns(request.propertyID);
+        }
         this.loading = false;
       },
       error: (err) => {
@@ -73,10 +96,37 @@ export class DesignRequestDetailsComponent implements OnInit {
     });
   }
 
+  mapStatus(val: any): string {
+      if (val === undefined || val === null) return 'Pending';
+      if (typeof val === 'string') return val;
+      // Assume Enum: 0=Pending, 1=Accepted, 2=Rejected
+      switch (val) {
+          case 0: return 'Pending';
+          case 1: return 'Accepted';
+          case 2: return 'Rejected';
+          case 3: return 'Completed';
+          default: return 'Pending';
+      }
+  }
+
   loadProposals(): void {
     this.proposalService.getProposalsForRequest(this.requestId).subscribe({
-      next: (proposals) => {
-        this.proposals = proposals;
+      next: (proposals: any[]) => {
+        // Normalize backend data
+        this.proposals = proposals.map(p => {
+             const rawStatus = p.status ?? p.Status ?? p.proposalStatus ?? 0;
+             return {
+                id: p.id || p.Id,
+                designRequestID: p.designRequestID || p.DesignRequestID || p.requestID || p.RequestID,
+                proposalDescription: p.proposalDescription || p.ProposalDescription,
+                estimatedCost: p.estimatedCost || p.EstimatedCost,
+                estimatedDays: p.estimatedDays || p.EstimatedDays,
+                sampleDesignURL: p.sampleDesignURL || p.SampleDesignURL || p.SampleDesignUrl,
+                status: this.mapStatus(rawStatus), 
+                designerName: p.designerName || p.DesignerName,
+                designerEmail: p.designerEmail || p.DesignerEmail
+            };
+        });
       },
       error: (err) => {
         console.error('Error loading proposals:', err);
@@ -118,10 +168,62 @@ export class DesignRequestDetailsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error choosing proposal:', err);
+        
+        let errorMessage = 'Failed to accept proposal.';
+        if (err.error) {
+             if (typeof err.error === 'string') {
+                 errorMessage = err.error;
+             } else if (err.error.errors) {
+                 const validationErrors = Object.values(err.error.errors).flat().join('\n');
+                 errorMessage = validationErrors || 'Validation failed';
+             } else if (err.error.message) {
+                 errorMessage = err.error.message;
+             } else if (err.error.title) {
+                 errorMessage = err.error.title;
+             }
+        }
+
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: err.error?.message || 'Failed to accept proposal.'
+          detail: errorMessage,
+          life: 5000
+        });
+      }
+    });
+  }
+
+  rejectProposal(proposalId: number): void {
+    this.proposalService.rejectProposal(proposalId).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Success',
+          detail: 'Proposal rejected.'
+        });
+        this.loadRequestDetails();
+        this.loadProposals();
+        this.showProposalDialog = false;
+      },
+      error: (err) => {
+        console.error('Error rejecting proposal:', err);
+        let errorMessage = 'Failed to reject proposal.';
+         if (err.error) {
+             if (typeof err.error === 'string') {
+                 errorMessage = err.error;
+             } else if (err.error.errors) {
+                 const validationErrors = Object.values(err.error.errors).flat().join('\n');
+                 errorMessage = validationErrors || 'Validation failed';
+             } else if (err.error.message) {
+                 errorMessage = err.error.message;
+             } else if (err.error.title) {
+                 errorMessage = err.error.title;
+             }
+        }
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: errorMessage
         });
       }
     });

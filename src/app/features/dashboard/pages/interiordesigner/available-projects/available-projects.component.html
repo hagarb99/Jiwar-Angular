@@ -69,18 +69,10 @@
 
       <ng-template pTemplate="footer">
         <div class="flex gap-2">
-          <p-button 
-            label="View Details" 
-            icon="pi pi-eye" 
-            [outlined]="true"
-            styleClass="flex-1"
+          <p-button label="View Details" icon="pi pi-eye" [outlined]="true" styleClass="flex-1"
             (onClick)="openProposalDialog(request)">
           </p-button>
-          <p-button 
-            label="Send Proposal" 
-            icon="pi pi-send" 
-            styleClass="flex-1"
-            (onClick)="openProposalDialog(request)">
+          <p-button label="Send Proposal" icon="pi pi-send" styleClass="flex-1" (onClick)="openProposalDialog(request)">
           </p-button>
         </div>
       </ng-template>
@@ -88,41 +80,48 @@
   </div>
 
   <!-- Proposal Dialog -->
-  <p-dialog 
-    [(visible)]="showProposalDialog" 
-    [modal]="true" 
-    [style]="{ width: '600px' }"
-    header="Send Proposal"
-    [draggable]="false"
-    [closable]="true"
+  <p-dialog [(visible)]="showProposalDialog" [modal]="true" [style]="{ width: '600px' }" header="Send Proposal"
+    [draggable]="false" [closable]="true" [maximizable]="true" styleClass="proposal-dialog"
     (onHide)="closeProposalDialog()">
-    
-    <form [formGroup]="proposalForm" (ngSubmit)="submitProposal()" class="space-y-4">
-      <div *ngIf="selectedRequest" class="mb-4 p-4 bg-gray-50 rounded-lg">
-        <h4 class="font-semibold text-gray-900 mb-2">Request Details</h4>
-        <p class="text-sm text-gray-600"><strong>Style:</strong> {{ selectedRequest.preferredStyle }}</p>
-        <p class="text-sm text-gray-600" *ngIf="selectedRequest.budget">
-          <strong>Budget:</strong> {{ selectedRequest.budget | number }} SAR
-        </p>
+
+    <ng-template pTemplate="header">
+      <div class="flex align-items-center justify-content-between w-full">
+        <span class="text-xl font-bold text-gray-900">Send Proposal</span>
+      </div>
+    </ng-template>
+
+    <form [formGroup]="proposalForm" (ngSubmit)="submitProposal()" class="space-y-4 mt-2">
+      <div *ngIf="selectedRequest" class="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+        <h4 class="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+          <i class="pi pi-briefcase text-amber-600"></i>
+          Request Details
+        </h4>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <p class="text-gray-700"><strong>Style:</strong> {{ selectedRequest.preferredStyle }}</p>
+          <p class="text-gray-700" *ngIf="selectedRequest.budget">
+            <strong>Budget:</strong> <span class="text-green-700 font-bold">{{ selectedRequest.budget | number }}
+              SAR</span>
+          </p>
+        </div>
       </div>
 
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-2">
           Proposal Description <span class="text-red-500">*</span>
         </label>
-        <textarea 
-          pInputTextarea 
-          formControlName="proposalDescription" 
-          rows="5"
+        <textarea pInputTextarea formControlName="proposalDescription" rows="5"
           placeholder="Describe your design approach, timeline, and how you'll meet the client's needs..."
-          class="w-full"
+          class="w-full border-gray-300 focus:border-amber-500 focus:ring-amber-500 rounded-md"
           [class.ng-invalid]="proposalForm.get('proposalDescription')?.invalid && proposalForm.get('proposalDescription')?.touched">
         </textarea>
-        <small class="text-gray-500">Minimum 20 characters</small>
-        <small *ngIf="proposalForm.get('proposalDescription')?.invalid && proposalForm.get('proposalDescription')?.touched" 
-               class="text-red-500 block">
-          Description is required and must be at least 20 characters
-        </small>
+        <div class="flex justify-between mt-1">
+          <small class="text-gray-500">Minimum 20 characters</small>
+          <small
+            *ngIf="proposalForm.get('proposalDescription')?.invalid && proposalForm.get('proposalDescription')?.touched"
+            class="text-red-500">
+            Required (min 20 chars)
+          </small>
+        </div>
       </div>
 
       <div class="grid grid-cols-2 gap-4">
@@ -130,13 +129,8 @@
           <label class="block text-sm font-semibold text-gray-700 mb-2">
             Estimated Cost (SAR) <span class="text-red-500">*</span>
           </label>
-          <p-inputNumber 
-            formControlName="estimatedCost" 
-            mode="currency" 
-            currency="SAR" 
-            [min]="1"
-            placeholder="0"
-            class="w-full"
+          <p-inputNumber formControlName="estimatedCost" mode="currency" currency="SAR" [min]="1" placeholder="0"
+            class="w-full" styleClass="w-full"
             [class.ng-invalid]="proposalForm.get('estimatedCost')?.invalid && proposalForm.get('estimatedCost')?.touched">
           </p-inputNumber>
         </div>
@@ -145,11 +139,8 @@
           <label class="block text-sm font-semibold text-gray-700 mb-2">
             Estimated Days <span class="text-red-500">*</span>
           </label>
-          <p-inputNumber 
-            formControlName="estimatedDays" 
-            [min]="1"
-            placeholder="0"
-            class="w-full"
+          <p-inputNumber formControlName="estimatedDays" [min]="1" placeholder="0" suffix=" Days" class="w-full"
+            styleClass="w-full"
             [class.ng-invalid]="proposalForm.get('estimatedDays')?.invalid && proposalForm.get('estimatedDays')?.touched">
           </p-inputNumber>
         </div>
@@ -159,29 +150,21 @@
         <label class="block text-sm font-semibold text-gray-700 mb-2">
           Sample Design URL <span class="text-red-500">*</span>
         </label>
-        <input 
-          pInputText 
-          formControlName="sampleDesignURL" 
-          type="url"
-          placeholder="https://example.com/design-sample.jpg"
-          class="w-full"
-          [class.ng-invalid]="proposalForm.get('sampleDesignURL')?.invalid && proposalForm.get('sampleDesignURL')?.touched">
-        <small class="text-gray-500">Link to a sample design or portfolio</small>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon"><i class="pi pi-link"></i></span>
+          <input pInputText formControlName="sampleDesignURL" type="url"
+            placeholder="https://example.com/design-sample.jpg" class="w-full"
+            [class.ng-invalid]="proposalForm.get('sampleDesignURL')?.invalid && proposalForm.get('sampleDesignURL')?.touched">
+        </div>
+        <small class="text-gray-500 mt-1 block">Link to a sample design or portfolio</small>
       </div>
 
-      <div class="flex justify-end gap-2 pt-4">
-        <p-button 
-          label="Cancel" 
-          [outlined]="true"
-          (onClick)="closeProposalDialog()"
+      <div class="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
+        <p-button label="Cancel" [outlined]="true" severity="secondary" (onClick)="closeProposalDialog()"
           [disabled]="loading">
         </p-button>
-        <p-button 
-          label="Send Proposal" 
-          icon="pi pi-send"
-          type="submit"
-          [loading]="loading"
-          [disabled]="proposalForm.invalid || loading">
+        <p-button label="Send Proposal" icon="pi pi-send" type="submit" [loading]="loading"
+          [disabled]="proposalForm.invalid || loading" styleClass="bg-amber-500 hover:bg-amber-600 border-amber-500">
         </p-button>
       </div>
     </form>
