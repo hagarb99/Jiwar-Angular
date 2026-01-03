@@ -175,4 +175,8 @@ export class OwnerMyPropertiesComponent implements OnInit, OnDestroy {
   navigateToAddProperty(): void {
     this.router.navigate(['/add-property']);
   }
+
+  goToPropertyDetails(property: Property): void {
+    this.router.navigate(['/property-details', property.propertyID]);
+  }
 }

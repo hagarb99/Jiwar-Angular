@@ -1,6 +1,8 @@
 import { provideRouter, Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
+import { ChangePasswordComponent } from './features/auth/change-password/change-password.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 import { HomeComponent } from './core/pages/home/home.component';
 import { AvailableProjectsComponent } from './features/projects/available-projects/available-projects.component';
 import { AddPropertyComponent } from './shared/components/add-property/add-property.component';
@@ -16,6 +18,10 @@ const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'change-password', component: ChangePasswordComponent, canActivate: [authGuard] },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'change-password', component: ChangePasswordComponent, canActivate: [authGuard] },
   { path: 'propertyowner', component: PropertyOwnerLayoutComponent },
   { path: 'projects', component: AvailableProjectsComponent },
   { path: 'add-property', component: AddPropertyComponent, canActivate: [authGuard] },
