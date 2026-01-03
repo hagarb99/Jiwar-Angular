@@ -65,7 +65,7 @@ export class DesignerDashboardComponent implements OnInit {
 
         this.overviewStats[0].value = data.length.toString();
 
-        // Dummy active projects (لحد ما backend يطلع designs)
+        // Dummy active projects (until backend provides designs)
         this.activeProjects = [
           { title: 'Luxury Penthouse', client: 'Omar Khalil', progress: 72, date: 'Dec 25, 2024' },
           { title: 'Beach House Design', client: 'Layla Ibrahim', progress: 40, date: 'Jan 10, 2025' }
