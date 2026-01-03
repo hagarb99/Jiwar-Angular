@@ -98,7 +98,16 @@ export class DesignRequestDetailsComponent implements OnInit {
 
   mapStatus(val: any): string {
       if (val === undefined || val === null) return 'Pending';
-      if (typeof val === 'string') return val;
+      
+      if (typeof val === 'string') {
+          const lower = val.toLowerCase();
+          if (lower === 'accepted') return 'Accepted';
+          if (lower === 'rejected') return 'Rejected';
+          if (lower === 'pending') return 'Pending';
+          if (lower === 'completed') return 'Completed';
+          return val;
+      }
+
       // Assume Enum: 0=Pending, 1=Accepted, 2=Rejected
       switch (val) {
           case 0: return 'Pending';
