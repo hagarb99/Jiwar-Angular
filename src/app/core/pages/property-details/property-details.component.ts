@@ -1,7 +1,10 @@
+
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
+import { PropertyCardComponent } from '../../../shared/components/property-card/property-card.component';
 import {
   LucideAngularModule,
   MapPin,
@@ -14,12 +17,28 @@ import {
   Phone,
   Mail,
   User,
-  Info
+  Info,
+  X,
+  ClipboardCheck,
+  Key,
+  Eye,
+  Wifi,
+  Car,
+  Shield,
+  Activity,
+  Star,
+  CheckCircle,
+  Wallet,
+  PieChart,
+  TrendingUp,
+  LineChart
 } from 'lucide-angular';
 import { PropertyService, Property, PropertyType } from '../../services/property.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { environment } from '../../../../environments/environment';
+import { WishlistService } from '../../services/wishlist.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-property-details',
@@ -27,9 +46,11 @@ import { environment } from '../../../../environments/environment';
   imports: [
     CommonModule,
     RouterModule,
+    FormsModule,
     LucideAngularModule,
     NavbarComponent,
-    FooterComponent
+    FooterComponent,
+    PropertyCardComponent
   ],
   templateUrl: './property-details.component.html',
   styleUrls: ['./property-details.component.css']
@@ -39,6 +60,8 @@ export class PropertyDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private propertyService = inject(PropertyService);
+  private wishlistService = inject(WishlistService);
+  private authService = inject(AuthService);
   private sanitizer = inject(DomSanitizer);
 
   // Icons
@@ -53,8 +76,23 @@ export class PropertyDetailsComponent implements OnInit {
   Mail = Mail;
   User = User;
   Info = Info;
+  X = X;
+  ClipboardCheck = ClipboardCheck;
+  Key = Key;
+  Eye = Eye;
+  Wifi = Wifi;
+  Car = Car;
+  Shield = Shield;
+  Activity = Activity;
+  Star = Star;
+  CheckCircle = CheckCircle;
+  Wallet = Wallet;
+  PieChart = PieChart;
+  TrendingUp = TrendingUp;
+  LineChart = LineChart;
 
   property: Property | null = null;
+  recommendedProperties: Property[] = [];
   loading = true;
   errorMessage = '';
   propertyId = 0;
@@ -65,25 +103,100 @@ export class PropertyDetailsComponent implements OnInit {
   safeTourUrl: SafeResourceUrl | null = null;
   safeMapUrl: SafeResourceUrl | null = null;
 
+  // Static Amenities for Demo
+  amenities = [
+    { icon: Wifi, label: 'High-Speed Wifi' },
+    { icon: Car, label: 'Private Parking' },
+    { icon: Shield, label: '24/7 Security' },
+    { icon: Activity, label: 'Gym & Fitness' },
+    { icon: Star, label: 'Premium Finish' },
+    { icon: CheckCircle, label: 'Smart Home' }
+  ];
+
+  // Navigation State
+  activeSection = 'overview';
+
+  scrollToSection(sectionId: string): void {
+    this.activeSection = sectionId;
+    const element = document.getElementById(sectionId);
+    if (element) {
+      // Offset for the sticky navbar
+      const headerOffset = 120;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  }
+
+  // Price Analytics Data
+  priceHistory = [
+    { year: 2020, price: 1000000, percentage: 0 },
+    { year: 2021, price: 1150000, percentage: 15 },
+    { year: 2022, price: 1300000, percentage: 13 },
+    { year: 2023, price: 1600000, percentage: 23 },
+    { year: 2024, price: 2100000, percentage: 31 }
+  ];
+
+  // Booking Modal State
+  isBookingModalOpen = false;
+  bookingData = {
+    name: '',
+    phone: '',
+    email: '',
+    date: '',
+    message: ''
+  };
+
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      this.propertyId = Number(params['id']);
-      if (this.propertyId) {
-        this.fetchPropertyDetails();
+    this.route.paramMap.subscribe(params => {
+      const id = Number(params.get('id')); // Ensure 'id' matches your route config
+      if (id) {
+        this.propertyId = id; // Set propertyId for other methods
+        this.loadProperty(id);
+        this.checkWishlistStatus(); // Check wishlist status after propertyId is set
+        this.loadRecommendedProperties();
       } else {
-        this.errorMessage = 'Invalid property ID';
+        this.errorMessage = 'Invalid Property ID';
         this.loading = false;
+      }
+    });
+
+    // Subscribe to wishlist changes to keep UI in sync
+    this.wishlistService.wishlistIds$.subscribe(() => {
+      this.checkWishlistStatus();
+    });
+
+    // Pre-fill user data if logged in
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        this.bookingData.name = user.name || '';
+        this.bookingData.email = user.email || '';
+        this.bookingData.phone = user.phoneNumber || '';
       }
     });
   }
 
-  fetchPropertyDetails(): void {
+  checkWishlistStatus(): void {
+    if (this.propertyId) {
+      this.isFavorite = this.wishlistService.isInWishlist(this.propertyId);
+    }
+  }
+
+
+
+  loadProperty(id: number): void {
     this.loading = true;
     this.errorMessage = '';
+    this.propertyId = id;
 
-    this.propertyService.getPropertyById(this.propertyId).subscribe({
+    this.propertyService.getPropertyById(id).subscribe({
       next: (data) => {
         this.property = data;
+        this.selectedImageIndex = 0;
 
         // 360° Tour
         if (data.tour360Url) {
@@ -91,10 +204,7 @@ export class PropertyDetailsComponent implements OnInit {
             this.sanitizer.bypassSecurityTrustResourceUrl(data.tour360Url);
         }
 
-        // ✅ Google Maps (الحل الصحيح)
-        // Logic to determine map URL
-        // 1. If valid coordinates exist (not 0,0), use them.
-        // 2. Fallback to address search if coordinates are missing or invalid.
+        // Google Maps
         let mapUrl = '';
 
         if (
@@ -125,12 +235,29 @@ export class PropertyDetailsComponent implements OnInit {
         }
 
         this.loading = false;
+
+        // Load additional data dependent on property
+        this.checkWishlistStatus();
       },
       error: (err) => {
         console.error('Error fetching property details:', err);
         this.errorMessage = 'Failed to load property details. Please try again later.';
         this.loading = false;
       }
+    });
+  }
+
+  loadRecommendedProperties() {
+    // Mocking context: Fetch properties to show as "Recommended"
+    // In a real app, you might pass the current property's category/location to filter
+    this.propertyService.getFilteredProperties({}).subscribe({
+      next: (data) => {
+        // Simple logic: exclude current property and show top 3
+        this.recommendedProperties = data
+          .filter(p => p.propertyID !== this.propertyId)
+          .slice(0, 3);
+      },
+      error: (err) => console.error('Failed to load recommended properties', err)
     });
   }
 
@@ -141,11 +268,41 @@ export class PropertyDetailsComponent implements OnInit {
   }
 
   toggleFavorite(): void {
-    this.isFavorite = !this.isFavorite;
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (this.propertyId) {
+      // Optimistic UI update
+      this.isFavorite = !this.isFavorite;
+
+      this.wishlistService.toggleWishlist(this.propertyId).subscribe({
+        error: (err) => {
+          console.error('Error toggling wishlist:', err);
+          // Revert on error
+          this.isFavorite = !this.isFavorite;
+        }
+      });
+    }
   }
 
   handleBooking(): void {
-    this.router.navigate(['/booking', this.propertyId]);
+    this.isBookingModalOpen = true;
+  }
+
+  closeBookingModal(): void {
+    this.isBookingModalOpen = false;
+  }
+
+  submitBooking(): void {
+    // In a real app, this would send data to the backend
+    console.log('Booking Data:', this.bookingData);
+    alert('Thank you! Your viewing request has been received. We will contact you shortly.');
+    this.closeBookingModal();
+    // Reset form
+    this.bookingData.date = '';
+    this.bookingData.message = '';
   }
 
   handleShare(): void {

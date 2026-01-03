@@ -41,7 +41,7 @@ export class WishlistComponent implements OnInit {
 
     removeFromWishlist(propertyId: number, event: Event) {
         event.stopPropagation();
-        this.wishlistService.removeFromWishlist(propertyId);
+        this.wishlistService.removeFromWishlist(propertyId).subscribe();
     }
 
     clearAll() {
