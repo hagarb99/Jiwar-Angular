@@ -19,6 +19,7 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
+    "@microsoft/signalr": "^10.0.0",
     "@ngneat/elf": "^2.5.1",
     "@primeuix/themes": "^2.0.2",
     "lucide-angular": "^0.562.0",

@@ -35,54 +35,20 @@ export class MyProposalsComponent implements OnInit {
   constructor(
     private proposalService: DesignerProposalService,
     private messageService: MessageService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadProposals();
   }
 
-  mapStatus(val: any): string {
-      if (val === undefined || val === null) return 'Pending';
-      
-      if (typeof val === 'string') {
-          const lower = val.toLowerCase();
-          if (lower === 'accepted') return 'Accepted';
-          if (lower === 'rejected') return 'Rejected';
-          if (lower === 'pending') return 'Pending';
-          if (lower === 'completed') return 'Completed';
-          return val; // Fallback
-      }
-
-      // Assume Enum: 0=Pending, 1=Accepted, 2=Rejected
-      switch (val) {
-          case 0: return 'Pending';
-          case 1: return 'Accepted';
-          case 2: return 'Rejected';
-          case 3: return 'Completed';
-          default: return 'Pending';
-      }
-  }
+  // mapStatus is no longer needed here as service does it, but keeping it for tag helper if needed
+  // or just removing if not strictly used outside loadProposals
 
   loadProposals() {
     this.loading = true;
     this.proposalService.getMyProposals().subscribe({
-      next: (data: any[]) => {
-        console.log('Fetched Proposals:', data);
-        // Normalize backend data (PascalCase -> camelCase) if needed
-        this.proposals = data.map(p => {
-            const rawStatus = p.status ?? p.Status ?? p.proposalStatus ?? 0;
-            return {
-                id: p.id || p.Id,
-                designRequestID: p.designRequestID || p.DesignRequestID || p.requestID || p.RequestID,
-                proposalDescription: p.proposalDescription || p.ProposalDescription,
-                estimatedCost: p.estimatedCost || p.EstimatedCost,
-                estimatedDays: p.estimatedDays || p.EstimatedDays,
-                sampleDesignURL: p.sampleDesignURL || p.SampleDesignURL || p.SampleDesignUrl,
-                status: this.mapStatus(rawStatus), 
-                designerName: p.designerName || p.DesignerName,
-                designerEmail: p.designerEmail || p.DesignerEmail
-            };
-        });
+      next: (data) => {
+        this.proposals = data;
         this.loading = false;
       },
       error: (err) => {

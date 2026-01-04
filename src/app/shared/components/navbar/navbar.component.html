@@ -69,6 +69,41 @@
 
       <!-- Right Side (Desktop) -->
       <div class="hidden lg:flex items-center gap-4">
+        <!-- Notifications -->
+        <div class="relative" *ngIf="isLoggedIn">
+          <button class="relative p-2 hover:bg-gray-100 rounded-full transition-colors" (click)="toggleNotifications()">
+            <lucide-angular [img]="Bell" class="w-5 h-5 text-gray-600 hover:text-primary"></lucide-angular>
+            <span *ngIf="unreadCount > 0"
+              class="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">
+              {{ unreadCount > 9 ? '9+' : unreadCount }}
+            </span>
+          </button>
+
+          <!-- Notification Dropdown -->
+          <div *ngIf="toggleNotificationsDropdown"
+            class="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+              <h3 class="font-semibold text-gray-900">Notifications</h3>
+              <button (click)="markAllAsRead()" class="text-xs text-blue-600 hover:text-blue-800">Mark all as
+                read</button>
+            </div>
+
+            <div class="max-h-80 overflow-y-auto">
+              <div *ngIf="notifications.length === 0" class="p-8 text-center bg-gray-50">
+                <i class="pi pi-bell text-gray-300 text-2xl mb-2"></i>
+                <p class="text-gray-500 text-sm">No new notifications</p>
+              </div>
+              <div *ngFor="let note of notifications"
+                class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors"
+                [class.bg-blue-50]="!note.read">
+                <p class="text-sm font-medium text-gray-900">{{ note.title }}</p>
+                <p class="text-xs text-gray-600 mt-1">{{ note.message }}</p>
+                <p class="text-[10px] text-gray-400 mt-2 text-right">{{ note.timestamp | date:'short' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Wishlist -->
         <a routerLink="/wishlist" class="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
           <lucide-angular [img]="Heart" class="w-5 h-5 text-gray-600 hover:text-red-500"></lucide-angular>
@@ -101,7 +136,8 @@
             <div *ngIf="profilePicUrl" class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary shadow-md">
               <img [src]="profilePicUrl" alt="Profile" class="w-full h-full object-cover" />
             </div>
-            <div *ngIf="!profilePicUrl" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center border-2 border-primary shadow-md font-semibold">
+            <div *ngIf="!profilePicUrl"
+              class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center border-2 border-primary shadow-md font-semibold">
               {{ (currentUserName || 'U').charAt(0).toUpperCase() }}
             </div>
             <span class="text-primary font-medium hidden md:block">{{ currentUserName || 'User' }}</span>
@@ -127,12 +163,11 @@
               <i class="pi pi-home mr-3"></i>
               Dashboard
             </a> -->
-            <button
-  (click)="goToDashboard(); toggleUserDropdown = false"
-  class="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
-  <i class="pi pi-home mr-3"></i>
-  Dashboard
-</button>
+            <button (click)="goToDashboard(); toggleUserDropdown = false"
+              class="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
+              <i class="pi pi-home mr-3"></i>
+              Dashboard
+            </button>
 
 
 

@@ -1,1 +1,81 @@
-<p>active-projects works!</p>
+<div class="max-w-7xl mx-auto p-6">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Active Projects</h1>
+    <p class="text-gray-600">Proposals that have been accepted by property owners. Submit your final designs here.</p>
+  </div>
+
+  <p-toast></p-toast>
+
+  <div *ngIf="loading && activeProposals.length === 0" class="flex justify-center items-center py-20">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <div *ngIf="!loading && activeProposals.length === 0" class="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
+    <div class="text-gray-400 mb-4">
+      <i class="pi pi-briefcase text-6xl"></i>
+    </div>
+    <p class="text-gray-600 text-lg font-medium">No active projects yet</p>
+    <p class="text-gray-500 text-sm mt-2">When a property owner accepts one of your proposals, it will appear here.</p>
+    <button pButton label="View My Proposals" icon="pi pi-arrow-right" class="p-button-text mt-4" 
+            routerLink="/dashboard/interiordesigner/my-proposals"></button>
+  </div>
+
+  <div *ngIf="!loading && activeProposals.length > 0" class="space-y-4">
+    <p-card *ngFor="let proposal of activeProposals" class="hover:shadow-lg transition-all duration-300">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+        <div class="flex-1 space-y-4">
+          <div class="flex items-center gap-3">
+             <div class="p-2 bg-green-50 rounded-lg">
+                <i class="pi pi-check-circle text-green-600 text-xl"></i>
+             </div>
+            <h3 class="text-xl font-bold text-gray-900">
+              Request #{{ proposal.designRequestID }}
+            </h3>
+            <p-tag value="Accepted" severity="success"></p-tag>
+          </div>
+
+          <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Project Description</span>
+            <p class="text-gray-700 mt-2 leading-relaxed">{{ proposal.proposalDescription }}</p>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="flex flex-col">
+              <span class="text-xs font-semibold text-gray-500 uppercase">Project Budget</span>
+              <p class="text-gray-900 font-bold text-lg mt-1">{{ proposal.estimatedCost | number }} SAR</p>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-xs font-semibold text-gray-500 uppercase">Timeline</span>
+              <p class="text-gray-900 font-bold text-lg mt-1">{{ proposal.estimatedDays }} Days</p>
+            </div>
+            <div *ngIf="proposal.designerName" class="flex flex-col">
+              <span class="text-xs font-semibold text-gray-500 uppercase">Designer</span>
+              <p class="text-gray-700 mt-1 font-medium">{{ proposal.designerName }}</p>
+            </div>
+             <div class="flex flex-col">
+              <span class="text-xs font-semibold text-gray-500 uppercase">Sample Design</span>
+              <a *ngIf="proposal.sampleDesignURL" [href]="proposal.sampleDesignURL" target="_blank"
+                 class="text-amber-600 hover:text-amber-700 font-medium flex items-center gap-2 mt-1">
+                <i class="pi pi-external-link"></i>
+                View
+              </a>
+              <span *ngIf="!proposal.sampleDesignURL" class="text-gray-400 mt-1 italic text-sm">No sample</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3 min-w-[200px]">
+          <button pButton label="Submit Project" icon="pi pi-upload" class="p-button-success p-button-lg w-full"
+            [routerLink]="['/dashboard/interiordesigner/upload-design']" 
+            [queryParams]="{ proposalId: proposal.id }"
+            pTooltip="Upload your final design to complete the project"
+            tooltipPosition="bottom">
+          </button>
+          <button pButton label="View Details" icon="pi pi-eye" class="p-button-outlined p-button-secondary w-full"
+                  [routerLink]="['/dashboard/interiordesigner/my-proposals']">
+          </button>
+        </div>
+      </div>
+    </p-card>
+  </div>
+</div>
