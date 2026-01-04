@@ -14,19 +14,27 @@ export interface PropertyOwnerProfile {
   bio: string;
   specializations: string[];
   certifications: string[];
+  companyName?: string;
+  taxId?: string;
   stats: { label: string; value: string | number; icon?: string }[];
 }
 
-export interface EditProfileRequest {
-  name: string;
+// Base DTO for all users
+export interface EditProfileBaseDto {
+  name?: string;
   email?: string;
   phoneNumber?: string;
   profilePicURL?: string;
+  avatarUrl?: string;
   title?: string;
   location?: string;
   bio?: string;
-  specializations?: string[];
-  certifications?: string[];
+}
+
+// PropertyOwner specific DTO extending base
+export interface PropertyOwnerEditProfileDto extends EditProfileBaseDto {
+  companyName?: string;
+  taxId?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -36,16 +44,24 @@ export class ProfileService {
   constructor(private httpClient: HttpClient) { }
 
   getProfile(): Observable<PropertyOwnerProfile> {
-    // Calling the account service endpoint or the relevant endpoint for profile data
     return this.httpClient.get<PropertyOwnerProfile>(`${this.apiUrl}/profile`);
   }
 
-  editProfile(request: EditProfileRequest): Observable<any> {
-    return this.httpClient.put(`${this.apiUrl}/edit-profile`, request);
+  /**
+   * Updates PropertyOwner profile with partial data (only edited fields)
+   * @param request Partial update request containing only changed fields
+   * @returns Observable of updated PropertyOwnerProfile
+   */
+  editPropertyOwnerProfile(request: PropertyOwnerEditProfileDto): Observable<PropertyOwnerProfile> {
+    return this.httpClient.put<PropertyOwnerProfile>(`${this.apiUrl}/edit-profile`, request);
   }
 
-  completeProfilePropertyOwner(request: CompleteProfilePropertyOwnerRequest): Observable<any> {
-    return this.httpClient.post(`${this.apiUrl}/complete-profile/property-owner`, request);
+  /**
+   * Legacy method for specializations/certifications - kept for compatibility
+   * TODO: Consider moving these to the main edit profile DTO if backend supports it
+   */
+  completeProfilePropertyOwner(request: CompleteProfilePropertyOwnerRequest): Observable<PropertyOwnerProfile> {
+    return this.httpClient.post<PropertyOwnerProfile>(`${this.apiUrl}/complete-profile/property-owner`, request);
   }
 }
 

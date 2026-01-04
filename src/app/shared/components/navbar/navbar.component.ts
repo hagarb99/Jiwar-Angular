@@ -9,11 +9,12 @@ import {
   Menu,
   X,
   Globe,
-  Heart
+  Heart,
+  Bell
 } from 'lucide-angular';
 import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../../core/services/auth.service';
-
+import { SignalRService, NotificationMessage } from '../../../core/services/signalr.service';
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -28,7 +29,7 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class NavbarComponent implements OnInit {
   toggleUserDropdown = false;
-
+  currentUserRole: string | null = null;
   profilePicUrl: string | null = null;
   currentUserName: string | null = null;
   currentUserEmail: string | null = null;
@@ -38,6 +39,12 @@ export class NavbarComponent implements OnInit {
   readonly X = X;
   readonly Globe = Globe;
   readonly Heart = Heart;
+  readonly Bell = Bell;
+
+  // Notification State
+  toggleNotificationsDropdown = false;
+  notifications: NotificationMessage[] = [];
+  unreadCount = 0;
 
   // State
   mobileMenuOpen = false;
@@ -74,7 +81,8 @@ export class NavbarComponent implements OnInit {
   ];
 
   constructor(private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private signalRService: SignalRService
   ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -100,28 +108,76 @@ export class NavbarComponent implements OnInit {
     this.mobileMenuOpen = false;
   }
   ngOnInit(): void {
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUserRole = user?.role ?? null;
+      if (this.currentUserRole) {
+        // Initialize SignalR if user is logged in?
+        // The service starts connection in constructor, so it's already running.
+        // But maybe we want to filter notifications for this user?
+        // For now, the global listener is fine for demo/MVP.
+      }
+    });
+
+    this.signalRService.notifications$.subscribe(notifs => {
+      this.notifications = notifs;
+      this.unreadCount = notifs.filter(n => !n.read).length;
+    });
+
+    // Subscribe to login status
     this.authService.isLoggedIn$.subscribe(status => {
       this.isLoggedIn = status;
-      if (status) {
-        this.profilePicUrl = this.authService.getProfilePicUrl();
-        this.currentUserName = this.authService.getUserName();
-        this.currentUserEmail = this.authService.getUserEmail();
+    });
+
+    // Subscribe to user data changes
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        this.profilePicUrl = user.profilePicURL || null;
+        this.currentUserName = user.name || null;
+        this.currentUserEmail = user.email || null;
+        this.isLoggedIn = true;
       } else {
         this.profilePicUrl = null;
         this.currentUserName = null;
         this.currentUserEmail = null;
+        this.isLoggedIn = false;
       }
     });
-    if (this.authService.isLoggedIn()) {
-      this.profilePicUrl = this.authService.getProfilePicUrl();
-      this.currentUserName = this.authService.getUserName();
-      this.currentUserEmail = this.authService.getUserEmail();
-    }
   }
 
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+
+  goToDashboard(): void {
+    if (!this.currentUserRole) {
+      return;
+    }
+
+    if (this.currentUserRole === 'PropertyOwner') {
+      this.router.navigate(['/dashboard/propertyowner/dashboard']);
+    }
+
+    if (this.currentUserRole === 'InteriorDesigner') {
+      this.router.navigate(['/dashboard/interiordesigner/dashboard']);
+    }
+
+    if (this.currentUserRole === 'Admin') {
+      this.router.navigate(['/dashboard/admin']);
+    }
+  }
+
+  toggleNotifications(): void {
+    this.toggleNotificationsDropdown = !this.toggleNotificationsDropdown;
+    if (this.toggleNotificationsDropdown) {
+      this.toggleUserDropdown = false; // Close user dropdown
+    }
+  }
+
+  markAllAsRead(): void {
+    this.signalRService.markAsRead();
+  }
+
+
 
 }

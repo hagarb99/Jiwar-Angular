@@ -1,0 +1,169 @@
+<div class="max-w-4xl mx-auto p-6">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Upload Final Design</h1>
+    <p class="text-gray-600">Upload your completed design for an accepted proposal</p>
+  </div>
+
+  <p-toast></p-toast>
+
+  <p-card>
+    <form [formGroup]="designForm" (ngSubmit)="submitDesign()" class="space-y-6">
+      <!-- Proposal Selection -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          Select Accepted Proposal <span class="text-red-500">*</span>
+        </label>
+        <p-dropdown 
+          formControlName="proposalID" 
+          [options]="acceptedProposals" 
+          optionLabel="id"
+          optionValue="id"
+          placeholder="Select a proposal"
+          (onChange)="onProposalChange()"
+          class="w-full"
+          [class.ng-invalid]="designForm.get('proposalID')?.invalid && designForm.get('proposalID')?.touched">
+          <ng-template let-proposal pTemplate="item">
+            <div class="flex items-center justify-between">
+              <span>Proposal #{{ proposal.id }}</span>
+              <span class="text-sm text-gray-500">Request #{{ proposal.designRequestID }}</span>
+            </div>
+          </ng-template>
+        </p-dropdown>
+        <small *ngIf="acceptedProposals.length === 0" class="text-amber-600 block mt-1">
+          No accepted proposals available. You need an accepted proposal to upload a design.
+        </small>
+        <small *ngIf="designForm.get('proposalID')?.invalid && designForm.get('proposalID')?.touched" 
+               class="text-red-500 block">
+          Please select a proposal
+        </small>
+      </div>
+
+      <!-- Property ID (Auto-filled) -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          Property ID <span class="text-red-500">*</span>
+        </label>
+        <p-inputNumber 
+          formControlName="propertyID" 
+          [min]="1"
+          placeholder="Property ID"
+          class="w-full"
+          [readonly]="true"
+          [class.ng-invalid]="designForm.get('propertyID')?.invalid && designForm.get('propertyID')?.touched">
+        </p-inputNumber>
+        <small class="text-gray-500">Automatically filled from selected proposal</small>
+      </div>
+
+      <!-- Style Selection -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          Design Style <span class="text-red-500">*</span>
+        </label>
+        <p-dropdown 
+          formControlName="selectedStyle" 
+          [options]="styleOptions" 
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select design style"
+          class="w-full"
+          [class.ng-invalid]="designForm.get('selectedStyle')?.invalid && designForm.get('selectedStyle')?.touched">
+        </p-dropdown>
+        <small *ngIf="designForm.get('selectedStyle')?.invalid && designForm.get('selectedStyle')?.touched" 
+               class="text-red-500 block">
+          Please select a design style
+        </small>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          Description <span class="text-red-500">*</span>
+        </label>
+        <textarea 
+          pInputTextarea 
+          formControlName="description" 
+          rows="5"
+          placeholder="Describe your design, key features, and design choices..."
+          class="w-full"
+          [class.ng-invalid]="designForm.get('description')?.invalid && designForm.get('description')?.touched">
+        </textarea>
+        <small class="text-gray-500">Minimum 20 characters</small>
+        <small *ngIf="designForm.get('description')?.invalid && designForm.get('description')?.touched" 
+               class="text-red-500 block">
+          Description is required and must be at least 20 characters
+        </small>
+      </div>
+
+      <!-- Image URLs -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          Design Images <span class="text-red-500">*</span>
+        </label>
+        <div class="flex gap-2 mb-3">
+          <input 
+            id="imageUrlInput"
+            type="url"
+            placeholder="https://example.com/design-image.jpg"
+            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none">
+          <p-button 
+            label="Add Image" 
+            icon="pi pi-plus"
+            (onClick)="addImageURL()"
+            [outlined]="true">
+          </p-button>
+        </div>
+        
+        <div *ngIf="imageURLs.length > 0" class="space-y-2">
+          <div *ngFor="let url of imageURLs; let i = index" 
+               class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+            <img [src]="url" alt="Design image" class="w-16 h-16 object-cover rounded" 
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'64\' height=\'64\'%3E%3Crect fill=\'%23ddd\' width=\'64\' height=\'64\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-gray-700 truncate">{{ url }}</p>
+            </div>
+            <p-button 
+              icon="pi pi-times" 
+              [text]="true"
+              [rounded]="true"
+              severity="danger"
+              (onClick)="removeImageURL(i)">
+            </p-button>
+          </div>
+        </div>
+        <small *ngIf="imageURLs.length === 0" class="text-gray-500">
+          Add at least one image URL
+        </small>
+      </div>
+
+      <!-- AI Generated Checkbox -->
+      <div class="flex items-center">
+        <p-checkbox 
+          formControlName="ai_Generated" 
+          inputId="aiGenerated"
+          [binary]="true">
+        </p-checkbox>
+        <label for="aiGenerated" class="ml-2 text-sm font-medium text-gray-700">
+          This design was AI-generated
+        </label>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="flex justify-end gap-2 pt-4 border-t">
+        <p-button 
+          label="Cancel" 
+          [outlined]="true"
+          routerLink="/dashboard/interiordesigner/my-designs"
+          [disabled]="loading">
+        </p-button>
+        <p-button 
+          label="Upload Design" 
+          icon="pi pi-upload"
+          type="submit"
+          [loading]="loading"
+          [disabled]="designForm.invalid || imageURLs.length === 0 || loading || acceptedProposals.length === 0">
+        </p-button>
+      </div>
+    </form>
+  </p-card>
+</div>
+

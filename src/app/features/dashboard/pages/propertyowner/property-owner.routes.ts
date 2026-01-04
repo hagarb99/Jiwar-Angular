@@ -1,13 +1,14 @@
 import { Routes } from '@angular/router';
 import { ProfilePropertyownerComponent } from './profile-propertyowner/profile-propertyowner.component';
-import { OwnerMyPropertiesComponent } from './profile-propertyowner/owner-my-properties/owner-my-properties.component';
+import { OwnerMyPropertiesComponent } from './owner-my-properties/owner-my-properties.component';
+import { PropertyDashboardComponent } from './property-dashboard/property-dashboard.component';
 
 export const propertyOwnerRoutes: Routes = [
   {
-    path: '',
-    redirectTo: 'profile',
+    path: 'dashboard',
+    redirectTo: 'property-dashboard',
     pathMatch: 'full'
-  },
+  }, 
   {
     path: 'profile/edit',
     loadComponent: () => import('./profile-propertyowner/edit-profile/edit-profile.component').then(m => m.EditProfilePropertyownerComponent)
@@ -19,6 +20,35 @@ export const propertyOwnerRoutes: Routes = [
   {
     path: 'my-properties',
     component: OwnerMyPropertiesComponent
+  },
+  {
+    path: 'edit-property/:id',
+    loadComponent: () => import('./edit-property/edit-property.component').then(m => m.EditPropertyComponent)
+  },
+  {  
+    path: 'dashboard',
+    loadComponent: () => import('./property-dashboard/property-dashboard.component').then(m => m.PropertyDashboardComponent)
+  },
+  {
+    path: 'design-requests/create',
+    loadComponent: () => import('./create-design-request/create-design-request.component').then(m => m.CreateDesignRequestComponent)
+  },
+  {
+    path: 'design-requests/:id',
+    loadComponent: () => import('./design-request-details/design-request-details.component').then(m => m.DesignRequestDetailsComponent)
+  },
+  {
+    path: 'browse-designers',
+    loadComponent: () => import('./browse-designers/browse-designers.component').then(m => m.BrowseDesignersComponent)
+  },
+  {
+    path: 'my-requests',
+    loadComponent: () => import('./my-requests/my-requests.component').then(m => m.MyRequestsComponent)
+  },
+  {
+    path: 'design-requests',
+    redirectTo: 'my-requests',
+    pathMatch: 'full'
   },
   // {
   //   path: 'properties',

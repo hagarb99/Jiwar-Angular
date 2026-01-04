@@ -20,11 +20,17 @@ export interface DesignerProposal {
 }
 
 export interface CreateDesignerProposal {
-    designRequestID: number;
+    requestID: number;
     proposalDescription: string;
     estimatedCost: number;
     estimatedDays: number;
     sampleDesignURL: string;
+
+    // Backend compatibility fields
+    status?: string;
+    designerName?: string;
+    designerEmail?: string;
+    offerDetails?: string;
 }
 
 export interface ProposalForOwner extends DesignerProposal {

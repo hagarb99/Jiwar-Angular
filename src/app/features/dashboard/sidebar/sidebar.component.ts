@@ -24,18 +24,20 @@ export class SidebarComponent {
   currentUser$ = this.authService.currentUser$;
 
   private allMenuItems: SidebarMenuItem[] = [
+
     {
-      label: 'Overview',
-      path: '/dashboard/designer',
+      label: 'Dashboard',
+      path: '/dashboard/interiordesigner/dashboard',
       icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
       roles: ['InteriorDesigner']
     },
     {
-      label: 'Overview',
-      path: '/propertyowner',
+      label: 'Dashboard',
+      path: '/dashboard/propertyowner/dashboard',
       icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
       roles: ['PropertyOwner']
     },
+
     {
       label: 'Overview',
       path: '/dashboard',
@@ -46,13 +48,19 @@ export class SidebarComponent {
       label: 'My Profile',
       path: '/dashboard/profile',
       icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-      roles: ['InteriorDesigner', 'Customer', 'Admin']
+      roles: ['Customer', 'Admin']
     },
     {
       label: 'My Profile',
       path: '/dashboard/propertyowner/profile',
       icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
       roles: ['PropertyOwner']
+    },
+    {
+      label: 'My Profile',
+      path: '/dashboard/interiordesigner/profile',
+      icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+      roles: ['InteriorDesigner']
     },
     {
       label: 'My Listings',
@@ -92,9 +100,9 @@ export class SidebarComponent {
     },
     {
       label: 'My Requests',
-      path: '/propertyowner/my-requests',
+      path: '/dashboard/propertyowner/my-requests',
       icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-      roles: ['PropertyOwner'] // Only designers see available requests
+      roles: ['PropertyOwner']
     },
     {
       label: 'My Requests',
@@ -122,26 +130,26 @@ export class SidebarComponent {
     },
     {
       label: 'Available Projects',
-      path: '/dashboard/designer/projects',
+      path: '/dashboard/interiordesigner/available-projects',
       icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
       roles: ['InteriorDesigner']
     },
     {
       label: 'My Proposals',
-      path: '/dashboard/designer/proposals',
+      path: '/dashboard/interiordesigner/my-proposals',
       icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
       roles: ['InteriorDesigner']
     },
     {
-      label: 'Active Projects',
-      path: '/dashboard/designer/active-projects',
-      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-      roles: ['InteriorDesigner', 'PropertyOwner', 'Customer']
+      label: 'My Designs',
+      path: '/dashboard/interiordesigner/my-designs',
+      icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z',
+      roles: ['InteriorDesigner']
     },
     {
-      label: 'Portfolio Manager',
-      path: '/portfolio',
-      icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z',
+      label: 'Active Projects',
+      path: '/dashboard/interiordesigner/active-projects',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
       roles: ['InteriorDesigner']
     },
   ];
