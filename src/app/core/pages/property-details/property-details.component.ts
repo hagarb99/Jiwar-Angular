@@ -464,19 +464,25 @@ export class PropertyDetailsComponent implements OnInit {
     }
 
     if (this.propertyId) {
+      const wasFavorite = this.isFavorite;
+      // Optimistic UI update
       this.isFavorite = !this.isFavorite;
       console.log('Toggling favorite for ID:', this.propertyId);
+
+      // If we just added it to favorites, navigate immediately
+      if (this.isFavorite) {
+        console.log('Directly navigating to wishlist...');
+        this.router.navigate(['/wishlist']);
+      }
+
       this.wishlistService.toggleWishlist(this.propertyId).subscribe({
         next: () => {
-          console.log('Favorite toggle success. Local state isFavorite:', this.isFavorite);
-          if (this.isFavorite) {
-            console.log('Navigating to wishlist...');
-            this.router.navigate(['/wishlist']);
-          }
+          console.log('Favorite toggle success. Current isFavorite:', this.isFavorite);
         },
         error: (err) => {
           console.error('Error toggling wishlist:', err);
-          this.isFavorite = !this.isFavorite;
+          // Revert on error
+          this.isFavorite = wasFavorite;
         }
       });
     }
