@@ -45,7 +45,7 @@ export class DesignerDashboardComponent implements OnInit {
 
   loadDashboardData() {
     this.loading = true;
-    
+
     // Load profile
     this.profileService.getProfile().subscribe({
       next: (profile) => {
@@ -69,14 +69,21 @@ export class DesignerDashboardComponent implements OnInit {
 
         // Update stats
         this.overviewStats[0].value = data.length.toString();
-        
+
         // Count accepted proposals (active projects)
         const acceptedCount = data.filter(p => p.status === 'Accepted').length;
         this.overviewStats[1].value = acceptedCount.toString();
-        
+
         // Count completed (you might need to check designs for this)
         const completedCount = data.filter(p => p.status === 'Completed').length;
         this.overviewStats[2].value = completedCount.toString();
+
+
+        // Dummy active projects (until backend provides designs)
+        this.activeProjects = [
+          { title: 'Luxury Penthouse', client: 'Omar Khalil', progress: 72, date: 'Dec 25, 2024' },
+          { title: 'Beach House Design', client: 'Layla Ibrahim', progress: 40, date: 'Jan 10, 2025' }
+        ];
 
         this.loading = false;
       },
