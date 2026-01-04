@@ -115,10 +115,18 @@ export class PropertyCardComponent implements OnInit {
     const idToUse = this.propertyID || this.id;
 
     if (idToUse) {
+      console.log('Toggling wishlist for ID:', idToUse);
       // Optimistic UI update
       this.isInWishlist = !this.isInWishlist;
 
       this.wishlistService.toggleWishlist(idToUse).subscribe({
+        next: () => {
+          console.log('Wishlist toggle success. Local state isInWishlist:', this.isInWishlist);
+          if (this.isInWishlist) {
+            console.log('Navigating to wishlist...');
+            this.router.navigate(['/wishlist']);
+          }
+        },
         error: (err: any) => {
           console.error('Error toggling wishlist:', err);
           // Revert on error
