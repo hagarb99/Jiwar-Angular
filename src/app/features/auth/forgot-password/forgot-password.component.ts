@@ -56,8 +56,15 @@ export class ForgotPasswordComponent implements OnInit {
     this.loading = true;
     const { email } = this.forgotPasswordForm.value;
 
+    console.log('🔍 FORGOT PASSWORD DEBUG - About to call API with email:', email);
+    console.log('🔍 FORGOT PASSWORD DEBUG - API URL will be:', `${this.authService['apiBaseUrl']}/account/forgot-password`);
+
     this.authService.forgotPassword({ email }).subscribe({
       next: (response) => {
+        console.log('✅ FORGOT PASSWORD DEBUG - API call successful');
+        console.log('✅ FORGOT PASSWORD DEBUG - Response:', response);
+        console.log('✅ FORGOT PASSWORD DEBUG - Response message:', response.message);
+
         this.submitted = true;
         this.loading = false;
 
@@ -69,7 +76,10 @@ export class ForgotPasswordComponent implements OnInit {
         });
       },
       error: (error) => {
-        console.error('Forgot password error:', error);
+        console.error('❌ FORGOT PASSWORD DEBUG - API call failed');
+        console.error('❌ FORGOT PASSWORD DEBUG - Error status:', error.status);
+        console.error('❌ FORGOT PASSWORD DEBUG - Error body:', error.error);
+        console.error('❌ FORGOT PASSWORD DEBUG - Full error:', error);
 
         // Still show success message for security reasons
         this.submitted = true;

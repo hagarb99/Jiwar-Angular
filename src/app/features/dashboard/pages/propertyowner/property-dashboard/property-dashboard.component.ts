@@ -54,21 +54,16 @@ export class PropertyDashboardComponent implements OnInit {
   isLoading = false;
 
   // Mock bookings data
-  bookings = [
-    { id: 1, property: 'Modern Villa in Maadi', client: 'Ahmed Hassan', date: 'Jan 15, 2026', status: 'pending', amount: '2,500 EGP' },
-    { id: 2, property: 'Luxury Apartment Downtown', client: 'Sara Mohamed', date: 'Jan 12, 2026', status: 'confirmed', amount: '3,200 EGP' },
-  ];
+  // Mock bookings data - Emptied as requested
+  bookings: any[] = [];
 
-  // Recent reviews
-  recentReviews = [
-    { id: 1, client: 'Ahmed Hassan', property: 'Modern Villa in Maadi', rating: 5, comment: 'Excellent property with great amenities!', date: 'Dec 20, 2025' },
-    { id: 2, client: 'Sara Mohamed', property: 'Luxury Apartment Downtown', rating: 4, comment: 'Very clean and well-maintained.', date: 'Dec 18, 2025' },
-  ];
+  // Recent reviews - Emptied as requested
+  recentReviews: any[] = [];
 
   constructor(
     private propertyService: PropertyService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadMyProperties();
@@ -96,19 +91,19 @@ export class PropertyDashboardComponent implements OnInit {
 
   getThumbnailUrl(property: Property): string {
     const fallbackImage = '/logo2.png';
-  
+
     if (!property) {
       console.log('Property is null/undefined');
       return fallbackImage;
     }
-  
+
     console.log('Property data:', {
       propertyID: property.propertyID,
       title: property.title,
       ThumbnailUrl: property.ThumbnailUrl,
       thumbnailUrl: property.thumbnailUrl
     });
-  
+
     // Use ThumbnailUrl from backend (PropertyListBDTO) - similar to other working components
     if (property.ThumbnailUrl) {
       console.log('Using ThumbnailUrl:', property.ThumbnailUrl);
@@ -116,18 +111,18 @@ export class PropertyDashboardComponent implements OnInit {
       if (property.ThumbnailUrl.startsWith('http')) {
         return property.ThumbnailUrl;
       }
-  
+
       // Build full URL from relative path using API base URL (like other components)
       const apiBase = environment.apiBaseUrl;
       const cleanBase = apiBase.endsWith('/api') ? apiBase.replace('/api', '') : apiBase;
       const cleanPath = property.ThumbnailUrl.startsWith('/') ? property.ThumbnailUrl.substring(1) : property.ThumbnailUrl;
       const finalBase = cleanBase.endsWith('/') ? cleanBase.slice(0, -1) : cleanBase;
-  
+
       const result = `${finalBase}/${cleanPath}`;
       console.log('Final ThumbnailUrl result:', result);
       return result;
     }
-  
+
     // Fallback to thumbnailUrl for backward compatibility with other endpoints
     if (property.thumbnailUrl) {
       console.log('Using thumbnailUrl:', property.thumbnailUrl);
@@ -135,18 +130,18 @@ export class PropertyDashboardComponent implements OnInit {
       if (property.thumbnailUrl.startsWith('http')) {
         return property.thumbnailUrl;
       }
-  
+
       // Build full URL from relative path using API base URL
       const apiBase = environment.apiBaseUrl;
       const cleanBase = apiBase.endsWith('/api') ? apiBase.replace('/api', '') : apiBase;
       const cleanPath = property.thumbnailUrl.startsWith('/') ? property.thumbnailUrl.substring(1) : property.thumbnailUrl;
       const finalBase = cleanBase.endsWith('/') ? cleanBase.slice(0, -1) : cleanBase;
-  
+
       const result = `${finalBase}/${cleanPath}`;
       console.log('Final thumbnailUrl result:', result);
       return result;
     }
-  
+
     console.log('Using fallback image:', fallbackImage);
     return fallbackImage;
   }
