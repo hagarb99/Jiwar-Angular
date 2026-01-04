@@ -211,7 +211,7 @@
                                                 [ngClass]="isFavorite ? 'text-red-500 bg-red-50 border-red-100' : 'text-gray-600 hover:border-[#D4AF37] hover:text-[#D4AF37]'">
                                                 <lucide-angular [img]="Heart"
                                                     class="w-4 h-4 transition-transform group-hover:scale-110"
-                                                    [ngClass]="{'text-red-500 fill-red-500': isFavorite, 'text-gray-400': !isFavorite}"
+                                                    [ngClass]="{'text-red-500 fill-red-500': isFavorite}"
                                                     [class.fill-current]="isFavorite"></lucide-angular>
                                                 <span class="font-bold text-[10px] uppercase tracking-wider">{{
                                                     isFavorite ? 'Saved' : 'Save Property' }}</span>

@@ -121,12 +121,6 @@ export class PropertyCardComponent implements OnInit {
       // Optimistic UI update
       this.isInWishlist = !this.isInWishlist;
 
-      // If we just added it to wishlist, navigate immediately
-      if (this.isInWishlist) {
-        console.log('Directly navigating to wishlist...');
-        this.router.navigate(['/wishlist']);
-      }
-
       this.wishlistService.toggleWishlist(idToUse).subscribe({
         next: () => {
           console.log('Wishlist toggle success. Current isInWishlist:', this.isInWishlist);

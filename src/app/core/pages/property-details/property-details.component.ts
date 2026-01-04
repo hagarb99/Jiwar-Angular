@@ -469,12 +469,6 @@ export class PropertyDetailsComponent implements OnInit {
       this.isFavorite = !this.isFavorite;
       console.log('Toggling favorite for ID:', this.propertyId);
 
-      // If we just added it to favorites, navigate immediately
-      if (this.isFavorite) {
-        console.log('Directly navigating to wishlist...');
-        this.router.navigate(['/wishlist']);
-      }
-
       this.wishlistService.toggleWishlist(this.propertyId).subscribe({
         next: () => {
           console.log('Favorite toggle success. Current isFavorite:', this.isFavorite);
