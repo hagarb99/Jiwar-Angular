@@ -25,9 +25,24 @@ export class RenovationApiService {
         return this.http.post<{ simulationId: number }>(`${this.baseUrl}/start`, dto);
     }
 
-    getUserProperties(): Observable<Property[]> {
+    /*getUserProperties(): Observable<Property[]> {
         return this.http.get<Property[]>(`${environment.apiBaseUrl}/property/owner`);
-    }
+    }*/
+
+    /*getUserProperties(): Observable<Property[]> {
+        const ownerId = 1; // مؤقتًا، بعدين من التوكن
+        return this.http.post<Property[]>(
+            `${environment.apiBaseUrl}/property/owner`,
+            { id: ownerId }
+        );
+    }*/
+   
+getUserProperties(): Observable<Property[]> {
+    return this.http.get<Property[]>(
+        `${environment.apiBaseUrl}/property/my`
+    );
+}
+
 
     updateDetails(id: number, dto: UpdateSimulationDetailsDto): Observable<void> {
         return this.http.put<void>(`${this.baseUrl}/${id}/details`, dto);

@@ -10,6 +10,7 @@ import { DashboardLayoutComponent } from './features/dashboard/dashboard-layout/
 import { PropertyOwnerLayoutComponent } from './features/propertyowner/propertyowner-dashboard/property-owner-layout.component';
 import { PropertyDetailsComponent } from './core/pages/property-details/property-details.component';
 import { WishlistComponent } from './core/pages/wishlist/wishlist.component';
+import { SubscriptionListComponent } from './features/subscription/subscription-list/subscription-list.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -26,7 +27,7 @@ const routes: Routes = [
       import('../app/features/dashboard/dashboard.routes')
         .then(m => m.DASHBOARD_ROUTES)
   },
-
+  { path: 'subscriptions', component: SubscriptionListComponent },
   // {
   //   path: 'propertyowner',
   //   canActivate: [roleGuard(['PropertyOwner'])],
@@ -86,6 +87,10 @@ const routes: Routes = [
   {
     path: 'wishlist',
     component: WishlistComponent
+  },
+  {
+    path: 'subscriptions',
+    loadComponent: () => import('./features/subscription/subscription-list/subscription-list.component').then(m => m.SubscriptionListComponent)
   }
 ];
 

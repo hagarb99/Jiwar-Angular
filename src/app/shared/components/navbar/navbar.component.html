@@ -59,6 +59,11 @@
           </div>
         </div>
 
+        <!-- Pricing -->
+        <a routerLink="/subscriptions" class="nav-btn">
+          Pricing
+        </a>
+
         <!-- Explore Properties -->
         <a routerLink="/properties">
           <button class="gradient-gold text-primary px-4 py-2 rounded-lg">
@@ -123,6 +128,11 @@
               Dashboard
             </a>
 
+            <a routerLink="/subscriptions" (click)="toggleUserDropdown = false"
+              class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
+              <i class="pi pi-credit-card mr-3"></i>
+              Subscriptions
+            </a>
 
             <a routerLink="/change-password" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
               <i class="pi pi-key mr-3"></i>
