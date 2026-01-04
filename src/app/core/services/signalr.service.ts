@@ -48,7 +48,7 @@ export class SignalRService {
         this.hubConnection
             .start()
             .then(() => console.log('Connection started'))
-            .catch(err => console.log('Error while starting connection: ' + err));
+            .catch((err: any) => console.log('Error while starting connection: ' + err));
 
         this.addNotificationListener();
     }
