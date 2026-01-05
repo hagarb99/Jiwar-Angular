@@ -564,6 +564,9 @@
                                 <div>
                                     <p class="text-sm font-bold text-gray-900">{{ property.ownerName || 'Jiwar
                                         Agent' }}</p>
+                                        <a [routerLink]="['/propertyowner', property.propertyOwner?.userId]">
+                                            View Owner Profile →
+                                          </a>
                                     <p class="text-xs text-gray-500">Listed Agent</p>
                                 </div>
                             </div>

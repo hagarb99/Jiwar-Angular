@@ -5,6 +5,12 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 // Define interfaces matching your backend models
+export interface PropertyOwner {
+    userId: string;
+    name: string;
+    profilePicURL?: string;
+    phoneNumber?: string;
+  }
 export interface Property {
     propertyID: number;
     id?: number; // fallback
@@ -27,6 +33,7 @@ export interface Property {
     thumbnailUrl?: string; // Still used by browse endpoint for card display
     ThumbnailUrl?: string; // Used by /my endpoint (PropertyListBDTO)
     propertyMedia?: PropertyMedia[]; // Still used by some endpoints
+    propertyOwner?: PropertyOwner; 
 }
 
 export interface PropertyMedia {
