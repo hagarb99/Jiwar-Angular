@@ -1,204 +1,120 @@
-<div class="max-w-4xl mx-auto space-y-6 pb-20">
-    <div class="flex justify-between items-center mb-6">
+<div class="max-w-7xl mx-auto p-6">
+  <!-- Welcome Message -->
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+      Welcome back, {{ getCurrentUser()?.name || 'Designer' }}!
+    </h1>
+    <p class="text-gray-600">Here's your design business overview</p>
+  </div>
+
+  <!-- Overview Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div *ngFor="let stat of overviewStats" 
+         [class]="'bg-white rounded-xl p-6 border border-gray-100 ' + stat.bg">
+      <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Edit Profile</h1>
-            <p class="text-gray-500 text-sm">Update your profile information and settings</p>
+          <p class="text-sm text-gray-600 mb-1">{{ stat.label }}</p>
+          <p class="text-2xl font-bold text-gray-900">{{ stat.value }}</p>
+          <p *ngIf="stat.sub" class="text-xs text-gray-500 mt-1">{{ stat.sub }}</p>
         </div>
-        <button (click)="saveProfile()"
-            class="bg-amber-300 text-amber-900 px-6 py-2 rounded-xl font-bold text-sm hover:bg-amber-400 transition-colors shadow-sm flex items-center">
-            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-            </svg>
-            Save Changes
-        </button>
+        <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
+          <svg class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path [attr.d]="stat.icon" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Profile Photo -->
-    <div class="bg-white rounded-2xl p-6 border border-gray-100">
-        <h3 class="font-bold text-gray-800 mb-6 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Profile Photo
-        </h3>
-        <div class="flex items-center gap-6">
-            <div
-                class="w-24 h-24 rounded-full bg-slate-900 text-white flex items-center justify-center text-3xl font-medium shadow-md">
-                NE
-            </div>
-            <div>
-                <button
-                    class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors bg-white flex items-center">
-                    <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                    Upload Photo
-                </button>
-                <p class="text-xs text-gray-400 mt-2">Recommended: Square image, at least 400x400 pixels. Max 5MB.</p>
-            </div>
-        </div>
+  <!-- Financial Summary -->
+  <div class="bg-slate-900 rounded-xl p-6 mb-6 text-white">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold">Financial Summary</h2>
+      <button class="bg-amber-300 text-amber-900 px-4 py-2 rounded-lg font-semibold hover:bg-amber-400 transition-colors">
+        Withdraw Funds
+      </button>
     </div>
-
-    <!-- Basic Info -->
-    <div class="bg-white rounded-2xl p-6 border border-gray-100">
-        <h3 class="font-bold text-gray-800 mb-6 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            Basic Information
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Full Name</label>
-                <input type="text" value="Nadia El-Sayed"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-gray-800">
-            </div>
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Professional Title</label>
-                <input type="text" value="Senior Interior Designer"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-gray-800">
-            </div>
-            <div class="col-span-1 md:col-span-2 space-y-2">
-                <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Bio</label>
-                <textarea rows="4"
-                    class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-gray-800 text-sm leading-relaxed"
-                    placeholder="Tell us about yourself...">Award-winning interior designer with 8+ years of experience specializing in luxury residential and commercial spaces. Passionate about creating functional, beautiful environments that reflect each client's unique personality.</textarea>
-                <div class="text-xs text-gray-400 text-right">225/500 characters</div>
-            </div>
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Years of Experience</label>
-                <input type="number" value="8"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-gray-800">
-            </div>
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Location</label>
-                <input type="text" value="Cairo, Egypt"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-gray-800">
-            </div>
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div *ngFor="let financial of financials" [class.font-bold]="financial.main">
+        <p class="text-sm text-gray-400 mb-1">{{ financial.label }}</p>
+        <p [class.text-3xl]="financial.main" [class.text-xl]="!financial.main">{{ financial.value }}</p>
+      </div>
     </div>
+  </div>
 
-    <!-- Contact Info -->
-    <div class="bg-white rounded-2xl p-6 border border-gray-100">
-        <h3 class="font-bold text-gray-800 mb-6 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            Contact Information
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Email Address</label>
-                <input type="email" value="nadia@designer.com"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-gray-800">
-            </div>
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Phone Number</label>
-                <input type="tel" value="+20 100 123 4567"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-gray-800">
-            </div>
-            <div class="col-span-1 md:col-span-2 space-y-2">
-                <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Website</label>
-                <input type="url" value="www.nadiadesigns.com"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-gray-800">
-            </div>
-        </div>
-    </div>
-
-    <!-- Pricing -->
-    <div class="bg-white rounded-2xl p-6 border border-gray-100">
-        <h3 class="font-bold text-gray-800 mb-6 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Pricing & Availability
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Hourly Rate (USD)</label>
-                <input type="number" value="150"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-gray-800">
-            </div>
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Minimum Project Budget
-                    (USD)</label>
-                <input type="number" value="5000"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-gray-800">
-            </div>
-        </div>
-    </div>
-
-    <!-- Specializations -->
-    <div class="bg-white rounded-2xl p-6 border border-gray-100">
-        <h3 class="font-bold text-gray-800 mb-6 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            Specializations
-        </h3>
-        <div class="flex flex-wrap gap-2 mb-4">
-            <span *ngFor="let spec of specializations; let i = index"
-                class="px-4 py-2 bg-slate-800 text-white rounded-full text-sm font-medium flex items-center">
-                {{ spec }}
-                <button (click)="removeSpecialization(i)" class="ml-2 hover:text-red-300">×</button>
-            </span>
-        </div>
-        <div class="flex gap-2">
-            <input #specInput type="text" placeholder="Add a specialization..."
-                class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-gray-800 text-sm">
-            <button (click)="addSpecialization(specInput)"
-                class="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50">+
-                Add</button>
-        </div>
-    </div>
-
-    <!-- Certifications -->
-    <div class="bg-white rounded-2xl p-6 border border-gray-100">
-        <h3 class="font-bold text-gray-800 mb-6 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-            </svg>
-            Certifications & Awards
-        </h3>
-        <div class="flex flex-wrap gap-2 mb-4">
-            <span *ngFor="let cert of certifications; let i = index"
-                class="px-4 py-2 bg-green-50 text-green-700 rounded-full text-sm font-medium flex items-center border border-green-100">
-                <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
-                </svg>
-                {{ cert }}
-                <button (click)="removeCertification(i)" class="ml-2 hover:text-green-900">×</button>
-            </span>
-        </div>
-        <div class="flex gap-2">
-            <input #certInput type="text" placeholder="Add a certification..."
-                class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-gray-800 text-sm">
-            <button (click)="addCertification(certInput)"
-                class="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50">+
-                Add</button>
-        </div>
-    </div>
-</div>
-
-<!-- Floating Action Bar (Responsive) -->
-<div
-    class="fixed bottom-0 right-0 left-0 md:left-64 bg-white border-t border-gray-200 p-4 flex justify-end items-center z-40">
-    <button (click)="saveProfile()"
-        class="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center">
-        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+  <!-- My Proposals Section -->
+  <div class="bg-white rounded-xl p-6 border border-gray-100 mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold text-gray-900 flex items-center">
+        <svg class="w-6 h-6 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        Save All Changes
-    </button>
+        My Proposals
+      </h2>
+    </div>
+    
+    <div *ngIf="loading" class="text-center py-8">
+      <p class="text-gray-500">Loading proposals...</p>
+    </div>
+
+    <div *ngIf="!loading && proposals.length === 0" class="text-center py-8">
+      <p class="text-gray-500">No proposals yet</p>
+    </div>
+
+    <div *ngIf="!loading && proposals.length > 0" class="space-y-3">
+      <div *ngFor="let proposal of proposals.slice(0, 5)" 
+           class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+        <div>
+          <h3 class="font-semibold text-gray-900">{{ proposal.title }}</h3>
+          <p class="text-sm text-gray-600">Client: {{ proposal.client }}</p>
+        </div>
+        <div class="text-right">
+          <p class="font-bold text-gray-900">{{ proposal.price }}</p>
+          <span [class]="'px-2 py-1 rounded text-xs font-semibold ' + 
+            (proposal.status === 'Accepted' ? 'bg-green-100 text-green-800' : 
+             proposal.status === 'Rejected' ? 'bg-red-100 text-red-800' : 
+             'bg-yellow-100 text-yellow-800')">
+            {{ proposal.status }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Projects Section -->
+  <div class="bg-white rounded-xl p-6 border border-gray-100">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold text-gray-900 flex items-center">
+        <svg class="w-6 h-6 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        Active Projects
+      </h2>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-8">
+      <p class="text-gray-500">Loading projects...</p>
+    </div>
+
+    <div *ngIf="!loading && activeProjects.length === 0" class="text-center py-8">
+      <p class="text-gray-500">No active projects yet</p>
+    </div>
+
+    <div *ngIf="!loading && activeProjects.length > 0" class="space-y-4">
+      <div *ngFor="let project of activeProjects" 
+           class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-semibold text-gray-900">{{ project.title }}</h3>
+          <span class="text-sm text-gray-600">{{ project.date }}</span>
+        </div>
+        <p class="text-sm text-gray-600 mb-3">Client: {{ project.client }}</p>
+        <div class="flex items-center gap-2">
+          <div class="flex-1 bg-gray-200 rounded-full h-2">
+            <div class="bg-amber-500 h-2 rounded-full" [style.width.%]="project.progress"></div>
+          </div>
+          <span class="text-sm font-semibold text-gray-700">{{ project.progress }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

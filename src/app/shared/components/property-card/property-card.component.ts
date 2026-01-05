@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { LucideAngularModule, Heart } from 'lucide-angular';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { Property } from '../../../core/services/property.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-property-card',
@@ -65,6 +66,7 @@ import { Property } from '../../../core/services/property.service';
 export class PropertyCardComponent implements OnInit {
   private router = inject(Router);
   private wishlistService = inject(WishlistService);
+  private authService = inject(AuthService);
 
   Heart = Heart;
 
@@ -87,7 +89,7 @@ export class PropertyCardComponent implements OnInit {
       this.isInWishlist = this.wishlistService.isInWishlist(idToUse);
     }
 
-    this.wishlistService.wishlist$.subscribe(() => {
+    this.wishlistService.wishlistIds$.subscribe(() => {
       const idToCheck = this.propertyID || this.id;
       if (idToCheck) {
         this.isInWishlist = this.wishlistService.isInWishlist(idToCheck);
@@ -104,26 +106,33 @@ export class PropertyCardComponent implements OnInit {
 
   toggleWishlist(event: Event) {
     event.stopPropagation();
-    const idToUse = this.propertyID || this.id;
 
-    if (idToUse && this.propertyData) {
-      this.isInWishlist = this.wishlistService.toggleWishlist(this.propertyData);
-    } else if (idToUse) {
-      const minimalProperty: Property = {
-        propertyID: this.propertyID || 0,
-        id: this.id,
-        title: this.title,
-        district: this.location,
-        price: 0,
-        description: '',
-        address: '',
-        city: '',
-        locationLat: 0,
-        locationLang: 0,
-        ownerName: '',
-        mediaUrls: [this.image]
-      };
-      this.isInWishlist = this.wishlistService.toggleWishlist(minimalProperty);
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const idToUse = this.propertyData?.propertyID || this.propertyID || this.id;
+
+    if (idToUse) {
+      const wasInWishlist = this.isInWishlist;
+      console.log('Toggling wishlist for ID:', idToUse);
+
+      // Optimistic UI update
+      this.isInWishlist = !this.isInWishlist;
+
+      this.wishlistService.toggleWishlist(idToUse).subscribe({
+        next: () => {
+          console.log('Wishlist toggle success. Current isInWishlist:', this.isInWishlist);
+          // Sync with service state
+          this.isInWishlist = this.wishlistService.isInWishlist(idToUse);
+        },
+        error: (err: any) => {
+          console.error('Error toggling wishlist:', err);
+          // Revert on error
+          this.isInWishlist = wasInWishlist;
+        }
+      });
     }
   }
 }

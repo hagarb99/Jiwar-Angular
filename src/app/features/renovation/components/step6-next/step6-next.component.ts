@@ -30,8 +30,7 @@ export class Step6NextComponent {
 
     onOpenAIAssistant() {
         console.log('Opening AI Assistant...');
-        // Could navigate to a chat interface or back to results with a chat overlay
-        alert('AI Assistant chat interface coming soon!');
+        this.router.navigate(['/renovation/chat']);
     }
 
     restart() {

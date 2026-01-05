@@ -9,7 +9,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { AuthService } from '../../../core/services/auth.service'; 
+import { AuthService } from '../../../core/services/auth.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { StepsModule } from 'primeng/steps';
@@ -17,7 +17,8 @@ import { MenuItem } from 'primeng/api';
 import { CardModule } from 'primeng/card';
 import { FileUploadModule } from 'primeng/fileupload';
 import { PropertyService } from '../../../core/services/property.service';
-  
+
+
 interface PropertyCreateDTO {
   title: string;
   description: string;
@@ -32,7 +33,7 @@ interface PropertyCreateDTO {
   tour360Url?: string;
   locationLat?: number;
   locationLang?: number;
-   listingType: number;
+  listingType: number;
 }
 
 export enum ListingTypeEnum {
@@ -83,15 +84,15 @@ export class AddPropertyComponent {
     { label: 'Commercial', value: 5 }
   ];
   listingTypes = [
-  { label: 'Rent', value: ListingTypeEnum.Rent },
-  { label: 'Sell', value: ListingTypeEnum.Sell }
-];
+    { label: 'Rent', value: ListingTypeEnum.Rent },
+    { label: 'Sell', value: ListingTypeEnum.Sell }
+  ];
 
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private propertyService : PropertyService,
+    private propertyService: PropertyService,
     private messageService: MessageService,
     public router: Router
   ) {
@@ -106,7 +107,7 @@ export class AddPropertyComponent {
       rooms: [null, Validators.min(0)],
       bathrooms: [null, Validators.min(0)],
       categoryId: [null, Validators.required],
-      listingType: [ListingTypeEnum.Sell, Validators.required], 
+      listingType: [ListingTypeEnum.Sell, Validators.required],
       tour360Url: [''],
       locationLat: [''],
       locationLang: ['']
@@ -153,155 +154,83 @@ export class AddPropertyComponent {
     const category = this.categories.find(cat => cat.value === categoryId);
     return category ? category.label : '—';
   }
-  uploadedFiles: File[] = []; // array للصور اللي المستخدم رفعها
+  uploadedFiles: File[] = []; // Array for user uploaded images
 
- onFileSelect(event: any) {
-  // حد أقصى 10 صور
-  const newFiles = event.currentFiles || event.files;
-  if (this.uploadedFiles.length + newFiles.length > 10) {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Limit Exceeded',
-      detail: 'Maximum 10 images allowed'
+  onFileSelect(event: any) {
+    // Max 10 images
+    const newFiles = event.currentFiles || event.files;
+    if (this.uploadedFiles.length + newFiles.length > 10) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Limit Exceeded',
+        detail: 'Maximum 10 images allowed'
+      });
+      return;
+    }
+    this.uploadedFiles = [...this.uploadedFiles, ...newFiles];
+  }
+
+  removeFile(file: File) {
+    this.uploadedFiles = this.uploadedFiles.filter(f => f !== file);
+  }
+
+  getImagePreview(file: File): string {
+    return URL.createObjectURL(file);
+  }
+  onFileRemove(event: any) {
+    this.uploadedFiles = this.uploadedFiles.filter(f => f !== event.file);
+  }
+
+  onSubmit() {
+    if (this.activeStep !== this.steps.length - 1) return;
+
+    if (this.propertyForm.invalid) {
+      this.messageService.add({ severity: 'error', summary: 'Validation Error', detail: 'Please complete all required fields' });
+      return;
+    }
+
+    if (!this.authService.isLoggedIn()) {
+      this.messageService.add({ severity: 'error', summary: 'Authentication Required', detail: 'You must be logged in' });
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.loading = true;
+
+    const formValue = this.propertyForm.value;
+    const dto: PropertyCreateDTO = {
+      title: formValue.title,
+      description: formValue.description,
+      price: Number(formValue.price),
+      address: formValue.address,
+      city: formValue.city,
+      district: formValue.district || undefined,
+      area: formValue.area ? Number(formValue.area) : undefined,
+      rooms: formValue.rooms ? Number(formValue.rooms) : undefined,
+      bathrooms: formValue.bathrooms ? Number(formValue.bathrooms) : undefined,
+      categoryId: Number(formValue.categoryId),
+      listingType: Number(formValue.listingType),
+      tour360Url: formValue.tour360Url || undefined,
+      locationLat: formValue.locationLat ? Number(formValue.locationLat) : undefined,
+      locationLang: formValue.locationLang ? Number(formValue.locationLang) : undefined
+    };
+
+    this.propertyService.addProperty(dto, this.uploadedFiles).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Property added successfully!' });
+        this.router.navigate(['/properties']);
+        this.loading = false;
+        this.uploadedFiles = [];
+      },
+      error: (err) => {
+        console.error('Add property error:', err);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Failed to add property' });
+        this.loading = false;
+      }
     });
-    return;
-  }
-  this.uploadedFiles = [...this.uploadedFiles, ...newFiles];
-}
 
-   removeFile(file: File) {
-  this.uploadedFiles = this.uploadedFiles.filter(f => f !== file);
-}
-
-getImagePreview(file: File): string {
-  return URL.createObjectURL(file);
-}
-   onFileRemove(event: any) {
-  this.uploadedFiles = this.uploadedFiles.filter(f => f !== event.file);
-   }
-
-   onSubmit() {
-  if (this.activeStep !== this.steps.length - 1) return;
-
-  if (this.propertyForm.invalid) {
-    this.messageService.add({ severity: 'error', summary: 'Validation Error', detail: 'Please complete all required fields' });
-    return;
   }
 
-  if (!this.authService.isLoggedIn()) {
-    this.messageService.add({ severity: 'error', summary: 'Authentication Required', detail: 'You must be logged in' });
-    this.router.navigate(['/login']);
-    return;
-  }
 
-  this.loading = true;
-
-  const formValue = this.propertyForm.value;
-  const dto: PropertyCreateDTO = {
-    title: formValue.title,
-    description: formValue.description,
-    price: Number(formValue.price),
-    address: formValue.address,
-    city: formValue.city,
-    district: formValue.district || undefined,
-    area: formValue.area ? Number(formValue.area) : undefined,
-    rooms: formValue.rooms ? Number(formValue.rooms) : undefined,
-    bathrooms: formValue.bathrooms ? Number(formValue.bathrooms) : undefined,
-    categoryId: Number(formValue.categoryId),
-     listingType: Number(formValue.listingType),
-    tour360Url: formValue.tour360Url || undefined,
-    locationLat: formValue.locationLat ? Number(formValue.locationLat) : undefined,
-    locationLang: formValue.locationLang ? Number(formValue.locationLang) : undefined
-  };
-
-  this.propertyService.addProperty(dto, this.uploadedFiles).subscribe({
-  next: () => {
-    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Property added successfully!' });
-    this.router.navigate(['/properties']);
-    this.loading = false;
-    this.uploadedFiles = [];
-  },
-  error: (err) => {
-    console.error('Add property error:', err);
-    this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Failed to add property' });
-    this.loading = false;
-  }
-});
-
-}
-
-  // onSubmit() {
-  //   // تأكد إننا في آخر خطوة
-  //   if (this.activeStep !== this.steps.length - 1) {
-  //     return;
-  //   }
-
-  //   if (this.propertyForm.invalid) {
-  //     this.messageService.add({
-  //       severity: 'error',
-  //       summary: 'Validation Error',
-  //       detail: 'Please complete all required fields'
-  //     });
-  //     return;
-  //   }
-
-  //   if (!this.authService.isLoggedIn()) {
-  //     this.messageService.add({
-  //       severity: 'error',
-  //       summary: 'Authentication Required',
-  //       detail: 'You must be logged in to add a property'
-  //     });
-  //     this.router.navigate(['/login']);
-  //     return;
-  //   }
-
-  //   this.loading = true;
-
-  //   const formValue = this.propertyForm.value;
-
-  //   const dto: PropertyCreateDTO = {
-  //     title: formValue.title,
-  //     description: formValue.description,
-  //     price: Number(formValue.price),
-  //     address: formValue.address,
-  //     city: formValue.city,
-  //     district: formValue.district || undefined,
-  //     area: formValue.area ? Number(formValue.area) : undefined,
-  //     rooms: formValue.rooms ? Number(formValue.rooms) : undefined,
-  //     bathrooms: formValue.bathrooms ? Number(formValue.bathrooms) : undefined,
-  //     categoryId: Number(formValue.categoryId),
-  //     tour360Url: formValue.tour360Url || undefined,
-  //     locationLat: formValue.locationLat ? Number(formValue.locationLat) : undefined,
-  //     locationLang: formValue.locationLang ? Number(formValue.locationLang) : undefined
-  //   };
-
-  //   const formData = new FormData();
-  // formData.append('dto', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
-
-  // this.uploadedFiles.forEach(file => {
-  //   formData.append('images', file, file.name);
-  // });
-
-  //   this.http.post('/api/property/add', dto).subscribe({
-  //     next: () => {
-  //       this.messageService.add({
-  //         severity: 'success',
-  //         summary: 'Success',
-  //         detail: 'Property added successfully!'
-  //       });
-  //       this.router.navigate(['/properties']);
-  //       this.loading = false;
-  //     },
-  //     error: (err) => {
-  //       console.error('Add property error:', err);
-  //       this.messageService.add({
-  //         severity: 'error',
-  //         summary: 'Error',
-  //         detail: err.error?.message || 'Failed to add property. Please try again.'
-  //       });
-  //       this.loading = false;
-  //     }
-  //   });
-  // }
 
 }

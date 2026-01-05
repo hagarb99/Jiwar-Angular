@@ -25,8 +25,25 @@ export enum RecommendationSeverityEnum {
   High = 2
 }
 
+export enum SimulationSourceEnum {
+  Standalone = 1,
+  ExistingProperty = 2
+}
+
 export interface StartSimulationDto {
-  propertyId: number;
+  PropertyID?: number;
+  BudgetMin?: number;
+  BudgetMax?: number;
+  GoalsJson?: string[];
+}
+
+export interface Property {
+  propertyID: number;
+  title: string;
+  address: string;
+  area_sqm?: number;
+  numBedrooms?: number;
+  numBathrooms?: number;
 }
 
 export interface UpdateSimulationDetailsDto {

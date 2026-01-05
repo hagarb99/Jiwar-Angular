@@ -1,0 +1,251 @@
+<p-toast></p-toast>
+<div class="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <app-navbar></app-navbar>
+
+    <div class="flex-grow flex flex-col items-center p-4 md:p-8 overflow-hidden">
+        <!-- Header -->
+        <div class="w-full max-w-6xl flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+                <a routerLink="/renovation/next" class="text-slate-500 hover:text-slate-800 transition-colors">
+                    <i class="pi pi-arrow-left text-xl"></i>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0F172A] tracking-tight">AI Renovation Expert</h1>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-[#BA9F60] animate-pulse"></span>
+                        <span class="text-xs text-slate-500 font-medium">Assistant Online</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button (click)="loadProjectDataAndHistory()"
+                    class="p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors" title="Reload Chat">
+                    <i class="pi pi-refresh" [class.animate-spin]="isLoading"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Layout Split -->
+        <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow overflow-hidden h-[75vh]">
+
+            <!-- Left Sidebar: Project Context -->
+            <div class="hidden lg:flex flex-col gap-4 overflow-y-auto">
+                <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Project Context</h3>
+
+                    @if (projectInfo) {
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase font-bold">Estimated Budget</label>
+                            <p class="text-sm font-semibold text-slate-800">
+                                {{ projectInfo.budgetMin | currency:'USD':'symbol':'1.0-0' }} - {{ projectInfo.budgetMax
+                                | currency:'USD':'symbol':'1.0-0' }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase font-bold">Selected Goals</label>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                @for (goal of projectInfo.goals; track goal) {
+                                <span
+                                    class="px-2 py-0.5 bg-slate-50 text-[10px] rounded-md text-slate-600 border border-slate-100">{{
+                                    goal }}</span>
+                                }
+                            </div>
+                        </div>
+
+                        @if (projectInfo.recommendations && projectInfo.recommendations.length > 0) {
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase font-bold">Key Recommendations</label>
+                            <ul class="mt-1 space-y-1">
+                                @for (rec of projectInfo.recommendations.slice(0, 3); track rec.title) {
+                                <li class="text-[11px] text-slate-600 flex items-start gap-2">
+                                    <i class="pi pi-check-circle text-[#BA9F60] mt-0.5"></i>
+                                    {{ rec.title }}
+                                </li>
+                                }
+                            </ul>
+                        </div>
+                        }
+                    </div>
+                    } @else {
+                    <div class="animate-pulse space-y-3">
+                        <div class="h-4 bg-slate-50 rounded w-3/4"></div>
+                        <div class="h-10 bg-slate-50 rounded"></div>
+                        <div class="h-20 bg-slate-50 rounded"></div>
+                    </div>
+                    }
+                </div>
+
+                <div class="bg-[#F9F6F0] rounded-3xl p-5 border border-[#BA9F60]/20">
+                    <h4 class="text-xs font-bold text-[#BA9F60] uppercase tracking-widest mb-2">Expert Tip</h4>
+                    <p class="text-[11px] text-[#0F172A] leading-relaxed italic opacity-80">
+                        "Always prioritize structural integrity and energy efficiency to maximize long-term market
+                        value."
+                    </p>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div
+                class="lg:col-span-3 bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col overflow-hidden h-full">
+
+                <!-- Messages Area -->
+                <div #scrollContainer class="flex-grow overflow-y-auto p-6 space-y-6 scroll-smooth">
+                    @if (messages.length === 0 && !isLoading) {
+                    <div class="h-full flex flex-col items-center justify-center text-center opacity-50">
+                        <i class="pi pi-comments text-5xl mb-4 text-slate-200"></i>
+                        <p class="text-slate-400">Your AI Expert is ready to discuss your renovation.</p>
+                    </div>
+                    }
+
+                    @for (msg of messages; track msg.id || $index) {
+                    <div class="flex w-full"
+                        [ngClass]="msg.sender === ChatSender.User ? 'justify-end' : 'justify-start'">
+                        <div class="max-w-[85%] flex items-end gap-3"
+                            [ngClass]="msg.sender === ChatSender.User ? 'flex-row-reverse' : 'flex-row'">
+                            <!-- Avatar -->
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm"
+                                [ngClass]="msg.sender === ChatSender.User ? 'bg-slate-100 text-slate-500' : 'bg-[#BA9F60] text-white'">
+                                <i class="pi"
+                                    [ngClass]="msg.sender === ChatSender.User ? 'pi-user' : 'pi-sparkles text-sm'"></i>
+                            </div>
+
+                            <!-- Bubble -->
+                            <div class="flex flex-col"
+                                [ngClass]="msg.sender === ChatSender.User ? 'items-end' : 'items-start'">
+                                <div class="px-5 py-3 rounded-2xl text-sm md:text-base shadow-sm leading-relaxed"
+                                    [ngClass]="msg.sender === ChatSender.User 
+                                            ? 'bg-[#0F172A] text-white rounded-br-none' 
+                                            : 'bg-[#F9F6F0] text-slate-800 rounded-bl-none border border-[#F0EAD6]'">
+
+                                    @if (msg.messageType === ChatMessageType.Text) {
+                                    <div class="whitespace-pre-wrap">{{ msg.content }}</div>
+                                    } @else if (msg.messageType === ChatMessageType.Image) {
+                                    <div class="flex items-center gap-3 text-emerald-600 font-medium">
+                                        <i class="pi pi-image text-xl"></i>
+                                        <span>{{ msg.content }}</span>
+                                    </div>
+                                    } @else if (msg.messageType === ChatMessageType.Video) {
+                                    <div class="flex items-center gap-3 text-amber-600 font-medium">
+                                        <i class="pi pi-video text-xl"></i>
+                                        <span>{{ msg.content }}</span>
+                                    </div>
+                                    }
+                                </div>
+                                <span class="text-[9px] text-slate-400 mt-1.5 uppercase font-bold tracking-widest">
+                                    {{ msg.createdAt | date:'HH:mm' }} • {{ msg.sender === ChatSender.User ? 'You' :
+                                    'Expert' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    }
+
+                    @if (isLoading) {
+                    <div class="flex justify-start">
+                        <div class="flex items-end gap-3">
+                            <!-- Avatar -->
+                            <div
+                                class="w-9 h-9 rounded-full bg-[#BA9F60] text-white flex items-center justify-center shadow-sm">
+                                <i class="pi pi-sparkles text-sm"></i>
+                            </div>
+
+                            <!-- Bubble -->
+                            <div class="flex flex-col items-start">
+                                <div
+                                    class="bg-[#F9F6F0] px-5 py-3 rounded-2xl rounded-bl-none border border-[#BA9F60]/20 flex items-center gap-3">
+                                    <div class="flex gap-1.5 items-center">
+                                        <span class="dot-typing"></span>
+                                        <span class="dot-typing"></span>
+                                        <span class="dot-typing"></span>
+                                    </div>
+                                    <span class="text-xs font-bold text-[#BA9F60]/70 uppercase tracking-widest">Expert
+                                        is analyzing</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+
+                    @if (showPlans) {
+                    <div class="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                            @for (plan of plans; track plan.id) {
+                            <div class="transform scale-90">
+                                <app-pricing-card [plan]="plan" [loading]="processingId === plan.id"
+                                    (onSubscribe)="handleSubscribe($event)">
+                                </app-pricing-card>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                    }
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-4 bg-slate-50/50 border-t border-slate-100">
+                    <div
+                        class="relative flex items-end gap-3 bg-white rounded-2xl border border-slate-200 p-2.5 shadow-inner focus-within:ring-2 focus-within:ring-[#BA9F60]/20 focus-within:border-[#BA9F60] transition-all">
+
+                        <!-- File Upload Actions -->
+                        <div class="flex items-center gap-1 pb-1">
+                            <label
+                                class="p-2.5 rounded-xl text-slate-400 hover:text-[#BA9F60] hover:bg-[#F9F6F0] cursor-pointer transition-all"
+                                title="Upload Property Image">
+                                <i class="pi pi-image text-lg"></i>
+                                <input type="file" class="hidden" accept="image/*"
+                                    (change)="onFileUpload($event, 'Image')">
+                            </label>
+                            <label
+                                class="p-2.5 rounded-xl text-slate-400 hover:text-[#BA9F60] hover:bg-[#F9F6F0] cursor-pointer transition-all"
+                                title="Upload Video Tour">
+                                <i class="pi pi-video text-lg"></i>
+                                <input type="file" class="hidden" accept="video/*"
+                                    (change)="onFileUpload($event, 'Video')">
+                            </label>
+                            <button (click)="onVoiceUpload()"
+                                class="p-2.5 rounded-xl text-slate-400 hover:text-[#BA9F60] hover:bg-[#F9F6F0] transition-all"
+                                title="Voice Consultation">
+                                <i class="pi pi-microphone text-lg"></i>
+                            </button>
+                        </div>
+
+                        <textarea [(ngModel)]="newMessage" (keyup.enter)="$event.preventDefault(); send()"
+                            placeholder="Ask about ROI, materials, or design ideas..."
+                            class="flex-grow bg-transparent border-none focus:ring-0 text-slate-800 placeholder:text-slate-400 resize-none max-h-32 py-2.5 px-2 text-sm md:text-base leading-relaxed"
+                            rows="1"></textarea>
+
+                        <button (click)="send()" [disabled]="!newMessage.trim() || isLoading"
+                            class="p-4 bg-[#0F172A] hover:bg-[#1E293B] disabled:bg-slate-200 text-white rounded-xl transition-all shadow-lg flex items-center justify-center">
+                            <i class="pi pi-send"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 mt-4 px-1">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold self-center mr-2">Try:</span>
+                        <button (click)="newMessage = 'Suggest ways to increase market value.'; send()"
+                            class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:border-[#BA9F60] hover:text-[#BA9F60] transition-all shadow-sm">
+                            MARKET VALUE
+                        </button>
+                        <button (click)="newMessage = 'What materials fit my budget?'; send()"
+                            class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:border-[#BA9F60] hover:text-[#BA9F60] transition-all shadow-sm">
+                            BUDGET MATERIALS
+                        </button>
+                        <button (click)="newMessage = 'How can I optimize the layout?'; send()"
+                            class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:border-[#BA9F60] hover:text-[#BA9F60] transition-all shadow-sm">
+                            LAYOUT IDEAS
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <app-footer></app-footer>
+
+    <!-- Paymob Secure Payment Modal -->
+    <app-payment-modal [visible]="showPaymentModal" [iframeUrl]="paymobUrl" (onClose)="onPaymentClose()">
+    </app-payment-modal>
+</div>
