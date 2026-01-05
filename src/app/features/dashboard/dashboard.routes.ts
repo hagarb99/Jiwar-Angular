@@ -7,7 +7,12 @@ export const DASHBOARD_ROUTES: Routes = [
     path: '',
     component: DashboardLayoutComponent,
     children: [
-
+      { 
+        path: 'interiordesigner',
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/profile-placeholder/profile-placeholder.component').then(m => m.ProfilePlaceholderComponent)
+      },
 
       {
         path: 'designer',
