@@ -112,17 +112,25 @@ export class PropertyCardComponent implements OnInit {
       return;
     }
 
-    const idToUse = this.propertyID || this.id;
+    const idToUse = this.propertyData?.propertyID || this.propertyID || this.id;
 
     if (idToUse) {
+      const wasInWishlist = this.isInWishlist;
+      console.log('Toggling wishlist for ID:', idToUse);
+
       // Optimistic UI update
       this.isInWishlist = !this.isInWishlist;
 
       this.wishlistService.toggleWishlist(idToUse).subscribe({
+        next: () => {
+          console.log('Wishlist toggle success. Current isInWishlist:', this.isInWishlist);
+          // Sync with service state
+          this.isInWishlist = this.wishlistService.isInWishlist(idToUse);
+        },
         error: (err: any) => {
           console.error('Error toggling wishlist:', err);
           // Revert on error
-          this.isInWishlist = !this.isInWishlist;
+          this.isInWishlist = wasInWishlist;
         }
       });
     }

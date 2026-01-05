@@ -11,6 +11,8 @@ import { authGuard } from './core/guards/auth.guard';
 import { SearchPageComponent } from './core/pages/search-page/search-page.component';
 import { PropertyDetailsComponent } from './core/pages/property-details/property-details.component';
 import { WishlistComponent } from './core/pages/wishlist/wishlist.component';
+import { SubscriptionListComponent } from './features/subscription/subscription-list/subscription-list.component';
+
 import { ChatComponent } from './shared/components/chat/chat.component';
 import { PropertyOwnerPublicProfileComponent } from './features/dashboard/pages/propertyowner/profile-propertyowner/property-owner-public-profile/property-owner-public-profile.component';
 const routes: Routes = [
@@ -30,6 +32,7 @@ const routes: Routes = [
       import('../app/features/dashboard/dashboard.routes')
         .then(m => m.DASHBOARD_ROUTES)
   },
+  { path: 'subscriptions', component: SubscriptionListComponent },
   { path: 'chat', component: ChatComponent },
   {path: 'propertyowner/:userId', component: PropertyOwnerPublicProfileComponent},
   // {
@@ -91,6 +94,10 @@ const routes: Routes = [
   {
     path: 'wishlist',
     component: WishlistComponent
+  },
+  {
+    path: 'subscriptions',
+    loadComponent: () => import('./features/subscription/subscription-list/subscription-list.component').then(m => m.SubscriptionListComponent)
   }
 ];
 

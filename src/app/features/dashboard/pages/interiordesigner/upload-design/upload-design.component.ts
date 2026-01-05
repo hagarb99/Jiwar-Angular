@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { DesignService } from '../../../../../core/services/design.service';
 import { DesignerProposalService } from '../../../../../core/services/designer-proposal.service';
 import { DesignRequestService } from '../../../../../core/services/design-request.service';
@@ -80,22 +82,35 @@ export class UploadDesignComponent implements OnInit {
   loadAcceptedProposals() {
     this.proposalService.getMyProposals().subscribe({
       next: (proposals) => {
-        this.acceptedProposals = proposals.filter(p => p.status === 'Accepted');
-        
-        // check for query params
-        this.route.queryParams.subscribe(params => {
-             const preSelectedId = params['proposalId'];
-             if (preSelectedId) {
-                 const found = this.acceptedProposals.find(p => p.id == preSelectedId);
-                 if (found) {
-                     this.designForm.patchValue({ proposalID: found.id });
-                     this.onProposalChange(); // Trigger property fetch
-                 }
-             } else if (this.acceptedProposals.length > 0) {
-                 // Fallback optional: select first if none selected
-                 // this.designForm.patchValue({ proposalID: this.acceptedProposals[0].id });
-                 // this.onProposalChange();
-             }
+        // 1. Explicitly accepted
+        const explicitlyAccepted = proposals.filter(p => p.status === 'Accepted');
+
+        // 2. Pending to check
+        const pendingProposals = proposals.filter(p => p.status === 'Pending' || p.status === '0');
+
+        if (pendingProposals.length === 0) {
+          this.processAcceptedProposals(explicitlyAccepted);
+          return;
+        }
+
+        // 3. Check requests
+        const checkObservables = pendingProposals.map(prop =>
+          this.designRequestService.getDesignRequestById(prop.designRequestID).pipe(
+            map(req => {
+              if (req.status === 'InProgress' || req.status === 'Active' || req.status === 'Completed') {
+                prop.status = 'Accepted';
+                return prop;
+              }
+              return null;
+            }),
+            catchError(() => of(null))
+          )
+        );
+
+        forkJoin(checkObservables).subscribe(results => {
+          const implicitlyAccepted = results.filter((p): p is DesignerProposal => p !== null);
+          const allAccepted = [...explicitlyAccepted, ...implicitlyAccepted].filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
+          this.processAcceptedProposals(allAccepted);
         });
       },
       error: (err) => {
@@ -105,6 +120,24 @@ export class UploadDesignComponent implements OnInit {
           summary: 'Warning',
           detail: 'Could not load accepted proposals'
         });
+      }
+    });
+  }
+
+  processAcceptedProposals(proposals: DesignerProposal[]) {
+    this.acceptedProposals = proposals;
+
+    // check for query params
+    this.route.queryParams.subscribe(params => {
+      const preSelectedId = params['proposalId'];
+      if (preSelectedId) {
+        const found = this.acceptedProposals.find(p => p.id == preSelectedId);
+        if (found) {
+          this.designForm.patchValue({ proposalID: found.id });
+          this.onProposalChange();
+        }
+      } else if (this.acceptedProposals.length > 0) {
+        // Optional auto-select logic
       }
     });
   }

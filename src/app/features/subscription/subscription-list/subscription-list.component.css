@@ -1,0 +1,50 @@
+.subscription-container {
+    background: radial-gradient(circle at top right, #1a237e 0%, #000000 100%);
+    overflow: hidden;
+    position: relative;
+}
+
+.subscription-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(212, 175, 55, 0.05) 0%, transparent 40%);
+    pointer-events: none;
+}
+
+.plan-card {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    animation: cardFadeIn 0.8s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.plan-card:hover {
+    transform: translateY(-10px);
+}
+
+.shadow-luxury {
+    box-shadow: 0 25px 50px -12px rgba(212, 175, 55, 0.15);
+}
+
+/* Glassmorphism effect */
+.backdrop-blur-xl {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}

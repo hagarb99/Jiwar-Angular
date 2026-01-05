@@ -4,10 +4,12 @@ import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { ProfileService, InteriorDesigner } from './profile.service';
 import { DesignerProposalService } from '../../../../../core/services/designer-proposal.service';
 import { DesignService } from '../../../../../core/services/design.service';
+import { DesignRequestService } from '../../../../../core/services/design-request.service';
+import { DesignerProposal } from '../../../../../core/interfaces/designer-proposal.interface'; // Ensure interface availability
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { forkJoin, of } from 'rxjs';
-import { catchError, filter } from 'rxjs/operators';
+import { catchError, filter, map, switchMap } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -27,20 +29,21 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private proposalService: DesignerProposalService,
     private designService: DesignService,
+    private designRequestService: DesignRequestService,
     private messageService: MessageService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
     this.fetchProfile();
-    
+
     // Reload profile when navigating back from edit page
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
         // If we're on the profile page and coming from edit page, reload data
-        if (event.url === '/dashboard/interiordesigner/profile' || 
-            event.urlAfterRedirects === '/dashboard/interiordesigner/profile') {
+        if (event.url === '/dashboard/interiordesigner/profile' ||
+          event.urlAfterRedirects === '/dashboard/interiordesigner/profile') {
           this.fetchProfile();
         }
       });
@@ -52,81 +55,82 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
     }
   }
 
-  mapStatus(val: any): string {
-      if (val === undefined || val === null) return 'Pending';
-      
-      if (typeof val === 'string') {
-          const lower = val.toLowerCase();
-          if (lower === 'accepted') return 'Accepted';
-          if (lower === 'rejected') return 'Rejected';
-          if (lower === 'pending') return 'Pending';
-          if (lower === 'completed') return 'Completed';
-          return val;
-      }
-      
-      switch (val) {
-          case 0: return 'Pending';
-          case 1: return 'Accepted';
-          case 2: return 'Rejected';
-          case 3: return 'Completed';
-          default: return 'Pending';
-      }
-  }
 
   fetchProfile(): void {
     this.loading = true;
-    
+
     // Fetch profile, proposals, and designs in parallel
-    forkJoin({
-      profile: this.profileService.getProfile(),
-      proposals: this.proposalService.getMyProposals().pipe(
-        catchError(() => of([]))
-      ),
-      designs: this.designService.getMyDesigns().pipe(
-        catchError(() => of([]))
-      )
-    }).subscribe({
+    this.profileService.getProfile().pipe(
+      switchMap(profile => {
+        return forkJoin({
+          profile: of(profile),
+          proposals: this.proposalService.getMyProposals().pipe(catchError(() => of([]))),
+          designs: this.designService.getMyDesigns().pipe(catchError(() => of([])))
+        });
+      }),
+      switchMap(({ profile, proposals, designs }) => {
+        // Now verify pending proposals status
+        const pendingProposals = proposals.filter((p: any) => p.status === 'Pending' || p.status === '0');
+
+        if (pendingProposals.length === 0) {
+          return of({ profile, proposals, designs });
+        }
+
+        const checks = pendingProposals.map((prop: any) =>
+          this.designRequestService.getDesignRequestById(prop.designRequestID).pipe(
+            map(req => {
+              if (req.status === 'InProgress' || req.status === 'Active' || req.status === 'Completed') {
+                prop.status = 'Accepted';
+              }
+              return prop;
+            }),
+            catchError(() => of(prop))
+          )
+        );
+
+        return forkJoin(checks).pipe(
+          map(() => ({ profile, proposals, designs }))
+        );
+      })
+    ).subscribe({
       next: ({ profile, proposals, designs }) => {
-        console.log('Profile data received from backend:', profile);
-        
-        // Normalize proposal data (PascalCase -> camelCase)
-        const normalizedProposals = (proposals || []).map((p: any) => ({
-             ...p,
-             id: p.id || p.Id,
-             status: this.mapStatus(p.status || p.Status || p.proposalStatus?.toString()),
-             designRequestID: p.designRequestID || p.DesignRequestID || p.requestID || p.RequestID
-        }));
+        // Calculate stats from real data
+        const totalProposals = (proposals || []).length;
+        // Re-filter now that statuses might be updated
+        const acceptedProposals = (proposals || []).filter((p: any) => p.status === 'Accepted' || p.status === 'Completed').length;
+        const completedDesigns = (designs || []).length;
 
-        // Normalize design data
-        const normalizedDesigns = (designs || []).map((d: any) => ({
-             ...d,
-             id: d.id || d.Id,
-             proposalID: d.proposalID || d.ProposalID
-        }));
+        // Active projects: accepted proposals that don't have a submitted design yet
+        // However, if your business logic says 'Active' is 'Accepted', user might just want 'Accepted' count.
+        // Let's stick to "Active" usually means "In Progress" for the designer.
 
-        // Calculate stats from real data using normalized arrays
-        const totalProposals = normalizedProposals.length;
-        const acceptedProposals = normalizedProposals.filter(p => p.status === 'Accepted').length;
-        const completedDesigns = normalizedDesigns.length;
-        const activeProjects = normalizedProposals.filter(p => 
-          p.status === 'Accepted' && !normalizedDesigns.some(d => d.proposalID === p.id)
-        ).length;
+        const activeProposalsList = (proposals || []).filter((p: any) =>
+          p.status === 'Accepted'
+        );
 
-        // Map backend data to our interface with proper defaults
+        // Filter out those that already have a design linked? 
+        // For simplicity and to match the user's "Active Projects" page which lists Accepted proposals:
+        const activeProjects = activeProposalsList.length;
+
+        // Update profile object
         this.profile = {
-          name: profile?.name || '',
-          email: profile?.email || '',
-          phoneNumber: profile?.phoneNumber || '',
-          profilePicURL: profile?.profilePicURL || '',
-          title: profile?.title || 'Interior Designer',
-          location: profile?.location || '',
-          bio: profile?.bio || '',
-          specializations: Array.isArray(profile?.specializations) ? profile.specializations : [],
-          certifications: Array.isArray(profile?.certifications) ? profile.certifications : [],
-          website: profile?.website || '',
-          hourlyRate: profile?.hourlyRate ?? null,
-          projectMinimum: profile?.projectMinimum ?? null,
-          yearsOfExperience: profile?.yearsOfExperience ?? null,
+          name: profile?.name || profile?.Name || '',
+          email: profile?.email || profile?.Email || '',
+          phoneNumber: profile?.phoneNumber || profile?.PhoneNumber || '',
+          profilePicURL: profile?.profilePicURL || profile?.ProfilePicURL || profile?.avatarUrl || profile?.AvatarUrl || '',
+          title: profile?.title || profile?.Title || 'Interior Designer',
+          location: profile?.location || profile?.Location || '',
+          bio: profile?.bio || profile?.Bio || '',
+          specializations: profile?.specialization ? [profile.specialization] :
+            (profile?.Specialization ? [profile.Specialization] :
+              (Array.isArray(profile?.specializations) ? profile.specializations :
+                (Array.isArray(profile?.Specializations) ? profile.Specializations : []))),
+          certifications: Array.isArray(profile?.certifications) ? profile.certifications :
+            (Array.isArray(profile?.Certifications) ? profile.Certifications : []),
+          website: profile?.website || profile?.Website || profile?.portfolioUrl || profile?.PortfolioUrl || '',
+          hourlyRate: profile?.hourlyRate ?? profile?.HourlyRate ?? null,
+          projectMinimum: profile?.projectMinimum ?? profile?.ProjectMinimum ?? null,
+          yearsOfExperience: profile?.yearsOfExperience ?? profile?.YearsOfExperience ?? null,
           stats: [
             { label: 'Total Proposals', value: totalProposals },
             { label: 'Accepted Proposals', value: acceptedProposals },
@@ -134,11 +138,7 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
             { label: 'Active Projects', value: activeProjects }
           ]
         };
-        
-        console.log('Mapped profile data:', this.profile);
-        console.log('Specializations count:', this.profile.specializations.length);
-        console.log('Certifications count:', this.profile.certifications.length);
-        
+
         this.loading = false;
       },
       error: (error) => {
@@ -146,7 +146,7 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: error.error?.message || 'Failed to load profile data. Please try again later.'
+          detail: 'Failed to load profile data.'
         });
         this.loading = false;
       }

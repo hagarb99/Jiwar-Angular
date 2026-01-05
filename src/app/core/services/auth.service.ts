@@ -170,6 +170,11 @@ export class AuthService extends ApiBaseService {
     return user?.profilePicURL || null;
   }
 
+  getUserId(): string | null {
+    const user = this.currentUserSubject.value || JSON.parse(localStorage.getItem('currentUser') || 'null');
+    return user?.id || null;
+  }
+
   clearUserData() {
     this.currentUserSubject.next(null);
     localStorage.removeItem('currentUser');
