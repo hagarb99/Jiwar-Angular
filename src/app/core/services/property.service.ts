@@ -90,7 +90,7 @@ export class PropertyService {
         return this.http.get<PropertyAnalytics[]>(`${this.apiUrl}/${id}/analytics`);
     }
 
-    getFilteredProperties(filter: PropertyFilterDTO): Observable<Property[]> {
+    getFilteredProperties(filter: PropertyFilterDTO): Observable<any> {
         let params = new HttpParams();
 
         if (filter.district) {
@@ -118,7 +118,7 @@ export class PropertyService {
             params = params.set('propertyType', filter.propertyType.toString());
         }
 
-        return this.http.get<Property[]>(`${this.apiUrl}/browse`, { params });
+        return this.http.get<any>(`${this.apiUrl}/browse`, { params });
     }
 
     getPropertyById(id: number): Observable<Property> {
