@@ -1,8 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
-import { filter } from 'rxjs';
-import { OnInit } from '@angular/core';
+import { filter, Subject, takeUntil } from 'rxjs';
 import {
   LucideAngularModule,
   ChevronDown,
@@ -14,7 +13,8 @@ import {
 } from 'lucide-angular';
 import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../../core/services/auth.service';
-import { SignalRService, NotificationMessage } from '../../../core/services/signalr.service';
+import { NotificationService, NotificationDto } from '../../../core/services/notification.service';
+
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -27,7 +27,9 @@ import { SignalRService, NotificationMessage } from '../../../core/services/sign
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+
   toggleUserDropdown = false;
   currentUserRole: string | null = null;
   profilePicUrl: string | null = null;
@@ -43,7 +45,7 @@ export class NavbarComponent implements OnInit {
 
   // Notification State
   toggleNotificationsDropdown = false;
-  notifications: NotificationMessage[] = [];
+  notifications: NotificationDto[] = [];
   unreadCount = 0;
 
   // State
@@ -80,17 +82,74 @@ export class NavbarComponent implements OnInit {
     { path: '/sell/rental', label: 'Rent Property' }
   ];
 
-  constructor(private router: Router,
+  constructor(
+    private router: Router,
     private authService: AuthService,
-    private signalRService: SignalRService
+    private notificationService: NotificationService
   ) {
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
       .subscribe(event => {
         this.currentPath = (event as NavigationEnd).urlAfterRedirects;
       });
   }
 
+  ngOnInit(): void {
+    // Subscribe to auth state
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.currentUserRole = user?.role ?? null;
+
+        if (user) {
+          this.profilePicUrl = user.profilePicURL || null;
+          this.currentUserName = user.name || null;
+          this.currentUserEmail = user.email || null;
+          this.isLoggedIn = true;
+
+          // Initialize SignalR connection with token
+          const token = localStorage.getItem('token');
+          if (token) {
+            this.notificationService.startConnection(token);
+          }
+        } else {
+          this.profilePicUrl = null;
+          this.currentUserName = null;
+          this.currentUserEmail = null;
+          this.isLoggedIn = false;
+          this.notificationService.stopConnection();
+        }
+      });
+
+    // Subscribe to login status
+    this.authService.isLoggedIn$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(status => {
+        this.isLoggedIn = status;
+      });
+
+    // Subscribe to notifications
+    this.notificationService.notifications$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(notifications => {
+        this.notifications = notifications;
+      });
+
+    // Subscribe to unread count
+    this.notificationService.unreadCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(count => {
+        this.unreadCount = count;
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   setDropdown(name: 'buy' | 'invest' | 'sell' | 'renovation' | null): void {
     this.activeDropdown = name;
@@ -107,44 +166,9 @@ export class NavbarComponent implements OnInit {
   closeMobileMenu(): void {
     this.mobileMenuOpen = false;
   }
-  ngOnInit(): void {
-    this.authService.currentUser$.subscribe(user => {
-      this.currentUserRole = user?.role ?? null;
-      if (this.currentUserRole) {
-        // Initialize SignalR if user is logged in?
-        // The service starts connection in constructor, so it's already running.
-        // But maybe we want to filter notifications for this user?
-        // For now, the global listener is fine for demo/MVP.
-      }
-    });
-
-    this.signalRService.notifications$.subscribe(notifs => {
-      this.notifications = notifs;
-      this.unreadCount = notifs.filter(n => !n.read).length;
-    });
-
-    // Subscribe to login status
-    this.authService.isLoggedIn$.subscribe(status => {
-      this.isLoggedIn = status;
-    });
-
-    // Subscribe to user data changes
-    this.authService.currentUser$.subscribe(user => {
-      if (user) {
-        this.profilePicUrl = user.profilePicURL || null;
-        this.currentUserName = user.name || null;
-        this.currentUserEmail = user.email || null;
-        this.isLoggedIn = true;
-      } else {
-        this.profilePicUrl = null;
-        this.currentUserName = null;
-        this.currentUserEmail = null;
-        this.isLoggedIn = false;
-      }
-    });
-  }
 
   logout(): void {
+    this.notificationService.stopConnection();
     this.authService.logout();
     this.router.navigate(['/login']);
   }
@@ -175,9 +199,32 @@ export class NavbarComponent implements OnInit {
   }
 
   markAllAsRead(): void {
-    this.signalRService.markAsRead();
+    this.notificationService.markAllAsRead().subscribe({
+      next: () => {
+        console.log('All notifications marked as read');
+      },
+      error: (err) => {
+        console.error('Error marking all as read:', err);
+      }
+    });
   }
 
+  onNotificationClick(notification: NotificationDto): void {
+    if (!notification.isRead) {
+      this.notificationService.markAsRead(notification.notificationID).subscribe({
+        next: () => {
+          console.log('Notification marked as read');
+        },
+        error: (err) => {
+          console.error('Error marking notification as read:', err);
+        }
+      });
+    }
 
+    // Close dropdown
+    this.toggleNotificationsDropdown = false;
 
+    // Navigate based on notification type if needed
+    // You can add routing logic here based on notificationType
+  }
 }

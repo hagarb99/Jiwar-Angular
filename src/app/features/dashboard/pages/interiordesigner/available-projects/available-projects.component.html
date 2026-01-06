@@ -22,9 +22,13 @@
       <ng-template pTemplate="header">
         <div class="p-4 bg-gradient-to-r from-amber-400 to-amber-500">
           <div class="flex justify-between items-start">
-            <span [class]="'px-3 py-1 rounded-full text-xs font-semibold ' + getStatusBadgeClass(request.status)">
-              {{ request.status }}
-            </span>
+            <div class="flex items-center gap-2">
+              <p-tag *ngIf="hasSubmitted(request.id)" severity="success" value="Already Bid"
+                icon="pi pi-check-circle"></p-tag>
+              <span [class]="'px-3 py-1 rounded-full text-xs font-semibold ' + getStatusBadgeClass(request.status)">
+                {{ request.status }}
+              </span>
+            </div>
             <span class="text-white text-sm font-medium">
               #{{ request.id }}
             </span>
@@ -72,7 +76,9 @@
           <p-button label="View Details" icon="pi pi-eye" [outlined]="true" styleClass="flex-1"
             (onClick)="openProposalDialog(request)">
           </p-button>
-          <p-button label="Send Proposal" icon="pi pi-send" styleClass="flex-1" (onClick)="openProposalDialog(request)">
+          <p-button [label]="hasSubmitted(request.id) ? 'Already Bid' : 'Send Proposal'"
+            [icon]="hasSubmitted(request.id) ? 'pi pi-check' : 'pi pi-send'" styleClass="flex-1"
+            [disabled]="hasSubmitted(request.id)" (onClick)="openProposalDialog(request)">
           </p-button>
         </div>
       </ng-template>

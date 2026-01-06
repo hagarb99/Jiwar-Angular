@@ -13,27 +13,37 @@ import { RouterModule } from '@angular/router';
 import { SocialAuthService, GoogleSigninButtonModule, SocialUser, GoogleLoginProvider } from '@abacritt/angularx-social-login';
 import { SocialLoginModule } from '@abacritt/angularx-social-login';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule,
+  imports: [
+    CommonModule,
     ReactiveFormsModule,
-    FormsModule, ButtonModule, InputTextModule,
-    PasswordModule, ProgressSpinnerModule, MessageModule,
-    CheckboxModule, RouterModule, SocialLoginModule, GoogleSigninButtonModule],
+    FormsModule,
+    ButtonModule,
+    InputTextModule,
+    PasswordModule,
+    ProgressSpinnerModule,
+    MessageModule,
+    CheckboxModule,
+    RouterModule,
+    SocialLoginModule,
+    GoogleSigninButtonModule
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class LoginComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+
   loginForm: FormGroup;
   errorMessage: string | null = null;
   loading = false;
   showPassword = false;
   rememberMe = false;
-  authSubscription: Subscription | undefined;
 
   services = [
     { icon: 'pi-home', title: 'Property Listing', subtitle: 'List & manage properties' },
@@ -50,127 +60,201 @@ export class LoginComponent implements OnInit, OnDestroy {
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
-
-  get emailErrors() {
-    return this.loginForm.get('email')?.errors;
-  }
-
-  get passwordErrors() {
-    return this.loginForm.get('password')?.errors;
-  }
-
-  submit(): void {
-    if (this.loginForm.invalid) return;
-    this.loading = true;
-    this.errorMessage = null;
-
-    this.authService.login(this.loginForm.value).subscribe({
-      next: (response: LoginResponse) => {
-        console.log('Login Response:', response);
-        const token = response?.token;
-        if (token) {
-          this.authService.setAuthData(response);
-          this.navigateByRole(response.role);
-        } else {
-          this.errorMessage = 'Login failed: No token received';
-        }
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Login error detailed:', err);
-        if (err.status === 401) {
-          this.errorMessage = err.error?.message || 'Invalid email or password';
-        } else if (err.status === 400) {
-          this.errorMessage = 'Invalid input. Please check your details.';
-        } else {
-          // Other errors (network, 500, etc.)
-          this.errorMessage = 'Something went wrong. Please try again later.';
-        }
-        this.loading = false;
-      }
-    });
-  }
-
 
   ngOnInit(): void {
-    this.authSubscription = this.socialAuthService.authState.subscribe((user: SocialUser | null) => {
-      if (!user || !user.idToken) {
-        return; // No login happened
+    // Check if already logged in
+    if (this.authService.isLoggedIn()) {
+      const role = this.authService.userRole;
+      if (role) {
+        console.log('[LoginComponent] User already logged in, redirecting...');
+        this.navigateByRole(role);
+        return;
       }
+    }
 
-      // Show loading while contacting backend
-      this.loading = true;
-      this.errorMessage = null;
-
-      this.authService.googleBackendLogin(user.idToken).subscribe({
-        next: (response: any) => {
-          // Now response has: { Success: true, Data: { Token: "...", ... } }
-          const token = response?.data?.token || response?.token;
-
-          if (token) {
-            const loginResponse: LoginResponse = {
-              id: response.data.id,
-              name: response.data.name,
-              email: response.data.email,
-              profilePicURL: response.data.profilePicURL,
-              role: response.data.role,
-              token: response.data.token,
-              isProfileCompleted: response.data.isProfileCompleted
-            };
-
-            this.authService.setAuthData(loginResponse);
-            this.navigateByRole(loginResponse.role);
-          } else {
-            this.errorMessage = 'Google login failed: No token received';
-            console.error('Invalid response:', response);
+    // Listen for Google Sign-In events
+    this.socialAuthService.authState
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (user: SocialUser | null) => {
+          if (!user || !user.idToken) {
+            return; // No login event
           }
-          this.loading = false;
+
+          console.log('[LoginComponent] Google user detected, verifying with backend...');
+          this.handleGoogleLogin(user.idToken);
         },
         error: (err) => {
-          console.error('Google login error:', err);
-          this.errorMessage = err?.error?.message || 'Failed to sign in with Google';
-          this.loading = false;
+          console.error('[LoginComponent] Google auth state error:', err);
         }
       });
-    });
-  }
-
-  googleLogin() {
-    this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
-  }
-  triggerGoogleSignIn() {
-    // const button = document.querySelector('asl-google-signin-button') as HTMLElement;
-    // button?.click();
-    this.googleLogin();
-
   }
 
   ngOnDestroy(): void {
-    this.authSubscription?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
+  // ============================================================================
+  // FORM GETTERS
+  // ============================================================================
 
+  get emailErrors() {
+    const control = this.loginForm.get('email');
+    if (!control || !control.touched) return null;
 
-  private navigateByRole(role: string) {
-    switch (role) {
-      case 'PropertyOwner':
-        this.router.navigate(['/dashboard/propertyowner/dashboard']);
-        break;
-      case 'Admin':
-        this.router.navigate(['/dashboard']);
-        break;
-      case 'Customer':
-        this.router.navigate(['dashboard']);
-        break;
-      case 'InteriorDesigner':
-        this.router.navigate(['/dashboard/interiordesigner']);
-        break;
-      default:
-        this.router.navigate(['/']);
-        break;
+    if (control.hasError('required')) return { required: true };
+    if (control.hasError('email')) return { email: true };
+    return null;
+  }
+
+  get passwordErrors() {
+    const control = this.loginForm.get('password');
+    if (!control || !control.touched) return null;
+
+    if (control.hasError('required')) return { required: true };
+    if (control.hasError('minlength')) return { minlength: true };
+    return null;
+  }
+
+  // ============================================================================
+  // NORMAL LOGIN
+  // ============================================================================
+
+  submit(): void {
+    // Mark all fields as touched to show validation errors
+    Object.keys(this.loginForm.controls).forEach(key => {
+      this.loginForm.get(key)?.markAsTouched();
+    });
+
+    if (this.loginForm.invalid) {
+      this.errorMessage = 'Please fill in all required fields correctly.';
+      return;
     }
+
+    this.loading = true;
+    this.errorMessage = null;
+
+    console.log('[LoginComponent] Attempting login...');
+
+    this.authService.login(this.loginForm.value)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: LoginResponse) => {
+          console.log('[LoginComponent] Login successful, navigating...');
+          this.loading = false;
+          this.navigateByRole(response.role);
+        },
+        error: (err: any) => {
+          console.error('[LoginComponent] Login failed:', err);
+          this.loading = false;
+
+          // Extract user-friendly error message
+          if (err.status === 0) {
+            this.errorMessage = 'Cannot connect to server. Please check your internet connection.';
+          } else if (err.status === 401) {
+            this.errorMessage = 'Invalid email or password. Please try again.';
+          } else if (err.status === 400) {
+            this.errorMessage = err.message || 'Invalid input. Please check your details.';
+          } else if (err.status >= 500) {
+            this.errorMessage = 'Server error. Please try again later.';
+          } else {
+            this.errorMessage = err.message || 'Something went wrong. Please try again.';
+          }
+        }
+      });
+  }
+
+  // ============================================================================
+  // GOOGLE LOGIN
+  // ============================================================================
+
+  googleLogin(): void {
+    console.log('[LoginComponent] Initiating Google Sign-In...');
+    this.errorMessage = null;
+
+    this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID)
+      .catch(err => {
+        console.error('[LoginComponent] Google Sign-In popup error:', err);
+        this.errorMessage = 'Failed to open Google Sign-In. Please try again.';
+      });
+  }
+
+  triggerGoogleSignIn(): void {
+    this.googleLogin();
+  }
+
+  /**
+   * Handle Google login after user selects account
+   */
+  private handleGoogleLogin(idToken: string): void {
+    this.loading = true;
+    this.errorMessage = null;
+
+    console.log('[LoginComponent] Verifying Google token with backend...');
+
+    this.authService.googleBackendLogin(idToken)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: LoginResponse) => {
+          console.log('[LoginComponent] Google login successful, navigating...');
+          this.loading = false;
+          this.navigateByRole(response.role);
+        },
+        error: (err: any) => {
+          console.error('[LoginComponent] Google login verification failed:', err);
+          this.loading = false;
+
+          if (err.status === 0) {
+            this.errorMessage = 'Cannot connect to server. Please check your internet connection.';
+          } else if (err.status === 401) {
+            this.errorMessage = 'Google account not recognized. Please register first.';
+          } else if (err.status === 400) {
+            this.errorMessage = err.message || 'Invalid Google token. Please try again.';
+          } else {
+            this.errorMessage = err.message || 'Failed to sign in with Google. Please try again.';
+          }
+
+          // Sign out from Google to allow retry
+          this.socialAuthService.signOut().catch(console.error);
+        }
+      });
+  }
+
+  // ============================================================================
+  // NAVIGATION
+  // ============================================================================
+
+  /**
+   * Navigate user to appropriate dashboard based on role
+   */
+  private navigateByRole(role: string): void {
+    console.log('[LoginComponent] Navigating user with role:', role);
+
+    const routes: Record<string, string> = {
+      'PropertyOwner': '/dashboard/propertyowner/dashboard',
+      'InteriorDesigner': '/dashboard/interiordesigner/dashboard',
+      'Admin': '/dashboard/admin',
+      'Customer': '/dashboard/customer'
+    };
+
+    const targetRoute = routes[role] || '/';
+
+    this.router.navigate([targetRoute])
+      .then(success => {
+        if (success) {
+          console.log('[LoginComponent] Navigation successful to:', targetRoute);
+        } else {
+          console.warn('[LoginComponent] Navigation failed, redirecting to home');
+          this.router.navigate(['/']);
+        }
+      })
+      .catch(err => {
+        console.error('[LoginComponent] Navigation error:', err);
+        this.router.navigate(['/']);
+      });
   }
 }
