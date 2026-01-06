@@ -1,30 +1,52 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { AuthService } from './auth.service';
+import { ApiBaseService } from './api-base.service';
 
 @Injectable({
     providedIn: 'root'
 })
-export class PaymentService {
-    private http = inject(HttpClient);
-    private readonly baseUrl = `${environment.apiBaseUrl}/payment`;
+export class PaymentService extends ApiBaseService {
+    constructor(
+        httpClient: HttpClient,
+        private authService: AuthService
+    ) {
+        super(httpClient);
+    }
+
+    private get baseUrl() {
+        return `${this.apiBaseUrl}/payment`;
+    }
+
+    private get bookingUrl() {
+        return `${this.apiBaseUrl}/Booking`;
+    }
 
     /**
      * Initiates a subscription payment and returns the Paymob iframe URL
-     * @param planId The ID of the subscription plan
+     * Backend: POST api/payment/subscription/{planId}
      */
     createSubscriptionPayment(planId: number): Observable<{ iframeUrl: string }> {
-        // Following the pattern of CreateBookingPaymentAsync / CreateReportPaymentAsync
-        return this.http.post<{ iframeUrl: string }>(`${this.baseUrl}/subscription/${planId}`, {});
+        return this.httpClient.post<{ iframeUrl: string }>(`${this.baseUrl}/subscription/${planId}`, {});
     }
 
-    // Other payment methods following the backend IPaymentService
-    createBookingPayment(bookingId: number): Observable<{ iframeUrl: string }> {
-        return this.http.post<{ iframeUrl: string }>(`${this.baseUrl}/booking/${bookingId}`, {});
+    /**
+     * Initiates a booking payment.
+     * Backend: POST api/Booking/pay (expects BuyBookingDto)
+     */
+    createBookingPayment(bookingId: number): Observable<{ paymentUrl: string }> {
+        const userId = this.authService.getUserId();
+        return this.httpClient.post<{ paymentUrl: string }>(`${this.bookingUrl}/pay`, {
+            userId: userId,
+            bookingId: bookingId
+        });
     }
 
+    /**
+     * Initiates a report payment.
+     */
     createReportPayment(reportId: number): Observable<{ iframeUrl: string }> {
-        return this.http.post<{ iframeUrl: string }>(`${this.baseUrl}/report/${reportId}`, {});
+        return this.httpClient.post<{ iframeUrl: string }>(`${this.baseUrl}/report/${reportId}`, {});
     }
 }

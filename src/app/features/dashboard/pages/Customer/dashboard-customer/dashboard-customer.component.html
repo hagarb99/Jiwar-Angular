@@ -1,0 +1,162 @@
+<div class="min-h-screen bg-gray-50 p-6">
+  <!-- Welcome Section -->
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">{{ getWelcomeMessage() }}</h1>
+      <p class="text-gray-600 mt-1">Manage your properties and bookings</p>
+    </div>
+  </div>
+  
+  <!-- Stats Overview -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white rounded-xl p-6 border border-gray-100 bg-blue-50">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">My Properties</p>
+          <p class="text-2xl font-bold text-gray-900">{{ totalProperties }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
+          <svg class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 border border-gray-100 bg-green-50">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Upcoming Bookings</p>
+          <p class="text-2xl font-bold text-gray-900">{{ upcomingBookings }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
+          <svg class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10a2 2 0 002 2h4a2 2 0 002-2V11M9 11h6" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 border border-gray-100 bg-yellow-50">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Saved Properties</p>
+          <p class="text-2xl font-bold text-gray-900">{{ stats.savedProperties }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
+          <svg class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 border border-gray-100 bg-purple-50">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Active Requests</p>
+          <p class="text-2xl font-bold text-gray-900">{{ stats.activeRequests }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
+          <svg class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Properties -->
+  <div class="bg-white rounded-xl border border-gray-100 p-6 mb-6">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-semibold text-gray-900">My Properties</h2>
+      <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium">View all</a>
+    </div>
+
+    <div *ngIf="isLoading" class="text-center py-8">
+      <div class="animate-pulse text-gray-500">Loading properties...</div>
+    </div>
+
+    <div *ngIf="!isLoading && properties.length === 0" class="text-center py-8">
+      <p class="text-gray-500">No properties found. Start exploring properties to add to your favorites!</p>
+    </div>
+
+    <div *ngIf="!isLoading && properties.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let property of properties"
+        class="bg-gray-50 rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+        <div class="p-4">
+          <h3 class="font-semibold text-gray-900 mb-1">{{ property.title }}</h3>
+          <p class="text-sm text-gray-600 mb-2">{{ property.location }}</p>
+          <div class="flex items-center justify-between">
+            <p class="text-lg font-bold text-blue-600">{{ property.type }}</p>
+            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">{{ property.status }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- My Bookings -->
+    <div *ngIf="bookings.length > 0" class="bg-white rounded-xl border border-gray-100 p-6">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">My Bookings</h2>
+      <div class="space-y-3">
+        <div *ngFor="let booking of bookings" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <p class="font-medium text-gray-900">{{ booking.property }}</p>
+            <p class="text-sm text-gray-600">{{ booking.date }} • {{ booking.time }}</p>
+          </div>
+          <div class="text-right">
+            <span [class]="getStatusClass(booking.status)" class="px-2 py-1 text-xs rounded-full font-medium">
+              {{ booking.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+      <div class="space-y-3">
+        <button (click)="goToDesigners()" class="w-full text-left p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+          <div class="flex items-center">
+            <svg class="w-5 h-5 text-blue-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <div>
+              <p class="font-medium text-gray-900">Browse Designers</p>
+              <p class="text-sm text-gray-600">Find professional interior designers</p>
+            </div>
+          </div>
+        </button>
+
+        <button (click)="goToPostRequest()" class="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+          <div class="flex items-center">
+            <svg class="w-5 h-5 text-green-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            <div>
+              <p class="font-medium text-gray-900">Post Design Request</p>
+              <p class="text-sm text-gray-600">Submit your renovation needs</p>
+            </div>
+          </div>
+        </button>
+
+        <button (click)="goToAiAssistant()" class="w-full text-left p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
+          <div class="flex items-center">
+            <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <div>
+              <p class="font-medium text-gray-900">AI Assistant</p>
+              <p class="text-sm text-gray-600">Get AI-powered renovation ideas</p>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>  

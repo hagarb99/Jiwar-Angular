@@ -36,7 +36,7 @@ export class PropertyOwnerPublicProfileComponent {
         this.profile = profile;
         this.propertyService.getFilteredProperties({}).subscribe({
           next: (allProperties) => {
-            this.properties = allProperties.filter(p => p.propertyOwner?.userId === userId);
+            // this.properties = allProperties.filter(p => p.propertyOwner?.userId === userId);
             this.isLoading = false;
           },
           error: () => {

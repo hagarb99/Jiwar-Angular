@@ -25,8 +25,12 @@ export class SubscriptionListComponent implements OnInit {
     private authService = inject(AuthService);
     private router = inject(Router);
 
-    plans: SubscriptionPlan[] = [];
-    loading = true;
+    plans: SubscriptionPlan[] = [
+        { id: 1, name: 'Basic', price: 100, durationInMonths: 1, planType: 'Basic' },
+        { id: 2, name: 'Silver', price: 250, durationInMonths: 3, planType: 'Silver' },
+        { id: 3, name: 'Golden ⭐', price: 500, durationInMonths: 6, planType: 'Golden' }
+    ];
+    loading = false;
     processingId: number | null = null;
 
     // Payment Modal
@@ -34,26 +38,11 @@ export class SubscriptionListComponent implements OnInit {
     paymobUrl = '';
 
     ngOnInit(): void {
-        this.loadPlans();
+        // Data is static as requested
     }
 
     loadPlans(): void {
-        this.loading = true;
-        this.subscriptionService.getSubscriptions().subscribe({
-            next: (data) => {
-                this.plans = data;
-                this.loading = false;
-            },
-            error: (err) => {
-                console.error('Error fetching plans', err);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Connection Error',
-                    detail: 'Failed to load subscription plans.'
-                });
-                this.loading = false;
-            }
-        });
+        this.loading = false;
     }
 
     handleSubscribe(plan: SubscriptionPlan): void {
@@ -71,21 +60,19 @@ export class SubscriptionListComponent implements OnInit {
 
         this.processingId = plan.id;
 
-        // Create DTO for backend
-        const dto: CreateSubscriptionRequest = {
-            name: plan.name,
-            price: plan.price,
-            durationInMonths: plan.durationInMonths,
-            planType: plan.planType || 'Basic'
-        };
-
         this.paymentService.createSubscriptionPayment(plan.id).subscribe({
-            next: (res) => {
+            next: (res: { iframeUrl: string }) => {
                 this.paymobUrl = res.iframeUrl;
                 this.showPaymentModal = true;
                 this.processingId = null;
+
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Payment Initiated',
+                    detail: 'Redirecting to secure gateway...'
+                });
             },
-            error: (err) => {
+            error: (err: any) => {
                 console.error('Payment initiation error', err);
                 this.messageService.add({
                     severity: 'error',
@@ -100,6 +87,6 @@ export class SubscriptionListComponent implements OnInit {
     onPaymentClose(): void {
         this.showPaymentModal = false;
         this.paymobUrl = '';
-        this.loadPlans(); // Refresh subscription plans after payment
+        this.loadPlans(); // تحديث الباقات بعد الدفع
     }
 }

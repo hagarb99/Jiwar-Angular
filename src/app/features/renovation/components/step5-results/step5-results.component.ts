@@ -28,7 +28,8 @@ export class Step5ResultsComponent implements OnInit, OnDestroy {
         const simulationId = this.state.getSimulationIdOrThrow();
 
     this.api.generateRecommendations(simulationId).subscribe({
-        next: () => {
+        next: (res) => {
+            console.log("Recommendations generated",res);
             this.fetchResults(simulationId);
         },
         error: err => {
@@ -73,19 +74,21 @@ export class Step5ResultsComponent implements OnInit, OnDestroy {
     // Helpers
     // ===============================
 
-    getRecommendations(category: 'technical' | 'functional' | 'design'): SimulationRecommendationDto[] {
-        if (!this.result?.recommendations) return [];
+   getRecommendations(category: 'technical' | 'functional' | 'design') {
+    if (!this.result?.recommendations) return [];
 
-        const map: Record<string, number> = {
-            technical: 0,
-            functional: 1,
-            design: 2
-        };
+    const map: Record<'technical' | 'functional' | 'design', number> = {
+        technical: 0,
+        functional: 1,
+        design: 2
+    };
 
-        return this.result.recommendations.filter(
-            r => r.category === map[category]
-        );
-    }
+    return this.result.recommendations.filter(
+        r => r.category === map[category]
+    );
+}
+
+
 
     getSeverityClass(severity: number): string {
         switch (severity) {

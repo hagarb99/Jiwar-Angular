@@ -1,36 +1,39 @@
 <p-toast></p-toast>
 
-<div class="subscription-container min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+<div class="subscription-container min-h-screen py-16 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="text-center mb-16 animate-fade-in">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
-                Elevate Your <span class="text-gradient-gold">Vision</span>
+        <!-- Header Section -->
+        <div class="text-center mb-20">
+            <h1 class="text-5xl md:text-6xl font-extrabold text-white mb-6 tracking-tight">
+                Unlock the Power of <span class="text-gradient-gold">AI</span>
             </h1>
-            <p class="text-lg text-gray-300 max-w-2xl mx-auto">
-                Join Jiwar Premium to unlock elite AI renovation tools and unlimited architectural consultations.
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto font-light leading-relaxed">
+                Your AI quota has ended or you're ready for more. Choose a plan to continue your renovation journey with
+                elite architectural intelligence.
             </p>
         </div>
 
         <!-- Loading State -->
-        <div *ngIf="loading" class="flex justify-center items-center py-20">
+        <div *ngIf="loading" class="flex flex-col justify-center items-center py-24 space-y-4">
             <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#D4AF37]"></div>
+            <p class="text-gray-400 font-medium animate-pulse">Fetching the best plans for you...</p>
         </div>
 
         <!-- Empty State -->
         <div *ngIf="!loading && plans.length === 0"
-             class="text-center py-20 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10">
-            <i class="pi pi-info-circle text-5xl text-[#D4AF37] mb-4"></i>
-            <h3 class="text-2xl font-bold text-white mb-2">No Plans Available</h3>
-            <p class="text-gray-400">Please check back later for exciting membership offers.</p>
+            class="text-center py-24 bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 max-w-3xl mx-auto">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 mb-6">
+                <i class="pi pi-calendar-times text-4xl text-[#D4AF37]"></i>
+            </div>
+            <h3 class="text-3xl font-bold text-white mb-4">No Active Plans Found</h3>
+            <p class="text-gray-400 text-lg px-8">We're currently updating our subscription offerings. Please check back
+                shortly for new premium features.</p>
         </div>
 
         <!-- Plans Grid -->
-        <div *ngIf="!loading && plans.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <app-pricing-card 
-                *ngFor="let plan of plans"
-                [plan]="plan"
-                [loading]="processingId === plan.id"
+        <div *ngIf="!loading && plans.length > 0"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 items-stretch">
+            <app-pricing-card *ngFor="let plan of plans" [plan]="plan" [loading]="processingId === plan.id"
                 (onSubscribe)="handleSubscribe(plan)">
             </app-pricing-card>
         </div>
@@ -38,8 +41,5 @@
 </div>
 
 <!-- Paymob Payment Modal -->
-<app-payment-modal 
-    [visible]="showPaymentModal" 
-    [iframeUrl]="paymobUrl" 
-    (onClose)="onPaymentClose()">
+<app-payment-modal [visible]="showPaymentModal" [iframeUrl]="paymobUrl" (onClose)="onPaymentClose()">
 </app-payment-modal>
