@@ -8,8 +8,6 @@ export const DASHBOARD_ROUTES: Routes = [
     path: '',
     component: DashboardLayoutComponent,
     children: [
-      { 
-        path: 'interiordesigner',
       {
         path: 'profile',
         loadComponent: () => import('./pages/profile-placeholder/profile-placeholder.component').then(m => m.ProfilePlaceholderComponent)
@@ -48,9 +46,9 @@ export const DASHBOARD_ROUTES: Routes = [
       ,
       {
         path: 'customer',
-        canActivate : [roleGuard(['Customer'])],
-        loadChildren: ()=>
-          import('./pages/Customer/customer.routes').then(m=>m.CustomerRoutes)
+        canActivate: [roleGuard(['Customer'])],
+        loadChildren: () =>
+          import('./pages/Customer/customer.routes').then(m => m.CustomerRoutes)
       }
     ]
   }
@@ -62,7 +60,7 @@ export const DASHBOARD_ROUTES: Routes = [
 //     path: '',
 //     component: DashboardLayoutComponent,
 //     children: [
-//       { 
+//       {
 //         path: 'interiordesigner',
 //       {
 //         path: 'profile',
