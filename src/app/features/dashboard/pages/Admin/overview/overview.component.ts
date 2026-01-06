@@ -58,7 +58,7 @@ export class OverviewComponent implements OnInit {
         this.isLoading = false;
 
         // Map Roles Distribution
-        if (data.usersMetrics?.userRolesDistribution) {
+        if (data.usersMetrics.userRolesDistribution) {
           const roles = Object.keys(data.usersMetrics.userRolesDistribution);
           const counts = Object.values(data.usersMetrics.userRolesDistribution);
           this.pieChartData = {
@@ -68,7 +68,7 @@ export class OverviewComponent implements OnInit {
         }
 
         // Map Valuations Trends
-        if (data.valuationMetrics?.valuationsPerPeriod) {
+        if (data.valuationMetrics.valuationsPerPeriod) {
           const periods = Object.keys(data.valuationMetrics.valuationsPerPeriod);
           const counts = Object.values(data.valuationMetrics.valuationsPerPeriod);
           this.barChartData = {

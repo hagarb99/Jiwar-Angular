@@ -2,7 +2,7 @@
   *ngIf="currentUser$ | async as currentUser">
   <div class="p-6 text-center border-b">
     <div class="w-16 h-16 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center text-xl">
-      {{ currentUser.name?.charAt(0) || 'U' }}
+      {{ currentUser.name.charAt(0) || 'U' }}
     </div>
 
     <h3 class="mt-3 font-bold">{{ currentUser.name }}</h3>
