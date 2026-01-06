@@ -27,11 +27,7 @@
             <!-- Revenue Card -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-sm font-medium text-muted-foreground">Total Revenue</h3>
-<<<<<<< HEAD
-                <p class="text-2xl font-bold text-foreground mt-2">{{ analyticsData.paymentMetrics.totalRevenue |
-=======
                 <p class="text-2xl font-bold text-foreground mt-2">{{ data.paymentMetrics.totalRevenue |
->>>>>>> 48a2f6bbfdc042777d12d27e333bf3269cc73d69
                     currency }}</p>
                 <p class="text-xs text-muted-foreground mt-1">Total earnings across all channels</p>
             </div>
@@ -39,41 +35,25 @@
             <!-- Users Card -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-sm font-medium text-muted-foreground">Total Users</h3>
-<<<<<<< HEAD
-                <p class="text-2xl font-bold text-foreground mt-2">{{ analyticsData.usersMetrics.totalUsers }}</p>
-                <div class="flex items-center mt-1 text-green-600">
-                    <span class="text-xs font-medium">+{{ analyticsData.usersMetrics.newSignUpsToday }} today</span>
-=======
                 <p class="text-2xl font-bold text-foreground mt-2">{{ data.usersMetrics.totalUsers }}</p>
                 <div class="flex items-center mt-1 text-green-600">
                     <span class="text-xs font-medium">+{{ data.usersMetrics.newSignUpsToday }} today</span>
->>>>>>> 48a2f6bbfdc042777d12d27e333bf3269cc73d69
                 </div>
             </div>
 
             <!-- Listings Card -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-sm font-medium text-muted-foreground">Active Listings</h3>
-<<<<<<< HEAD
-                <p class="text-2xl font-bold text-foreground mt-2">{{ analyticsData.propertyMetrics.activeListings }}
-                </p>
-                <p class="text-xs text-muted-foreground mt-1">{{ analyticsData.propertyMetrics.pendingListings }}
-=======
                 <p class="text-2xl font-bold text-foreground mt-2">{{ data.propertyMetrics.activeListings }}
                 </p>
                 <p class="text-xs text-muted-foreground mt-1">{{ data.propertyMetrics.pendingListings }}
->>>>>>> 48a2f6bbfdc042777d12d27e333bf3269cc73d69
                     pending approval</p>
             </div>
 
             <!-- Transactions Card -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-sm font-medium text-muted-foreground">Total Transactions</h3>
-<<<<<<< HEAD
-                <p class="text-2xl font-bold text-foreground mt-2">{{ analyticsData.paymentMetrics.totalTransactions
-=======
                 <p class="text-2xl font-bold text-foreground mt-2">{{ data.paymentMetrics.totalTransactions
->>>>>>> 48a2f6bbfdc042777d12d27e333bf3269cc73d69
                     }}
                 </p>
                 <p class="text-xs text-muted-foreground mt-1">Processed successfully</p>
@@ -89,11 +69,7 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center p-3 bg-secondary/10 rounded-lg">
                         <span class="text-muted-foreground">Active Users</span>
-<<<<<<< HEAD
-                        <span class="font-bold text-foreground">{{ analyticsData.usersMetrics.activeUsers }}</span>
-=======
                         <span class="font-bold text-foreground">{{ data.usersMetrics.activeUsers }}</span>
->>>>>>> 48a2f6bbfdc042777d12d27e333bf3269cc73d69
                     </div>
 
                     <div class="pt-2">
@@ -114,41 +90,25 @@
                         <div class="p-3 bg-secondary/10 rounded-lg text-center">
                             <span class="block text-xs text-muted-foreground">Total Properties</span>
                             <span class="block text-xl font-bold text-foreground">{{
-<<<<<<< HEAD
-                                analyticsData.propertyMetrics.totalProperties }}</span>
-=======
                                 data.propertyMetrics.totalProperties }}</span>
->>>>>>> 48a2f6bbfdc042777d12d27e333bf3269cc73d69
                         </div>
                         <div class="p-3 bg-secondary/10 rounded-lg text-center">
                             <span class="block text-xs text-muted-foreground">Sold/Rented</span>
                             <span class="block text-xl font-bold text-foreground">{{
-<<<<<<< HEAD
-                                analyticsData.propertyMetrics.soldOrRentedUnits }}</span>
-=======
                                 data.propertyMetrics.soldOrRentedUnits }}</span>
->>>>>>> 48a2f6bbfdc042777d12d27e333bf3269cc73d69
                         </div>
                     </div>
 
                     <div class="pt-2">
                         <h4 class="text-sm font-medium text-foreground mb-3">Top Categories</h4>
                         <div class="space-y-2">
-<<<<<<< HEAD
-                            <div *ngFor="let cat of analyticsData.propertyMetrics.topCategories"
-=======
                             <div *ngFor="let cat of data.propertyMetrics.topCategories"
->>>>>>> 48a2f6bbfdc042777d12d27e333bf3269cc73d69
                                 class="flex justify-between items-center text-sm">
                                 <span class="text-muted-foreground">{{ cat.categoryName }}</span>
                                 <div class="flex items-center gap-2">
                                     <div class="w-24 h-2 bg-secondary/20 rounded-full overflow-hidden">
                                         <div class="h-full bg-primary"
-<<<<<<< HEAD
-                                            [style.width.%]="(cat.count / (analyticsData.propertyMetrics.totalProperties || 1)) * 100">
-=======
                                             [style.width.%]="(cat.count / (data.propertyMetrics.totalProperties || 1)) * 100">
->>>>>>> 48a2f6bbfdc042777d12d27e333bf3269cc73d69
                                         </div>
                                     </div>
                                     <span class="font-medium text-foreground w-8 text-right">{{ cat.count }}</span>
@@ -175,30 +135,18 @@
                     <div class="text-center p-4 border border-border rounded-lg">
                         <span class="text-sm text-muted-foreground">Total Page Visits</span>
                         <p class="text-2xl font-bold text-foreground mt-1">{{
-<<<<<<< HEAD
-                            analyticsData.engagementMetrics.pageVisits
-=======
                             data.engagementMetrics.pageVisits
->>>>>>> 48a2f6bbfdc042777d12d27e333bf3269cc73d69
                             }}</p>
                     </div>
                     <div class="text-center p-4 border border-border rounded-lg">
                         <span class="text-sm text-muted-foreground">Property Views</span>
                         <p class="text-2xl font-bold text-foreground mt-1">{{
-<<<<<<< HEAD
-                            analyticsData.engagementMetrics.propertyViews }}</p>
-=======
                             data.engagementMetrics.propertyViews }}</p>
->>>>>>> 48a2f6bbfdc042777d12d27e333bf3269cc73d69
                     </div>
                     <div class="p-4 border border-border rounded-lg">
                         <span class="text-sm text-muted-foreground block mb-2 text-center">Top Search Trends</span>
                         <div class="flex flex-wrap gap-2 justify-center">
-<<<<<<< HEAD
-                            <span *ngFor="let trend of analyticsData.engagementMetrics.searchTrends | keyvalue"
-=======
                             <span *ngFor="let trend of data.engagementMetrics.searchTrends | keyvalue"
->>>>>>> 48a2f6bbfdc042777d12d27e333bf3269cc73d69
                                 class="px-2 py-1 bg-secondary/20 text-xs rounded-full text-foreground">
                                 {{ trend.key }}
                             </span>
@@ -206,7 +154,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
