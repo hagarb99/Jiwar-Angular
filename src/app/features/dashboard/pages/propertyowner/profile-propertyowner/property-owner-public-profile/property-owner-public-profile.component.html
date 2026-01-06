@@ -1,0 +1,15 @@
+<div *ngIf="isLoading">Loading...</div>
+<div *ngIf="hasError">Failed to load profile.</div>
+
+<div *ngIf="profile && !isLoading">
+  <h2>{{ profile.name }}</h2>
+  <img *ngIf="profile.profilePictureUrl" [src]="profile.profilePictureUrl" alt="Profile Picture">
+  <p *ngIf="profile.phoneNumber">Phone: {{ profile.phoneNumber }}</p>
+
+  <h3>Properties</h3>
+  <div *ngFor="let prop of properties">
+    <h4>{{ prop.title }}</h4>
+    <p>{{ prop.description }}</p>
+    <p>{{ prop.price | currency:'EGP':'symbol':'1.0-0' }}</p>
+  </div>
+</div>

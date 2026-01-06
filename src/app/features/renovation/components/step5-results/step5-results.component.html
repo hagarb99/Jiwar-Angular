@@ -70,10 +70,10 @@
                         <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
                             <i class="pi pi-wrench text-lg"></i>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-900">Technical</h3>
+                        <h3 class="text-lg font-bold text-slate-900">technical</h3>
                     </div>
                     <div class="space-y-4">
-                        <div *ngFor="let item of getRecommendations('Technical')"
+                        <div *ngFor="let item of getRecommendations('technical')"
                             class="p-4 rounded-xl bg-slate-50 border border-slate-100 group hover:border-[#DCCCA3] transition-colors">
                             <div class="flex justify-between items-start mb-2">
                                 <h4 class="font-bold text-slate-900 text-sm">{{ item.title }}</h4>
@@ -86,7 +86,7 @@
                             <p class="text-slate-500 text-xs leading-relaxed mb-3">{{ item.description }}</p>
                             <!-- Cost Estimate removed as not in DTO -->
                         </div>
-                        <div *ngIf="getRecommendations('Technical').length === 0"
+                        <div *ngIf="getRecommendations('technical').length === 0"
                             class="text-slate-400 text-sm italic text-center py-4">
                             No critical technical improvements identified.
                         </div>
@@ -99,10 +99,10 @@
                         <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
                             <i class="pi pi-cog text-lg"></i>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-900">Functional</h3>
+                        <h3 class="text-lg font-bold text-slate-900">functional</h3>
                     </div>
                     <div class="space-y-4">
-                        <div *ngFor="let item of getRecommendations('Functional')"
+                        <div *ngFor="let item of getRecommendations('functional')"
                             class="p-4 rounded-xl bg-slate-50 border border-slate-100 group hover:border-[#DCCCA3] transition-colors">
                             <div class="flex justify-between items-start mb-2">
                                 <h4 class="font-bold text-slate-900 text-sm">{{ item.title }}</h4>
@@ -114,7 +114,7 @@
                             </div>
                             <p class="text-slate-500 text-xs leading-relaxed mb-3">{{ item.description }}</p>
                         </div>
-                        <div *ngIf="getRecommendations('Functional').length === 0"
+                        <div *ngIf="getRecommendations('functional').length === 0"
                             class="text-slate-400 text-sm italic text-center py-4">
                             No functional enhancements suggested.
                         </div>
@@ -127,10 +127,10 @@
                         <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
                             <i class="pi pi-palette text-lg"></i>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-900">Design</h3>
+                        <h3 class="text-lg font-bold text-slate-900">design</h3>
                     </div>
                     <div class="space-y-4">
-                        <div *ngFor="let item of getRecommendations('Design')"
+                        <div *ngFor="let item of getRecommendations('design')"
                             class="p-4 rounded-xl bg-slate-50 border border-slate-100 group hover:border-[#DCCCA3] transition-colors">
                             <div class="flex justify-between items-start mb-2">
                                 <h4 class="font-bold text-slate-900 text-sm">{{ item.title }}</h4>
@@ -142,7 +142,7 @@
                             </div>
                             <p class="text-slate-500 text-xs leading-relaxed mb-3">{{ item.description }}</p>
                         </div>
-                        <div *ngIf="getRecommendations('Design').length === 0"
+                        <div *ngIf="getRecommendations('design').length === 0"
                             class="text-slate-400 text-sm italic text-center py-4">
                             No specific design aesthetics suggested.
                         </div>

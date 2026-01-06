@@ -1,0 +1,23 @@
+<div *ngIf="isLoadingBookings">Loading your bookings...</div>
+
+<table *ngIf="!isLoadingBookings && customerBookings.length" class="table-auto w-full border">
+  <thead>
+    <tr>
+      <th class="border px-2">Property</th>
+      <th class="border px-2">Start Date</th>
+      <th class="border px-2">End Date</th>
+      <th class="border px-2">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let booking of customerBookings">
+      <td class="border px-2">{{ booking.propertyTitle }}</td>
+      <td class="border px-2">{{ booking.bookingDate }}</td>
+      <td class="border px-2">{{ booking.status === 0 ? 'Pending' : booking.status === 1 ? 'Confirmed' : 'Rejected' }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<div *ngIf="!isLoadingBookings && customerBookings.length === 0">
+  You have no bookings yet.
+</div>

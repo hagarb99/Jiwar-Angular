@@ -25,9 +25,24 @@ export class RenovationApiService {
         return this.http.post<{ simulationId: number }>(`${this.baseUrl}/start`, dto);
     }
 
-    getUserProperties(): Observable<Property[]> {
+    /*getUserProperties(): Observable<Property[]> {
         return this.http.get<Property[]>(`${environment.apiBaseUrl}/property/owner`);
-    }
+    }*/
+
+    /*getUserProperties(): Observable<Property[]> {
+        const ownerId = 1; // مؤقتًا، بعدين من التوكن
+        return this.http.post<Property[]>(
+            `${environment.apiBaseUrl}/property/owner`,
+            { id: ownerId }
+        );
+    }*/
+   
+getUserProperties(): Observable<Property[]> {
+    return this.http.get<Property[]>(
+        `${environment.apiBaseUrl}/property/my`
+    );
+}
+
 
     updateDetails(id: number, dto: UpdateSimulationDetailsDto): Observable<void> {
         return this.http.put<void>(`${this.baseUrl}/${id}/details`, dto);
@@ -51,11 +66,11 @@ export class RenovationApiService {
         );
     }
 
-    generateRecommendations(id: number): Observable<void> {
-        return this.http.post<void>(`${this.baseUrl}/${id}/generate-recommendations`, {});
+    generateRecommendations(id: number): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/${id}/analyze`, {});
     }
 
     getResults(id: number): Observable<SimulationResultDto> {
-        return this.http.get<SimulationResultDto>(`${this.baseUrl}/${id}`);
+        return this.http.get<SimulationResultDto>(`${this.baseUrl}/${id}/results`);
     }
 }

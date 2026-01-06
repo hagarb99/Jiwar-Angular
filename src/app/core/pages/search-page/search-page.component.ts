@@ -15,7 +15,7 @@ import { environment } from '../../../../environments/environment';
     CommonModule,
     ReactiveFormsModule,
     NavbarComponent,
-    FooterComponent,
+    FooterComponent, 
     PropertyCardComponent,
     LucideAngularModule
   ],
@@ -110,6 +110,8 @@ export class SearchPageComponent implements OnInit {
 
     this.propertyService.getFilteredProperties(filter).subscribe({
       next: (properties) => {
+        console.log(properties);
+        
         this.properties = properties;
         this.isLoading = false;
         console.log('Properties loaded:', properties.length);

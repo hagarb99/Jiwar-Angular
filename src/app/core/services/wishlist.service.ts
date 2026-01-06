@@ -101,7 +101,9 @@ export class WishlistService {
      * Add a property to the wishlist
      */
     addToWishlist(propertyId: number, notes?: string): Observable<any> {
-        return this.http.post(this.apiUrl, { propertyID: propertyId, notes }).pipe(
+        // Many backends expect camelCase 'propertyId' or just 'id'
+        // Using both propertyID and propertyId to be safe, or sticking to propertyId as it's standard
+        return this.http.post(this.apiUrl, { propertyId: propertyId, notes }).pipe(
             tap(() => {
                 // Optimistic update
                 const currentIds = this.wishlistIdsSubject.value;

@@ -1,1 +1,138 @@
-<p>properties-list works!</p>
+<div class="p-6">
+    <!-- Header -->
+    <div class="mb-6 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Properties Management</h1>
+            <p class="text-gray-600 mt-2">Manage and approve property listings</p>
+        </div>
+        <button (click)="exportToExcel()"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Export to Excel
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Search -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="filterProperties()"
+                    placeholder="Search by title, city, or owner..."
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
+                <select [(ngModel)]="selectedStatus" (ngModelChange)="filterProperties()"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option *ngFor="let status of statuses" [value]="status.value">
+                        {{ status.label }}
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p class="mt-4 text-gray-600">Loading properties...</p>
+    </div>
+
+    <!-- Properties Table -->
+    <div *ngIf="!isLoading" class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Property</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Location</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Created</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr *ngFor="let property of filteredProperties" class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">{{ property.title }}</div>
+                            <div class="text-sm text-gray-500">ID: {{ property.id }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ property.city }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ property.ownerName }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {{ property.price ? (property.price | currency: 'EGP ') : 'N/A' }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span
+                                [class]="'px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getStatusBadgeClass(property.status)">
+                                {{ getStatusLabel(property.status) }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ property.createdDate | date: 'MMM d, y' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <div class="flex gap-2">
+                                <button *ngIf="property.status === PropEnum.Pending"
+                                    (click)="updatePropertyStatus(property.id, PropEnum.Approved, property.title)"
+                                    class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors">
+                                    Approve
+                                </button>
+                                <button *ngIf="property.status === PropEnum.Pending"
+                                    (click)="updatePropertyStatus(property.id, PropEnum.Rejected, property.title)"
+                                    class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors">
+                                    Reject
+                                </button>
+                                <button *ngIf="property.status !== PropEnum.Archived"
+                                    (click)="updatePropertyStatus(property.id, PropEnum.Archived, property.title)"
+                                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors">
+                                    Archive
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredProperties.length === 0" class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No properties found</h3>
+            <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
+        </div>
+
+        <!-- Results Count -->
+        <div *ngIf="filteredProperties.length > 0" class="bg-gray-50 px-6 py-3 border-t border-gray-200">
+            <p class="text-sm text-gray-700">
+                Showing <span class="font-medium">{{ filteredProperties.length }}</span> of <span class="font-medium">{{
+                    properties.length }}</span> properties
+            </p>
+        </div>
+    </div>
+</div>

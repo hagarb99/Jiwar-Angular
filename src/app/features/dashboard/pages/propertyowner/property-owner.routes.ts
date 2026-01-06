@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { ProfilePropertyownerComponent } from './profile-propertyowner/profile-propertyowner.component';
 import { OwnerMyPropertiesComponent } from './owner-my-properties/owner-my-properties.component';
-import { PropertyDashboardComponent } from './property-dashboard/property-dashboard.component';
+import { OwnerBookingsComponent } from './owner-bookings/owner-bookings.component';
 
 export const propertyOwnerRoutes: Routes = [
   {
@@ -20,6 +20,10 @@ export const propertyOwnerRoutes: Routes = [
   {
     path: 'my-properties',
     component: OwnerMyPropertiesComponent
+  },
+  {
+    path : 'my-Booking',
+    component: OwnerBookingsComponent
   },
   {
     path: 'edit-property/:id',

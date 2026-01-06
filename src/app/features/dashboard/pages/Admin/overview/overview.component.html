@@ -4,8 +4,9 @@
     </div>
 
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex justify-center p-20">
+    <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-20">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p class="mt-4 text-muted-foreground">Loading dashboard data...</p>
     </div>
 
     <!-- Error State -->
@@ -13,15 +14,20 @@
         {{ error }}
     </div>
 
+    <!-- No Data State -->
+    <div *ngIf="!isLoading && !error && !analyticsData" class="p-10 text-center text-gray-500">
+        No analytics data available.
+    </div>
+
     <!-- content -->
-    <div *ngIf="analyticsData" class="space-y-6">
+    <div *ngIf="analyticsData as data" class="space-y-6">
 
         <!-- Key Metrics Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Revenue Card -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-sm font-medium text-muted-foreground">Total Revenue</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ analyticsData.paymentMetrics.totalRevenue |
+                <p class="text-2xl font-bold text-foreground mt-2">{{ data.paymentMetrics.totalRevenue |
                     currency }}</p>
                 <p class="text-xs text-muted-foreground mt-1">Total earnings across all channels</p>
             </div>
@@ -29,25 +35,26 @@
             <!-- Users Card -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-sm font-medium text-muted-foreground">Total Users</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ analyticsData.usersMetrics.totalUsers }}</p>
+                <p class="text-2xl font-bold text-foreground mt-2">{{ data.usersMetrics.totalUsers }}</p>
                 <div class="flex items-center mt-1 text-green-600">
-                    <span class="text-xs font-medium">+{{ analyticsData.usersMetrics.newSignUpsToday }} today</span>
+                    <span class="text-xs font-medium">+{{ data.usersMetrics.newSignUpsToday }} today</span>
                 </div>
             </div>
 
             <!-- Listings Card -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-sm font-medium text-muted-foreground">Active Listings</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ analyticsData.propertyMetrics.activeListings }}
+                <p class="text-2xl font-bold text-foreground mt-2">{{ data.propertyMetrics.activeListings }}
                 </p>
-                <p class="text-xs text-muted-foreground mt-1">{{ analyticsData.propertyMetrics.pendingListings }}
+                <p class="text-xs text-muted-foreground mt-1">{{ data.propertyMetrics.pendingListings }}
                     pending approval</p>
             </div>
 
             <!-- Transactions Card -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-sm font-medium text-muted-foreground">Total Transactions</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ analyticsData.paymentMetrics.totalTransactions }}
+                <p class="text-2xl font-bold text-foreground mt-2">{{ data.paymentMetrics.totalTransactions
+                    }}
                 </p>
                 <p class="text-xs text-muted-foreground mt-1">Processed successfully</p>
             </div>
@@ -62,18 +69,14 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center p-3 bg-secondary/10 rounded-lg">
                         <span class="text-muted-foreground">Active Users</span>
-                        <span class="font-bold text-foreground">{{ analyticsData.usersMetrics.activeUsers }}</span>
+                        <span class="font-bold text-foreground">{{ data.usersMetrics.activeUsers }}</span>
                     </div>
 
                     <div class="pt-2">
                         <h4 class="text-sm font-medium text-foreground mb-3">Roles Distribution</h4>
-                        <div class="space-y-2">
-                            <div *ngFor="let role of analyticsData.usersMetrics.userRolesDistribution | keyvalue"
-                                class="flex justify-between items-center text-sm">
-                                <span class="text-muted-foreground">{{ role.key }}</span>
-                                <span class="font-medium text-foreground bg-secondary/20 px-2 py-1 rounded">{{
-                                    role.value }}</span>
-                            </div>
+                        <div style="display: block; height: 300px;">
+                            <canvas baseChart [data]="pieChartData" [options]="pieChartOptions" [type]="pieChartType">
+                            </canvas>
                         </div>
                     </div>
                 </div>
@@ -87,25 +90,25 @@
                         <div class="p-3 bg-secondary/10 rounded-lg text-center">
                             <span class="block text-xs text-muted-foreground">Total Properties</span>
                             <span class="block text-xl font-bold text-foreground">{{
-                                analyticsData.propertyMetrics.totalProperties }}</span>
+                                data.propertyMetrics.totalProperties }}</span>
                         </div>
                         <div class="p-3 bg-secondary/10 rounded-lg text-center">
                             <span class="block text-xs text-muted-foreground">Sold/Rented</span>
                             <span class="block text-xl font-bold text-foreground">{{
-                                analyticsData.propertyMetrics.soldOrRentedUnits }}</span>
+                                data.propertyMetrics.soldOrRentedUnits }}</span>
                         </div>
                     </div>
 
                     <div class="pt-2">
                         <h4 class="text-sm font-medium text-foreground mb-3">Top Categories</h4>
                         <div class="space-y-2">
-                            <div *ngFor="let cat of analyticsData.propertyMetrics.topCategories"
+                            <div *ngFor="let cat of data.propertyMetrics.topCategories"
                                 class="flex justify-between items-center text-sm">
                                 <span class="text-muted-foreground">{{ cat.categoryName }}</span>
                                 <div class="flex items-center gap-2">
                                     <div class="w-24 h-2 bg-secondary/20 rounded-full overflow-hidden">
                                         <div class="h-full bg-primary"
-                                            [style.width.%]="(cat.count / analyticsData.propertyMetrics.totalProperties) * 100">
+                                            [style.width.%]="(cat.count / (data.propertyMetrics.totalProperties || 1)) * 100">
                                         </div>
                                     </div>
                                     <span class="font-medium text-foreground w-8 text-right">{{ cat.count }}</span>
@@ -116,30 +119,12 @@
                 </div>
             </div>
 
-            <!-- Financial Overview -->
+            <!-- Valuations Trends -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm lg:col-span-2">
-                <h3 class="text-lg font-semibold text-foreground mb-4">Financial Overview</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <h4 class="text-sm font-medium text-muted-foreground mb-3">Revenue by Source</h4>
-                        <div class="space-y-3">
-                            <div *ngFor="let item of analyticsData.paymentMetrics.revenueByType | keyvalue"
-                                class="flex justify-between items-center p-3 border border-border rounded-lg">
-                                <span class="text-sm text-foreground capitalize">{{ item.key }}</span>
-                                <span class="text-sm font-bold text-foreground">{{ item.value | currency }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-medium text-muted-foreground mb-3">Revenue by Period</h4>
-                        <div class="space-y-3">
-                            <div *ngFor="let item of analyticsData.paymentMetrics.revenueByPeriod | keyvalue"
-                                class="flex justify-between items-center p-3 border border-border rounded-lg">
-                                <span class="text-sm text-foreground capitalize">{{ item.key }}</span>
-                                <span class="text-sm font-bold text-foreground">{{ item.value | currency }}</span>
-                            </div>
-                        </div>
-                    </div>
+                <h3 class="text-lg font-semibold text-foreground mb-4">Valuations per Period</h3>
+                <div style="display: block; height: 350px;">
+                    <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="barChartType">
+                    </canvas>
                 </div>
             </div>
 
@@ -149,18 +134,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="text-center p-4 border border-border rounded-lg">
                         <span class="text-sm text-muted-foreground">Total Page Visits</span>
-                        <p class="text-2xl font-bold text-foreground mt-1">{{ analyticsData.engagementMetrics.pageVisits
+                        <p class="text-2xl font-bold text-foreground mt-1">{{
+                            data.engagementMetrics.pageVisits
                             }}</p>
                     </div>
                     <div class="text-center p-4 border border-border rounded-lg">
                         <span class="text-sm text-muted-foreground">Property Views</span>
                         <p class="text-2xl font-bold text-foreground mt-1">{{
-                            analyticsData.engagementMetrics.propertyViews }}</p>
+                            data.engagementMetrics.propertyViews }}</p>
                     </div>
                     <div class="p-4 border border-border rounded-lg">
                         <span class="text-sm text-muted-foreground block mb-2 text-center">Top Search Trends</span>
                         <div class="flex flex-wrap gap-2 justify-center">
-                            <span *ngFor="let trend of analyticsData.engagementMetrics.searchTrends | keyvalue"
+                            <span *ngFor="let trend of data.engagementMetrics.searchTrends | keyvalue"
                                 class="px-2 py-1 bg-secondary/20 text-xs rounded-full text-foreground">
                                 {{ trend.key }}
                             </span>
