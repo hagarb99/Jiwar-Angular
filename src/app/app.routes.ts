@@ -9,12 +9,12 @@ import { AvailableProjectsComponent } from './features/projects/available-projec
 import { AddPropertyComponent } from './shared/components/add-property/add-property.component';
 import { authGuard } from './core/guards/auth.guard';
 import { SearchPageComponent } from './core/pages/search-page/search-page.component';
-import { DashboardLayoutComponent } from './features/dashboard/dashboard-layout/dashboard-layout.component';
-import { PropertyOwnerLayoutComponent } from './features/propertyowner/propertyowner-dashboard/property-owner-layout.component';
 import { PropertyDetailsComponent } from './core/pages/property-details/property-details.component';
 import { WishlistComponent } from './core/pages/wishlist/wishlist.component';
 import { SubscriptionListComponent } from './features/subscription/subscription-list/subscription-list.component';
 
+import { ChatComponent } from './shared/components/chat/chat.component';
+import { PropertyOwnerPublicProfileComponent } from './features/dashboard/pages/propertyowner/profile-propertyowner/property-owner-public-profile/property-owner-public-profile.component';
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
@@ -23,7 +23,6 @@ const routes: Routes = [
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'change-password', component: ChangePasswordComponent, canActivate: [authGuard] },
-  { path: 'propertyowner', component: PropertyOwnerLayoutComponent },
   { path: 'projects', component: AvailableProjectsComponent },
   { path: 'add-property', component: AddPropertyComponent, canActivate: [authGuard] },
   {
@@ -34,6 +33,8 @@ const routes: Routes = [
         .then(m => m.DASHBOARD_ROUTES)
   },
   { path: 'subscriptions', component: SubscriptionListComponent },
+  { path: 'chat', component: ChatComponent },
+  {path: 'propertyowner/:userId', component: PropertyOwnerPublicProfileComponent},
   // {
   //   path: 'propertyowner',
   //   canActivate: [roleGuard(['PropertyOwner'])],

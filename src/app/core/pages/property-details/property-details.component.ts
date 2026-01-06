@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { PropertyCardComponent } from '../../../shared/components/property-card/property-card.component';
+import { PropertyOwnerPublicProfile } from '../../services/PropertyOwnerService';
 import {
   LucideAngularModule,
   MapPin,
