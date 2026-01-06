@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ComparisonService, PropertyComparisonDTO } from '../../core/services/comparison.service';
 import { Property } from '../../core/services/property.service';
+import { environment } from '../../../environments/environment';
 import { LucideAngularModule, X, Scale, MapPin, Maximize2, Bed, Bath, Info, Sparkles, TrendingUp } from 'lucide-angular';
 import { RouterModule } from '@angular/router';
 
@@ -94,5 +95,17 @@ export class ComparisonPageComponent implements OnInit {
 
     formatPrice(price: number): string {
         return new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(price);
+    }
+
+    resolveImageUrl(url: string | undefined | null): string {
+        if (!url) return '/assets/placeholder.jpg';
+        if (url.startsWith('http')) return url;
+
+        // Remove trailing slash from base if present
+        const baseUrl = environment.assetsBaseUrl.replace(/\/$/, '');
+        // Ensure path starts with slash
+        const path = url.startsWith('/') ? url : `/${url}`;
+
+        return `${baseUrl}${path}`;
     }
 }
