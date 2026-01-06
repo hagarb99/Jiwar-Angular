@@ -1,0 +1,281 @@
+<div class="comparison-container p-4 md:p-8">
+    <!-- Header -->
+    <div class="text-center mb-12">
+        <div
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-50 text-[#D4AF37] text-sm font-bold mb-4 border border-yellow-100 uppercase tracking-widest">
+            <lucide-angular [img]="Scale" class="w-4 h-4"></lucide-angular>
+            Side-by-Side Analysis
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold premium-title mb-4">Property Comparison</h1>
+        <p class="text-gray-500 max-w-2xl mx-auto text-lg">
+            Compare multiple properties with intelligent insights to make the best investment decision for your future.
+        </p>
+    </div>
+
+    <ng-container *ngIf="properties.length > 0; else emptyState">
+        <div class="comparison-table-wrapper border border-gray-100 shadow-2xl shadow-yellow-500/5">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th class="sticky-col bg-gray-50/80 backdrop-blur-md">
+                            <div class="flex items-center gap-2 text-gray-400">
+                                <lucide-angular [img]="Info" class="w-5 h-5"></lucide-angular>
+                                Features
+                            </div>
+                        </th>
+                        <th *ngFor="let property of properties" class="property-col relative">
+                            <!-- Remove Button -->
+                            <button (click)="removeProperty(property.propertyID)"
+                                class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-400 hover:text-red-500 hover:shadow-xl transition-all z-20">
+                                <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
+                            </button>
+
+                            <div class="group cursor-pointer" [routerLink]="['/property-details', property.propertyID]">
+                                <div class="relative overflow-hidden rounded-xl mb-4 h-48">
+                                    <img [src]="property.thumbnailUrl || '/assets/placeholder.jpg'"
+                                        [alt]="property.title"
+                                        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4">
+                                        <span class="text-white font-bold text-sm line-clamp-1 text-left">{{
+                                            property.title }}</span>
+                                        <span class="text-gray-300 text-xs text-left">{{ property.city }}, {{
+                                            property.address }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button [routerLink]="['/property-details', property.propertyID]"
+                                class="gold-gradient-bg text-white w-full py-3 rounded-xl font-bold text-sm shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/40 transition-all action-btn">
+                                View Details
+                            </button>
+                        </th>
+
+                        <!-- Placeholder to encourage adding more -->
+                        <th *ngIf="properties.length < 5"
+                            class="property-col border-2 border-dashed border-gray-100 bg-gray-50/30 rounded-2xl flex flex-col items-center justify-center p-8 gap-4 min-w-[300px]">
+                            <div class="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center">
+                                <lucide-angular [img]="Sparkles" class="w-8 h-8 text-yellow-300"></lucide-angular>
+                            </div>
+                            <p class="text-gray-400 text-sm font-medium">Add another property to compare</p>
+                            <div class="flex flex-col gap-2 w-full">
+                                <button routerLink="/properties" class="text-[#D4AF37] font-bold text-sm underline">Find
+                                    Properties</button>
+                                <button (click)="openAddModal()"
+                                    class="text-gray-600 font-bold text-sm hover:text-[#D4AF37] transition-colors">Add
+                                    from My List</button>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Location Row -->
+                    <tr>
+                        <td class="sticky-col">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
+                                    <lucide-angular [img]="MapPin" class="w-5 h-5"></lucide-angular>
+                                </div>
+                                Location
+                            </div>
+                        </td>
+                        <td *ngFor="let property of properties" class="text-center font-medium text-gray-600">
+                            {{ property.address || property.city }}
+                        </td>
+                        <td *ngIf="properties.length < 5"></td>
+                    </tr>
+
+                    <!-- Price Row -->
+                    <tr>
+                        <td class="sticky-col">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-green-500">
+                                    <span class="font-bold text-sm">EGP</span>
+                                </div>
+                                Price
+                            </div>
+                        </td>
+                        <td *ngFor="let property of properties" class="text-center font-bold text-xl"
+                            [class.highlight-best]="isBest(property, 'price')">
+                            {{ formatPrice(property.price) }}
+                            <div *ngIf="isBest(property, 'price')"
+                                class="text-[10px] uppercase tracking-wider text-green-600 flex items-center justify-center gap-1 mt-1">
+                                <lucide-angular [img]="TrendingUp" class="w-3 h-3"></lucide-angular>
+                                Best Value
+                            </div>
+                        </td>
+                        <td *ngIf="properties.length < 5"></td>
+                    </tr>
+
+                    <!-- Area Row -->
+                    <tr>
+                        <td class="sticky-col">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500">
+                                    <lucide-angular [img]="Maximize2" class="w-5 h-5"></lucide-angular>
+                                </div>
+                                Area
+                            </div>
+                        </td>
+                        <td *ngFor="let property of properties" class="text-center font-medium text-gray-700"
+                            [class.highlight-best]="isBest(property, 'area')">
+                            {{ property.area_sqm || 'N/A' }} sqm
+                            <div *ngIf="isBest(property, 'area')"
+                                class="text-[10px] uppercase tracking-wider text-green-600 mt-1">Most Space</div>
+                        </td>
+                        <td *ngIf="properties.length < 5"></td>
+                    </tr>
+
+                    <!-- Rooms Row -->
+                    <tr>
+                        <td class="sticky-col">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
+                                    <lucide-angular [img]="Bed" class="w-5 h-5"></lucide-angular>
+                                </div>
+                                Bedrooms
+                            </div>
+                        </td>
+                        <td *ngFor="let property of properties" class="text-center font-medium text-gray-700"
+                            [class.highlight-best]="isBest(property, 'rooms')">
+                            {{ property.numBedrooms || 'N/A' }}
+                        </td>
+                        <td *ngIf="properties.length < 5"></td>
+                    </tr>
+
+                    <!-- Bathrooms Row -->
+                    <tr>
+                        <td class="sticky-col">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-cyan-50 flex items-center justify-center text-cyan-500">
+                                    <lucide-angular [img]="Bath" class="w-5 h-5"></lucide-angular>
+                                </div>
+                                Bathrooms
+                            </div>
+                        </td>
+                        <td *ngFor="let property of properties" class="text-center font-medium text-gray-700">
+                            {{ property.numBathrooms || 'N/A' }}
+                        </td>
+                        <td *ngIf="properties.length < 5"></td>
+                    </tr>
+
+                    <!-- Condition Row -->
+                    <tr>
+                        <td class="sticky-col">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500">
+                                    <lucide-angular [img]="Sparkles" class="w-5 h-5"></lucide-angular>
+                                </div>
+                                Status
+                            </div>
+                        </td>
+                        <td *ngFor="let property of properties" class="text-center font-medium text-gray-700">
+                            <span class="px-3 py-1 bg-gray-100 rounded-full text-xs">{{ property.status || 'N/A'
+                                }}</span>
+                        </td>
+                        <td *ngIf="properties.length < 5"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Smart Insights Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/20">
+                <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <lucide-angular [img]="Sparkles" class="w-5 h-5 text-yellow-400"></lucide-angular>
+                    Smart Recommendation
+                </h3>
+                <p class="text-sm text-gray-500 leading-relaxed">
+                    Based on your selection, <strong>{{ properties[0].title }}</strong> offers the best cost per square
+                    meter, making it a powerful investment choice.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/20">
+                <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <lucide-angular [img]="TrendingUp" class="w-5 h-5 text-green-400"></lucide-angular>
+                    Appreciation Potential
+                </h3>
+                <p class="text-sm text-gray-500 leading-relaxed">
+                    Properties in <strong>{{ properties[0].city }}</strong> are expected to grow by 15% in the next
+                    two years according to current market trends.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/20">
+                <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <lucide-angular [img]="Info" class="w-5 h-5 text-blue-400"></lucide-angular>
+                    Financing Tip
+                </h3>
+                <p class="text-sm text-gray-500 leading-relaxed">
+                    You can get a mortgage for up to 80% of the value for any of these properties through our partner
+                    banks.
+                </p>
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-template #emptyState>
+        <div class="empty-state">
+            <div class="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <lucide-angular [img]="Scale" class="w-12 h-12 text-[#D4AF37]"></lucide-angular>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">No properties to compare</h2>
+            <p class="text-gray-500 mb-8 max-w-sm mx-auto">
+                Start by adding properties you're interested in from our search results or your favorites list.
+            </p>
+            <div class="flex gap-4 justify-center">
+                <button routerLink="/properties"
+                    class="gold-gradient-bg text-white px-10 py-4 rounded-2xl font-bold shadow-xl shadow-yellow-500/30 transition-all hover:scale-105">
+                    Browse Properties
+                </button>
+                <button (click)="openAddModal()"
+                    class="bg-white border-2 border-gray-100 text-gray-700 px-10 py-4 rounded-2xl font-bold hover:bg-gray-50 transition-all">
+                    Load Favorites
+                </button>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- My Properties / Favorites Modal -->
+    <div *ngIf="showAddModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                <h3 class="text-xl font-bold text-gray-900">Select Property to Compare</h3>
+                <button (click)="closeAddModal()"
+                    class="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-gray-100">
+                    <lucide-angular [img]="X" class="w-4 h-4 text-gray-500"></lucide-angular>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1">
+                <div *ngIf="myProperties.length === 0" class="text-center py-12 text-gray-500">
+                    No properties found in your list.
+                </div>
+                <div class="space-y-4">
+                    <div *ngFor="let item of myProperties"
+                        class="flex items-center gap-4 p-4 border border-gray-100 rounded-xl hover:border-yellow-200 transition-colors">
+                        <img [src]="item.thumbnailUrl || '/assets/placeholder.jpg'" alt=""
+                            class="w-16 h-16 rounded-lg object-cover bg-gray-100">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-900">{{ item.title }}</h4>
+                            <p class="text-sm text-gray-500">{{ item.city }} • {{ formatPrice(item.price) }}</p>
+                        </div>
+                        <button (click)="addToCompare(item.propertyID)"
+                            class="px-4 py-2 bg-gray-900 text-white text-sm font-bold rounded-lg hover:bg-[#D4AF37] transition-colors">
+                            Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

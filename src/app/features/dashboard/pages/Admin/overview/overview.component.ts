@@ -77,7 +77,7 @@ export class OverviewComponent implements OnInit {
           };
         }
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error fetching analytics', err);
         this.error = 'Failed to load dashboard data. Please check backend connection.';
         this.isLoading = false;

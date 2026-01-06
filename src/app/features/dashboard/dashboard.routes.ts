@@ -7,8 +7,6 @@ export const DASHBOARD_ROUTES: Routes = [
     path: '',
     component: DashboardLayoutComponent,
     children: [
-      { 
-        path: 'interiordesigner',
       {
         path: 'profile',
         loadComponent: () => import('./pages/profile-placeholder/profile-placeholder.component').then(m => m.ProfilePlaceholderComponent)
@@ -38,6 +36,13 @@ export const DASHBOARD_ROUTES: Routes = [
         loadChildren: () =>
           import('./pages/Admin/admin.routes')
             .then(m => m.ADMIN_ROUTES)
+      },
+
+      // Default child route
+      {
+        path: '',
+        redirectTo: 'profile',
+        pathMatch: 'full'
       }
     ]
   }

@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap');
+
+.comparison-container {
+    font-family: 'Inter', sans-serif;
+    color: #1a1a1a;
+}
+
+.premium-title {
+    font-family: 'Playfair Display', serif;
+    background: linear-gradient(135deg, #1a1a1a 0%, #D4AF37 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.gold-gradient-bg {
+    background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+}
+
+.comparison-table-wrapper {
+    overflow-x: auto;
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.comparison-table th,
+.comparison-table td {
+    padding: 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.sticky-col {
+    position: sticky;
+    left: 0;
+    background: #f9fafb;
+    z-index: 10;
+    font-weight: 600;
+    min-width: 200px;
+}
+
+.property-col {
+    min-width: 300px;
+    text-align: center;
+}
+
+.property-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.best-value-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: #fdf2f2;
+    color: #9b1c1c;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 0.5rem;
+}
+
+.highlight-best {
+    background-color: #f0fdf4 !important;
+    color: #166534 !important;
+    font-weight: 700;
+}
+
+.action-btn {
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 5rem 2rem;
+    background: white;
+    border-radius: 24px;
+    border: 2px dashed #e2e8f0;
+}

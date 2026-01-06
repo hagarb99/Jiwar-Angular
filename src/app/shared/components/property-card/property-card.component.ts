@@ -1,10 +1,11 @@
 import { Component, Input, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { LucideAngularModule, Heart } from 'lucide-angular';
+import { LucideAngularModule, Heart, Scale } from 'lucide-angular';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { Property } from '../../../core/services/property.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ComparisonService } from '../../../core/services/comparison.service';
 
 @Component({
   selector: 'app-property-card',
@@ -23,9 +24,15 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
       </div>
 
-      <button (click)="toggleWishlist($event)" class="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all z-10" [ngClass]="{'bg-red-50': isInWishlist, 'bg-white/95 backdrop-blur': !isInWishlist}">
-        <lucide-angular [img]="Heart" class="w-5 h-5 transition-colors" [ngClass]="{'text-red-500 fill-red-500': isInWishlist, 'text-gray-400': !isInWishlist}"></lucide-angular>
-      </button>
+      <div class="absolute top-4 right-4 flex flex-col gap-2 z-10">
+        <button (click)="toggleWishlist($event)" class="w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all" [ngClass]="{'bg-red-50': isInWishlist, 'bg-white/95 backdrop-blur': !isInWishlist}">
+          <lucide-angular [img]="Heart" class="w-5 h-5 transition-colors" [ngClass]="{'text-red-500 fill-red-500': isInWishlist, 'text-gray-400': !isInWishlist}"></lucide-angular>
+        </button>
+
+        <button (click)="toggleComparison($event)" class="w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all" [ngClass]="{'bg-yellow-50': isInComparison, 'bg-white/95 backdrop-blur': !isInComparison}" title="Add to comparison">
+          <lucide-angular [img]="Scale" class="w-5 h-5 transition-colors" [ngClass]="{'text-[#D4AF37]': isInComparison, 'text-gray-400': !isInComparison}"></lucide-angular>
+        </button>
+      </div>
       
       <div class="p-5" (click)="goToDetails()">
         <div class="flex justify-between items-start mb-2">
@@ -66,9 +73,11 @@ import { AuthService } from '../../../core/services/auth.service';
 export class PropertyCardComponent implements OnInit {
   private router = inject(Router);
   private wishlistService = inject(WishlistService);
+  private comparisonService = inject(ComparisonService);
   private authService = inject(AuthService);
 
   Heart = Heart;
+  Scale = Scale;
 
   @Input() id: number | undefined;
   @Input() propertyID: number | undefined;
@@ -82,17 +91,26 @@ export class PropertyCardComponent implements OnInit {
   @Input() propertyData: Property | undefined;
 
   isInWishlist = false;
+  isInComparison = false;
 
   ngOnInit() {
     const idToUse = this.propertyID || this.id;
     if (idToUse) {
       this.isInWishlist = this.wishlistService.isInWishlist(idToUse);
+      this.isInComparison = this.comparisonService.isInComparison(idToUse);
     }
 
     this.wishlistService.wishlistIds$.subscribe(() => {
       const idToCheck = this.propertyID || this.id;
       if (idToCheck) {
         this.isInWishlist = this.wishlistService.isInWishlist(idToCheck);
+      }
+    });
+
+    this.comparisonService.comparisonList$.subscribe(() => {
+      const idToCheck = this.propertyID || this.id;
+      if (idToCheck) {
+        this.isInComparison = this.comparisonService.isInComparison(idToCheck);
       }
     });
   }
@@ -116,23 +134,33 @@ export class PropertyCardComponent implements OnInit {
 
     if (idToUse) {
       const wasInWishlist = this.isInWishlist;
-      console.log('Toggling wishlist for ID:', idToUse);
-
       // Optimistic UI update
       this.isInWishlist = !this.isInWishlist;
 
       this.wishlistService.toggleWishlist(idToUse).subscribe({
         next: () => {
-          console.log('Wishlist toggle success. Current isInWishlist:', this.isInWishlist);
-          // Sync with service state
           this.isInWishlist = this.wishlistService.isInWishlist(idToUse);
         },
-        error: (err: any) => {
-          console.error('Error toggling wishlist:', err);
-          // Revert on error
+        error: () => {
           this.isInWishlist = wasInWishlist;
         }
       });
+    }
+  }
+
+  toggleComparison(event: Event) {
+    event.stopPropagation();
+    const idToUse = this.propertyData?.propertyID || this.propertyID || this.id;
+    if (!idToUse) return;
+
+    if (this.isInComparison) {
+      this.comparisonService.removeFromCompare(idToUse);
+    } else {
+      const added = this.comparisonService.addToCompare(idToUse);
+      if (!added) {
+        // Optional: Show feedback if limit reached
+        alert('You can only compare up to 5 properties');
+      }
     }
   }
 }
