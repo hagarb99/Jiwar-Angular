@@ -9,6 +9,13 @@ export const DASHBOARD_ROUTES: Routes = [
     children: [
       { 
         path: 'interiordesigner',
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/profile-placeholder/profile-placeholder.component').then(m => m.ProfilePlaceholderComponent)
+      },
+
+      {
+        path: 'designer',
         canActivate: [roleGuard(['InteriorDesigner'])],
         loadChildren: () =>
           import('./pages/interiordesigner/interior-designer.routes')
