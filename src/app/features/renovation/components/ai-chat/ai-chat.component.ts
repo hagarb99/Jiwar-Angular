@@ -52,12 +52,17 @@ export class AiChatComponent implements OnInit {
     isLoading: boolean = false;
     simulationId: number | null = null;
     projectInfo: SimulationResultDto | null = null;
-    plans: SubscriptionPlan[] = [];
 
     // Message Limit Logic
     readonly MAX_DAILY_MESSAGES = 15;
     dailyMessageCount: number = 0;
     isLimitReached: boolean = false;
+    plans: SubscriptionPlan[] = [
+        { id: 1, name: 'Basic', price: 100, durationInMonths: 1, planType: 'Basic' },
+        { id: 2, name: 'Silver', price: 250, durationInMonths: 3, planType: 'Silver' },
+        { id: 3, name: 'Golden ⭐', price: 500, durationInMonths: 6, planType: 'Golden' }
+    ];
+    loading = false;
     showPlans: boolean = false;
     processingId: number | null = null;
 
@@ -79,14 +84,13 @@ export class AiChatComponent implements OnInit {
 
         this.loadMessageLimit();
         this.loadProjectDataAndHistory();
-        this.loadPlans();
+        // Plans are static as requested
+        // this.loadPlans();
     }
 
     private loadPlans() {
-        this.subscriptionService.getSubscriptions().subscribe({
-            next: (data) => this.plans = data,
-            error: (err) => console.error('Error fetching plans', err)
-        });
+        // Keeping this as a placeholder
+        this.isLoading = false;
     }
 
     private loadMessageLimit() {

@@ -66,11 +66,11 @@ getUserProperties(): Observable<Property[]> {
         );
     }
 
-    generateRecommendations(id: number): Observable<void> {
-        return this.http.post<void>(`${this.baseUrl}/${id}/generate-recommendations`, {});
+    generateRecommendations(id: number): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/${id}/analyze`, {});
     }
 
     getResults(id: number): Observable<SimulationResultDto> {
-        return this.http.get<SimulationResultDto>(`${this.baseUrl}/${id}`);
+        return this.http.get<SimulationResultDto>(`${this.baseUrl}/${id}/results`);
     }
 }
