@@ -227,7 +227,27 @@ export class NavbarComponent implements OnInit, OnDestroy {
     // Close dropdown
     this.toggleNotificationsDropdown = false;
 
-    // Navigate based on notification type if needed
-    // You can add routing logic here based on notificationType
+    // --- Navigation Logic ---
+    const message = notification.message.toLowerCase();
+    const requestMatch = notification.message.match(/design request (\d+)/i);
+    const requestId = requestMatch ? requestMatch[1] : null;
+
+    if (this.currentUserRole === 'PropertyOwner') {
+      if (requestId) {
+        this.router.navigate(['/dashboard/propertyowner/design-requests', requestId]);
+      } else {
+        this.router.navigate(['/dashboard/propertyowner/my-requests']);
+      }
+    }
+    else if (this.currentUserRole === 'InteriorDesigner') {
+      if (message.includes('accepted') || message.includes('approved')) {
+        this.router.navigate(['/dashboard/designer/active-projects']);
+      } else if (requestId) {
+        // Find if this is an active project or just a proposal
+        this.router.navigate(['/dashboard/designer/my-proposals']);
+      } else {
+        this.router.navigate(['/dashboard/designer/available-projects']);
+      }
+    }
   }
 }

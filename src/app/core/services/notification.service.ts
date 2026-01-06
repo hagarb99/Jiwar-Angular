@@ -5,6 +5,7 @@ import { tap } from 'rxjs/operators';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { MessageService } from 'primeng/api';
+import { AuthService } from './auth.service';
 
 export interface NotificationDto {
     notificationID: number;
@@ -31,13 +32,45 @@ export class NotificationService {
 
     constructor(
         private http: HttpClient,
-        private messageService: MessageService
-    ) { }
+        private messageService: MessageService,
+        private authService: AuthService
+    ) {
+        // Load from local storage immediately on startup
+        this.loadFromStorage();
+    }
+
+    private getStorageKey(): string {
+        const userEmail = this.authService.getUserEmail() || 'guest';
+        return `jiwar_notifications_${userEmail}`;
+    }
+
+    private saveToStorage(notifications: NotificationDto[]): void {
+        try {
+            localStorage.setItem(this.getStorageKey(), JSON.stringify(notifications));
+        } catch (e) {
+            console.warn('Could not save notifications to local storage', e);
+        }
+    }
+
+    private loadFromStorage(): void {
+        try {
+            const saved = localStorage.getItem(this.getStorageKey());
+            if (saved) {
+                const notifications = JSON.parse(saved);
+                this.notifications$.next(notifications);
+                const unreadCount = notifications.filter((n: NotificationDto) => !n.isRead).length;
+                this.unreadCount$.next(unreadCount);
+            }
+        } catch (e) {
+            console.warn('Could not load notifications from local storage', e);
+        }
+    }
 
     /**
      * Initialize SignalR connection with JWT token
      */
     public startConnection(token: string): void {
+        this.loadFromStorage(); // Refresh for current user
         if (this.hubConnection) {
             return; // Already connected
         }
@@ -113,6 +146,7 @@ export class NotificationService {
                 this.notifications$.next(notifications);
                 const unreadCount = notifications.filter(n => !n.isRead).length;
                 this.unreadCount$.next(unreadCount);
+                this.saveToStorage(notifications);
             })
         );
     }
@@ -130,6 +164,7 @@ export class NotificationService {
                 this.notifications$.next(notifications);
                 const unreadCount = notifications.filter(n => !n.isRead).length;
                 this.unreadCount$.next(unreadCount);
+                this.saveToStorage(notifications);
             })
         );
     }
@@ -144,6 +179,7 @@ export class NotificationService {
                 const notifications = this.notifications$.value.map(n => ({ ...n, isRead: true }));
                 this.notifications$.next(notifications);
                 this.unreadCount$.next(0);
+                this.saveToStorage(notifications);
             })
         );
     }
