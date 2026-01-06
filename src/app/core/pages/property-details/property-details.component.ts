@@ -44,7 +44,6 @@ import { WishlistService } from '../../services/wishlist.service';
 import { AuthService } from '../../services/auth.service';
 import { AdminAnalyticsService } from '../../services/admin-analytics.service';
 import { AdminAnalyticsDTO, TopDistrictDTO, TopCategoryDTO } from '../../models/admin-analytics.dto';
-import { SafeUrlPipe } from '../../../shared/pipes/safe-url.pipe';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 
@@ -70,7 +69,6 @@ export interface BookingCreateDTO {
     NavbarComponent,
     FooterComponent,
     PropertyCardComponent,
-    SafeUrlPipe,
     ToastModule
   ],
   templateUrl: './property-details.component.html',
@@ -508,13 +506,13 @@ export class PropertyDetailsComponent implements OnInit {
 
   submitBooking(): void {
     if (!this.propertyId) return;
-  
+
     // Validate required fields
     if (!this.bookingData.name || !this.bookingData.email || !this.bookingData.phone || !this.bookingData.date) {
       alert('Please fill all required fields.');
       return;
     }
-  
+
     // Prepare payload
     const bookingPayload: BookingCreateDTO = {
       propertyID: this.propertyId,
@@ -525,10 +523,10 @@ export class PropertyDetailsComponent implements OnInit {
       message: this.bookingData.message || '',
       offerID: null // backend يتوقع null بدل 0
     };
-  
+
     // Disable multiple submissions
     let isSubmitting = true;
-  
+
     this.propertyService.createBooking(bookingPayload).subscribe({
       next: () => {
         this.messageService.add({
@@ -561,8 +559,8 @@ export class PropertyDetailsComponent implements OnInit {
       }
     });
   }
-  
-  
+
+
 
   handleShare(): void {
     const shareData = {

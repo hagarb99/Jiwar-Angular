@@ -239,6 +239,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.router.navigate(['/dashboard/propertyowner/my-requests']);
       }
     }
+
+
     else if (this.currentUserRole === 'InteriorDesigner') {
       if (message.includes('accepted') || message.includes('approved')) {
         this.router.navigate(['/dashboard/designer/active-projects']);

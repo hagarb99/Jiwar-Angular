@@ -106,7 +106,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     const control = this.loginForm.get('email');
     if (!control || !control.touched) return null;
 
-<<<<<<< HEAD
     if (control.hasError('required')) return { required: true };
     if (control.hasError('email')) return { email: true };
     return null;
@@ -134,25 +133,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (this.loginForm.invalid) {
       this.errorMessage = 'Please fill in all required fields correctly.';
       return;
-=======
-  private navigateByRole(role: string) {
-    switch (role) {
-      case 'PropertyOwner':
-        this.router.navigate(['/dashboard/propertyowner/dashboard']);
-        break;
-      case 'Admin':
-        this.router.navigate(['/dashboard']);
-        break;
-      case 'Customer':
-        this.router.navigate(['/dashboard/customer']);
-        break;
-      case 'InteriorDesigner':
-        this.router.navigate(['/dashboard/interiordesigner']);
-        break;
-      default:
-        this.router.navigate(['/']);
-        break;
->>>>>>> e5ae9d63093e1e6c651b4e5c2e22043261cd8183
     }
 
     this.loading = true;

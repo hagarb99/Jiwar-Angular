@@ -312,9 +312,6 @@ export class AuthService extends ApiBaseService {
     );
   }
 
-<<<<<<< HEAD
-  clearUserData(): void {
-=======
   setAuthData(response: LoginResponse): void {
     this.setToken(response.token);
 
@@ -330,37 +327,12 @@ export class AuthService extends ApiBaseService {
     this.isLoggedInSubject.next(true);
   }
 
-  get userRole(): string | null {
-    const user =
-      this.currentUserSubject.value ??
-      JSON.parse(localStorage.getItem('currentUser') || 'null');
-
-    return user?.role ?? null;
-  }
-
-
-  getUserName(): string | null {
-    const user = this.currentUserSubject.value || JSON.parse(localStorage.getItem('currentUser') || 'null');
-    return user?.name || null;
-  }
-
-  getUserEmail(): string | null {
-    const user = this.currentUserSubject.value || JSON.parse(localStorage.getItem('currentUser') || 'null');
-    return user?.email || null;
-  }
-
-  getProfilePicUrl(): string | null {
-    const user = this.currentUserSubject.value || JSON.parse(localStorage.getItem('currentUser') || 'null');
-    return user?.profilePicURL || null;
-  }
-
   getUserId(): string | null {
     const user = this.currentUserSubject.value || JSON.parse(localStorage.getItem('currentUser') || 'null');
     return user?.id || null;
   }
 
-  clearUserData() {
->>>>>>> e5ae9d63093e1e6c651b4e5c2e22043261cd8183
+  clearUserData(): void {
     this.currentUserSubject.next(null);
     localStorage.removeItem('currentUser');
   }
