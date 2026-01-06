@@ -45,6 +45,19 @@ import { AuthService } from '../../services/auth.service';
 import { AdminAnalyticsService } from '../../services/admin-analytics.service';
 import { AdminAnalyticsDTO, TopDistrictDTO, TopCategoryDTO } from '../../models/admin-analytics.dto';
 import { SafeUrlPipe } from '../../../shared/pipes/safe-url.pipe';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+
+export interface BookingCreateDTO {
+  propertyID: number;
+  startDate: string; // ISO format
+  message?: string;
+  phone: string;
+  email: string;
+  name: string;
+  offerID?: number | null; // 0 -> null في backend
+}
+
 
 @Component({
   selector: 'app-property-details',
@@ -57,7 +70,8 @@ import { SafeUrlPipe } from '../../../shared/pipes/safe-url.pipe';
     NavbarComponent,
     FooterComponent,
     PropertyCardComponent,
-    SafeUrlPipe
+    SafeUrlPipe,
+    ToastModule
   ],
   templateUrl: './property-details.component.html',
   styleUrls: ['./property-details.component.css']
@@ -71,6 +85,7 @@ export class PropertyDetailsComponent implements OnInit {
   private authService = inject(AuthService);
   private sanitizer = inject(DomSanitizer);
   private adminAnalyticsService = inject(AdminAnalyticsService);
+  private messageService = inject(MessageService);
 
   // Icons
   MapPin = MapPin;
@@ -492,12 +507,62 @@ export class PropertyDetailsComponent implements OnInit {
   }
 
   submitBooking(): void {
-    console.log('Booking Data:', this.bookingData);
-    alert('Thank you! Your viewing request has been received. We will contact you shortly.');
-    this.closeBookingModal();
-    this.bookingData.date = '';
-    this.bookingData.message = '';
+    if (!this.propertyId) return;
+  
+    // Validate required fields
+    if (!this.bookingData.name || !this.bookingData.email || !this.bookingData.phone || !this.bookingData.date) {
+      alert('Please fill all required fields.');
+      return;
+    }
+  
+    // Prepare payload
+    const bookingPayload: BookingCreateDTO = {
+      propertyID: this.propertyId,
+      name: this.bookingData.name,
+      email: this.bookingData.email,
+      phone: this.bookingData.phone,
+      startDate: new Date(this.bookingData.date).toISOString(), // تحويل للتنسيق ISO
+      message: this.bookingData.message || '',
+      offerID: null // backend يتوقع null بدل 0
+    };
+  
+    // Disable multiple submissions
+    let isSubmitting = true;
+  
+    this.propertyService.createBooking(bookingPayload).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Booking Submitted',
+          detail: 'Your booking request has been sent successfully! The property owner will review it shortly.',
+          life: 5000
+        });
+        this.closeBookingModal();
+        // Reset only message and date, keep user info
+        this.bookingData.date = '';
+        this.bookingData.message = '';
+        isSubmitting = false;
+      },
+      error: (err) => {
+        let errorMessage = 'Failed to submit booking. Please try again later.';
+        if (err.status === 400) {
+          errorMessage = 'Invalid booking data. Please check your information and try again.';
+        }
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Booking Failed',
+          detail: errorMessage,
+          life: 5000
+        });
+
+        console.error('Booking failed:', err);
+        isSubmitting = false;
+      }
+    });
   }
+  
+  
 
   handleShare(): void {
     const shareData = {

@@ -165,6 +165,9 @@ export class NavbarComponent implements OnInit {
     if (this.currentUserRole === 'Admin') {
       this.router.navigate(['/dashboard/admin']);
     }
+    if (this.currentUserRole === 'Customer') {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   toggleNotifications(): void {

@@ -42,7 +42,13 @@ export class SidebarComponent {
       label: 'Overview',
       path: '/dashboard',
       icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
-      roles: ['Customer', 'Admin']
+      roles: ['Admin']
+    },
+    {
+      label: 'Dashboard',
+      path: '/dashboard/customer',
+      icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
+      roles: ['Customer']
     },
     {
       label: 'My Profile',
@@ -66,13 +72,19 @@ export class SidebarComponent {
       label: 'My Listings',
       path: '/dashboard/propertyowner/my-properties',
       icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-      roles: ['PropertyOwner', 'Customer']
+      roles: ['PropertyOwner']
     },
     {
       label: 'Bookings',
-      path: '/propertyowner/bookings',
+      path: '/dashboard/propertyowner/my-Booking',
       icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
       roles: ['PropertyOwner'] // Only designers see available requests
+    },
+    {
+        label: 'My Bookings',
+        path: '/dashboard/customer/MyBooking',
+        icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+        roles: ['Customer']
     },
     {
       label: 'Tenants/Buyers',

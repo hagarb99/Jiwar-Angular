@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Property, PropertyService } from '../../../../../core/services/property.service';
+import { BookingService } from '../../../../../core/services/booking.service';
 import { environment } from '../../../../../../environments/environment';
 
 @Component({
@@ -62,11 +63,13 @@ export class PropertyDashboardComponent implements OnInit {
 
   constructor(
     private propertyService: PropertyService,
+    private bookingService: BookingService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
     this.loadMyProperties();
+    this.loadBookingStats();
   }
 
   private loadMyProperties(): void {
@@ -76,11 +79,24 @@ export class PropertyDashboardComponent implements OnInit {
         this.properties = data;
         // Update overview stats with real data
         this.overviewStats[0].value = data.length.toString(); // Total Listings
-        this.overviewStats[1].value = this.bookings.filter(b => b.status === 'confirmed').length.toString(); // Active Bookings
         this.isLoading = false;
       },
       error: () => {
         this.isLoading = false;
+      }
+    });
+  }
+
+  private loadBookingStats(): void {
+    this.bookingService.getOwnerBookings().subscribe({
+      next: (bookings) => {
+        // Count active bookings (confirmed status)
+        const activeBookings = bookings.filter(b => b.status === 'Confirmed').length;
+        this.overviewStats[1].value = activeBookings.toString(); // Active Bookings
+      },
+      error: (error) => {
+        console.error('Error loading booking stats:', error);
+        this.overviewStats[1].value = '0'; // Default to 0 on error
       }
     });
   }

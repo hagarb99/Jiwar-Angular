@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { BookingCreateDTO } from '../pages/property-details/property-details.component';
 
 // Define interfaces matching your backend models
 export interface PropertyOwner {
@@ -155,6 +156,10 @@ export class PropertyService {
         return this.http.get<Property[]>(`${this.apiUrl}/my`);
     }
 
+    getAllProperties(): Observable<Property[]> {
+        return this.http.get<Property[]>(`${this.apiUrl}/all`);
+    }
+
     // property.service.ts
 
     updateProperty(id: number, dto: any, images?: File[]): Observable<any> {
@@ -190,6 +195,9 @@ export class PropertyService {
     deleteProperty(id: number): Observable<any> {
         return this.http.delete(`${this.apiUrl}/${id}`);
     }
+    createBooking(booking: BookingCreateDTO) {
+        return this.http.post(`${environment.apiBaseUrl}/Booking`, booking);
+      }      
 
 
 }
