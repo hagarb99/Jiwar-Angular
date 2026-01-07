@@ -70,7 +70,6 @@ export interface BookingCreateDTO {
     NavbarComponent,
     FooterComponent,
     PropertyCardComponent,
-    SafeUrlPipe,
     ToastModule
   ],
   templateUrl: './property-details.component.html',

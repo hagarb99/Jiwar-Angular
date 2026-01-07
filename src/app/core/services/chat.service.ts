@@ -20,7 +20,7 @@ export class ChatService {
 
     this.hubConnection.start()
       .then(() => console.log('✅ SignalR connected'))
-      .catch(err => console.error('❌ SignalR connection error:', err));
+      .catch((err: any) => console.error('❌ SignalR connection error:', err));
 
     // استقبال الرسائل
     this.hubConnection.on('ReceiveMessage', (senderId: string, message: string) => {
@@ -31,6 +31,6 @@ export class ChatService {
 
   public sendMessage(receiverId: string, senderId: string, message: string) {
     this.hubConnection.invoke('SendMessage', receiverId, senderId, message)
-      .catch(err => console.error(err));
+      .catch((err: any) => console.error(err));
   }
 }

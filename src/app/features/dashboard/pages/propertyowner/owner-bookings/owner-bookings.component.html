@@ -15,66 +15,150 @@
     </div>
   </div> 
 
-  <!-- No Bookings State -->
-  <div *ngIf="!loading && bookings.length === 0" class="text-center py-12">
-    <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10a2 2 0 002 2h4a2 2 0 002-2V11M9 11h6"></path>
-    </svg>
-    <h3 class="text-lg font-medium text-gray-900 mb-2">No Bookings Yet</h3>
-    <p class="text-gray-500">When customers book your properties, they'll appear here.</p>
-  </div>
-
-  <!-- Bookings Grid -->
-  <div *ngIf="!loading && bookings.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div *ngFor="let booking of bookings" class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
-      <div class="flex items-start justify-between mb-4">
-        <div>
-          <h3 class="font-semibold text-gray-900 mb-1">Property #{{ booking.propertyID }}</h3>
-          <p class="text-sm text-gray-600">Customer: {{ booking.customerID }}</p>
-        </div>
-        <span [class]="getStatusClass(booking.status)" class="px-2 py-1 text-xs rounded-full font-medium">
-          {{ booking.status || 'Pending' }}
+  <!-- Tab Header and Content -->
+  <div *ngIf="!loading" class="space-y-6">
+    <!-- Tab Header -->
+    <div class="flex space-x-1 border-b">
+      <button
+        (click)="setActiveTab('requests')"
+        [class]="activeTab === 'requests' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
+        class="px-6 py-3 rounded-t-lg font-medium transition-colors"
+      >
+        Requests
+        <span class="ml-2 bg-white bg-opacity-20 px-2 py-1 rounded text-sm">
+          {{ pendingBookings.length }}
         </span>
+      </button>
+      <button
+        (click)="setActiveTab('income')"
+        [class]="activeTab === 'income' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
+        class="px-6 py-3 rounded-t-lg font-medium transition-colors"
+      >
+        Income Bookings
+        <span class="ml-2 bg-white bg-opacity-20 px-2 py-1 rounded text-sm">
+          {{ confirmedBookings.length }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <!-- Requests Tab -->
+      <div *ngIf="activeTab === 'requests'">
+        <div *ngIf="pendingBookings.length === 0" class="text-center py-12">
+          <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10a2 2 0 002 2h4a2 2 0 002-2V11M9 11h6"></path>
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No Pending Requests</h3>
+          <p class="text-gray-500">When customers book your properties, they'll appear here.</p>
+        </div>
+
+        <div *ngIf="pendingBookings.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div *ngFor="let booking of pendingBookings" class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-1">{{ booking.propertyTitle }}</h3>
+                <p class="text-sm text-gray-600">Customer: {{ booking.customerName }}</p>
+              </div>
+              <span [class]="getStatusClass(booking.status)" class="px-2 py-1 text-xs rounded-full font-medium">
+                {{ booking.status || 'Pending' }}
+              </span>
+            </div>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex items-center text-sm text-gray-600">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10a2 2 0 002 2h4a2 2 0 002-2V11M9 11h6"></path>
+                </svg>
+                Date: {{ booking.startDate | date:'shortDate' }}
+              </div>
+              <div *ngIf="booking.endDate" class="flex items-center text-sm text-gray-600">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10a2 2 0 002 2h4a2 2 0 002-2V11M9 11h6"></path>
+                </svg>
+                End: {{ booking.endDate | date:'shortDate' }}
+              </div>
+              <div *ngIf="booking.cost" class="flex items-center text-sm font-medium text-green-600">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+                {{ booking.cost }} EGP
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <button *ngIf="booking.status === BookingStatus.Pending"
+                      (click)="acceptBooking(booking)"
+                      class="flex-1 bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Accept
+              </button>
+              <button *ngIf="booking.status === 0"
+                      (click)="rejectBooking(booking)"
+                      class="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="space-y-2 mb-4">
-        <div class="flex items-center text-sm text-gray-600">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10a2 2 0 002 2h4a2 2 0 002-2V11M9 11h6"></path>
-          </svg>
-          Start: {{ booking.startDate | date:'shortDate' }}
-        </div>
-        <div *ngIf="booking.endDate" class="flex items-center text-sm text-gray-600">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10a2 2 0 002 2h4a2 2 0 002-2V11M9 11h6"></path>
-          </svg>
-          End: {{ booking.endDate | date:'shortDate' }}
-        </div>
-        <div *ngIf="booking.cost" class="flex items-center text-sm font-medium text-green-600">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <!-- Income Bookings Tab -->
+      <div *ngIf="activeTab === 'income'">
+        <div *ngIf="confirmedBookings.length === 0" class="text-center py-12">
+          <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
           </svg>
-          {{ booking.cost }} EGP
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No Confirmed Bookings</h3>
+          <p class="text-gray-500">Accepted bookings will appear here as your income.</p>
         </div>
-      </div>
 
-      <div class="flex gap-2">
-        <button *ngIf="booking.status !== 'Confirmed'"
-                (click)="acceptBooking(booking)"
-                class="flex-1 bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-          </svg>
-          Accept
-        </button>
-        <button *ngIf="booking.status !== 'Rejected'"
-                (click)="rejectBooking(booking)"
-                class="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-          Reject
-        </button>
+        <div *ngIf="confirmedBookings.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div *ngFor="let booking of confirmedBookings" class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-1">{{ booking.propertyTitle }}</h3>
+                <p class="text-sm text-gray-600">Customer: {{ booking.customerName }}</p>
+              </div>   
+              <span [class]="getStatusClass(booking.status)" class="px-2 py-1 text-xs rounded-full font-medium">
+  {{ booking.status === BookingStatus.Pending ? 'Pending' :
+     booking.status === BookingStatus.Confirmed ? 'Confirmed' :
+     'Rejected' }} 
+</span>
+
+            </div>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex items-center text-sm text-gray-600">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10a2 2 0 002 2h4a2 2 0 002-2V11M9 11h6"></path>
+                </svg>
+                Date: {{ booking.startDate | date:'shortDate' }}
+              </div>
+              <div *ngIf="booking.endDate" class="flex items-center text-sm text-gray-600">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10a2 2 0 002 2h4a2 2 0 002-2V11M9 11h6"></path>
+                </svg>
+                End: {{ booking.endDate | date:'shortDate' }}
+              </div>
+              <div *ngIf="booking.cost" class="flex items-center text-sm font-medium text-green-600">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+                {{ booking.cost }} EGP
+              </div>
+            </div>
+
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+              <p class="text-sm text-green-800 font-medium">✓ Confirmed - Income Earned</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
