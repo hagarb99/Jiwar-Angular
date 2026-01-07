@@ -29,12 +29,11 @@ const routes: Routes = [
     path: 'dashboard',
     canActivate: [authGuard],
     loadChildren: () =>
-      import('../app/features/dashboard/dashboard.routes')
+      import('./features/dashboard/dashboard.routes')
         .then(m => m.DASHBOARD_ROUTES)
   },
-  { path: 'subscriptions', component: SubscriptionListComponent },
   { path: 'chat', component: ChatComponent },
-  {path: 'propertyowner/:userId', component: PropertyOwnerPublicProfileComponent},
+  { path: 'propertyowner/:userId', component: PropertyOwnerPublicProfileComponent },
   // {
   //   path: 'propertyowner',
   //   canActivate: [roleGuard(['PropertyOwner'])],
@@ -98,6 +97,10 @@ const routes: Routes = [
   {
     path: 'subscriptions',
     loadComponent: () => import('./features/subscription/subscription-list/subscription-list.component').then(m => m.SubscriptionListComponent)
+  },
+  {
+    path: 'compare',
+    loadComponent: () => import('./features/comparison/comparison-page.component').then(m => m.ComparisonPageComponent)
   }
 ];
 

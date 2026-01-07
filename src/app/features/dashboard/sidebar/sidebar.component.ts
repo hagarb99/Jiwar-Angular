@@ -63,6 +63,12 @@ export class SidebarComponent {
       roles: ['Admin']
     },
     {
+      label: 'Compare',
+      path: '/compare',
+      icon: 'M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2M9 21h6a2 2 0 002-2v-3a2 2 0 01-2-2H9a2 2 0 01-2 2v3a2 2 0 002 2zM3 9V6a2 2 0 012-2h14a2 2 0 012 2v3M3 19v-7a2 2 0 012-2h14a2 2 0 012 2v7',
+      roles: ['Customer', 'PropertyOwner', 'Admin']
+    },
+    {
       label: 'Wishlist',
       path: '/dashboard/admin/wishlist',
       icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z',

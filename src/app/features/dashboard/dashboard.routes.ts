@@ -2,23 +2,14 @@ import { Routes } from '@angular/router';
 import { DashboardLayoutComponent } from './dashboard-layout/dashboard-layout.component';
 import { roleGuard } from '../../core/guards/role.guard';
 
-
 export const DASHBOARD_ROUTES: Routes = [
   {
     path: '',
     component: DashboardLayoutComponent,
     children: [
-
       {
-        path: 'interiordesigner',
-        children: [
-          {
-            path: 'profile',
-            loadComponent: () =>
-              import('./pages/profile-placeholder/profile-placeholder.component')
-                .then(m => m.ProfilePlaceholderComponent)
-          }
-        ]
+        path: 'profile',
+        loadComponent: () => import('./pages/profile-placeholder/profile-placeholder.component').then(m => m.ProfilePlaceholderComponent)
       },
 
       {
@@ -43,13 +34,19 @@ export const DASHBOARD_ROUTES: Routes = [
         loadChildren: () =>
           import('./pages/Admin/admin.routes')
             .then(m => m.ADMIN_ROUTES)
-      }
-      ,
+      },
+
+      // Default child route
+      {
+        path: '',
+        redirectTo: 'profile',
+        pathMatch: 'full'
+      },
       {
         path: 'customer',
-        canActivate : [roleGuard(['Customer'])],
-        loadChildren: ()=>
-          import('./pages/Customer/customer.routes').then(m=>m.CustomerRoutes)
+        canActivate: [roleGuard(['Customer'])],
+        loadChildren: () =>
+          import('./pages/Customer/customer.routes').then(m => m.CustomerRoutes)
       }
     ]
   }
@@ -61,7 +58,7 @@ export const DASHBOARD_ROUTES: Routes = [
 //     path: '',
 //     component: DashboardLayoutComponent,
 //     children: [
-//       { 
+//       {
 //         path: 'interiordesigner',
 //       {
 //         path: 'profile',

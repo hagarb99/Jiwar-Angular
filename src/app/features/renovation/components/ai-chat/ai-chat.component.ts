@@ -139,7 +139,7 @@ export class AiChatComponent implements OnInit {
         forkJoin({
             projectData: this.renovationApi.getResults(this.simulationId).pipe(catchError(() => of(null))),
             history: this.chatService.getHistory(this.simulationId).pipe(catchError(() => of([])))
-        }).subscribe(({ projectData, history }) => {
+        }).subscribe(({ projectData, history }: { projectData: any, history: any[] }) => {
             this.projectInfo = projectData;
             this.messages = history;
 
@@ -167,7 +167,7 @@ export class AiChatComponent implements OnInit {
                 this.isLoading = false;
                 this.scrollToBottom();
             },
-            error: (err) => {
+            error: (err: any) => {
                 console.error('Error starting chat:', err);
                 this.isLoading = false;
             }
@@ -226,7 +226,7 @@ export class AiChatComponent implements OnInit {
                     }, 500);
                 }
             },
-            error: (err) => {
+            error: (err: any) => {
                 console.error('Error sending message:', err);
                 this.isLoading = false;
                 if (err.status === 401) {
@@ -305,7 +305,7 @@ export class AiChatComponent implements OnInit {
                 this.showPaymentModal = true;
                 this.processingId = null;
             },
-            error: (err) => {
+            error: (err: any) => {
                 console.error('Payment error', err);
                 this.messageService.add({
                     severity: 'error',

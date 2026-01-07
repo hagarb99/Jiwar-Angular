@@ -32,7 +32,7 @@ export const appConfig: ApplicationConfig = {
             )
           }
         ],
-        onError: (err) => { console.error('social login error', err) }
+        onError: (err: any) => { console.error('social login error', err) }
       } as SocialAuthServiceConfig
     }
   ]

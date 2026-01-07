@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { forkJoin } from 'rxjs';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DesignRequestService } from '../../../../../core/services/design-request.service';
 import { DesignerProposalService } from '../../../../../core/services/designer-proposal.service';
@@ -14,6 +15,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TagModule } from 'primeng/tag';
 import { AuthService } from '../../../../../core/services/auth.service';
 
 @Component({
@@ -29,7 +31,8 @@ import { AuthService } from '../../../../../core/services/auth.service';
     InputNumberModule,
     TextareaModule,
     ToastModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    TagModule
   ],
   providers: [MessageService],
   templateUrl: './available-projects.component.html',
@@ -41,6 +44,7 @@ export class AvailableProjectsComponent implements OnInit {
   showProposalDialog = false;
   selectedRequest: DesignRequest | null = null;
   proposalForm: FormGroup;
+  submittedRequestIds: Set<number> = new Set();
 
   constructor(
     private designRequestService: DesignRequestService,
@@ -63,21 +67,31 @@ export class AvailableProjectsComponent implements OnInit {
 
   loadAvailableRequests() {
     this.loading = true;
-    this.designRequestService.getAvailableDesignRequests().subscribe({
-      next: (data) => {
-        this.requests = data;
+
+    // Fetch both available requests and current designer's proposals
+    forkJoin({
+      requests: this.designRequestService.getAvailableDesignRequests(),
+      myProposals: this.proposalService.getMyProposals()
+    }).subscribe({
+      next: (result) => {
+        this.requests = result.requests;
+        this.submittedRequestIds = new Set(result.myProposals.map(p => p.designRequestID));
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading requests:', err);
+        console.error('Error loading data:', err);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to load available requests'
+          detail: 'Failed to load available projects'
         });
         this.loading = false;
       }
     });
+  }
+
+  hasSubmitted(requestId: number): boolean {
+    return this.submittedRequestIds.has(requestId);
   }
 
   openProposalDialog(request: DesignRequest) {
@@ -108,7 +122,7 @@ export class AvailableProjectsComponent implements OnInit {
       estimatedCost: this.proposalForm.value.estimatedCost,
       estimatedDays: this.proposalForm.value.estimatedDays,
       sampleDesignURL: this.proposalForm.value.sampleDesignURL,
-      
+
       // Populate backend required fields
       status: 'Pending',
       designerName: this.authService.getUserName() || 'Unknown Designer',
@@ -130,20 +144,20 @@ export class AvailableProjectsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error sending proposal:', err);
-        
+
         let errorMessage = 'Failed to send proposal';
         if (err.error) {
-            if (typeof err.error === 'string') {
-                errorMessage = err.error;
-            } else if (err.error.errors) {
-                // Handle validation errors dictionary
-                const validationErrors = Object.values(err.error.errors).flat().join('\n');
-                errorMessage = validationErrors || 'Validation failed';
-            } else if (err.error.message) {
-                errorMessage = err.error.message;
-            } else if (err.error.title) {
-                errorMessage = err.error.title;
-            }
+          if (typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err.error.errors) {
+            // Handle validation errors dictionary
+            const validationErrors = Object.values(err.error.errors).flat().join('\n');
+            errorMessage = validationErrors || 'Validation failed';
+          } else if (err.error.message) {
+            errorMessage = err.error.message;
+          } else if (err.error.title) {
+            errorMessage = err.error.title;
+          }
         }
 
         this.messageService.add({
