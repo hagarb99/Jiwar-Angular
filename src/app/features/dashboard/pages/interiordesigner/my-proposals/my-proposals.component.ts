@@ -24,7 +24,6 @@ import { TooltipModule } from 'primeng/tooltip';
     TooltipModule,
     RouterModule
   ],
-  providers: [MessageService],
   templateUrl: './my-proposals.component.html',
   styleUrl: './my-proposals.component.css'
 })
@@ -63,20 +62,18 @@ export class MyProposalsComponent implements OnInit {
     });
   }
 
-  getStatusSeverity(status?: string): string {
-    switch (status) {
-      case 'Accepted':
-        return 'success';
-      case 'Rejected':
-        return 'danger';
-      case 'Pending':
-        return 'warning';
-      default:
-        return 'info';
-    }
+  getStatusSeverity(status?: string | number): string {
+    const statusStr = String(status || '').toLowerCase();
+    if (statusStr === '1' || statusStr === 'accepted') return 'success';
+    if (statusStr === '2' || statusStr === 'rejected') return 'danger';
+    if (statusStr === '0' || statusStr === 'pending') return 'warning';
+    return 'info';
   }
 
-  getStatusLabel(status?: string): string {
-    return status || 'Unknown';
+  getStatusLabel(status?: string | number): string {
+    if (status === 0 || status === '0' || status === 'Pending') return 'Pending';
+    if (status === 1 || status === '1' || status === 'Accepted') return 'Accepted';
+    if (status === 2 || status === '2' || status === 'Rejected') return 'Rejected';
+    return String(status || 'Unknown');
   }
 }

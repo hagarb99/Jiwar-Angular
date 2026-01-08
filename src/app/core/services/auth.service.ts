@@ -312,6 +312,17 @@ export class AuthService extends ApiBaseService {
     );
   }
 
+  /**
+   * Clears user data from storage and state
+   */
+  clearUserData(): void {
+    this.currentUserSubject.next(null);
+    localStorage.removeItem('currentUser');
+  }
+
+  /**
+   * Helper to set all auth data at once
+   */
   setAuthData(response: LoginResponse): void {
     this.setToken(response.token);
 
@@ -319,7 +330,7 @@ export class AuthService extends ApiBaseService {
       id: response.id,
       name: response.name,
       email: response.email,
-      profilePicURL: response.profilePicURL,
+      profilePicURL: response.profilePicURL || '',
       role: response.role,
       isProfileCompleted: response.isProfileCompleted
     });
@@ -327,34 +338,33 @@ export class AuthService extends ApiBaseService {
     this.isLoggedInSubject.next(true);
   }
 
-  getUserId(): string | null {
-    const user = this.currentUserSubject.value || JSON.parse(localStorage.getItem('currentUser') || 'null');
-    return user?.id || null;
-  }
-
-  clearUserData(): void {
-    this.currentUserSubject.next(null);
-    localStorage.removeItem('currentUser');
-  }
-
   // ============================================================================
   // GETTERS
   // ============================================================================
 
   get userRole(): string | null {
-    return this.currentUserSubject.value?.role ?? null;
+    const user = this.currentUserSubject.value || this.loadUserFromStorage();
+    return user?.role ?? null;
   }
 
   getUserName(): string | null {
-    return this.currentUserSubject.value?.name ?? null;
+    const user = this.currentUserSubject.value || this.loadUserFromStorage();
+    return user?.name ?? null;
   }
 
   getUserEmail(): string | null {
-    return this.currentUserSubject.value?.email ?? null;
+    const user = this.currentUserSubject.value || this.loadUserFromStorage();
+    return user?.email ?? null;
   }
 
   getProfilePicUrl(): string | null {
-    return this.currentUserSubject.value?.profilePicURL ?? null;
+    const user = this.currentUserSubject.value || this.loadUserFromStorage();
+    return user?.profilePicURL ?? null;
+  }
+
+  getUserId(): string | null {
+    const user = this.currentUserSubject.value || this.loadUserFromStorage();
+    return user?.id ?? null;
   }
 
   // ============================================================================

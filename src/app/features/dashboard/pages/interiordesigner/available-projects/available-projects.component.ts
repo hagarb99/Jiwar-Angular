@@ -34,7 +34,6 @@ import { AuthService } from '../../../../../core/services/auth.service';
     ProgressSpinnerModule,
     TagModule
   ],
-  providers: [MessageService],
   templateUrl: './available-projects.component.html',
   styleUrl: './available-projects.component.css'
 })

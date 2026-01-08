@@ -1,160 +1,182 @@
-<div class="p-6 space-y-6">
-    <div class="flex items-center justify-between">
-        <h1 class="text-3xl font-bold tracking-tight text-foreground">Dashboard Overview</h1>
+<div class="admin-dashboard p-6 space-y-6 bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Admin Dashboard</h1>
+            <p class="text-gray-500 mt-1">Platform analytics and metrics oversight</p>
+        </div>
+        <div class="flex space-x-3">
+            <button
+                class="bg-white border text-gray-700 px-4 py-2 rounded-lg shadow-sm hover:bg-gray-50 transition font-medium flex items-center">
+                <i class="pi pi-download mr-2 text-primary"></i> Export Reports
+            </button>
+            <button (click)="ngOnInit()"
+                class="bg-primary text-white px-4 py-2 rounded-lg shadow-md hover:bg-primary/90 transition font-medium flex items-center bg-blue-600">
+                <i class="pi pi-refresh mr-2"></i> Refresh Data
+            </button>
+        </div>
     </div>
 
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        <p class="mt-4 text-muted-foreground">Loading dashboard data...</p>
+    <div *ngIf="isLoading"
+        class="flex flex-col justify-center items-center h-96 space-y-4 bg-white rounded-2xl shadow-sm border border-gray-100">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+        <p class="text-gray-500 animate-pulse font-medium">Crunching analytics data...</p>
     </div>
 
-    <!-- Error State -->
-    <div *ngIf="error" class="p-4 bg-red-100 text-red-700 rounded-lg border border-red-200">
-        {{ error }}
+    <div *ngIf="error" class="bg-red-50 border-l-4 border-red-500 p-6 rounded-xl shadow-sm flex items-start space-x-4">
+        <i class="pi pi-exclamation-triangle text-red-500 text-2xl mt-1"></i>
+        <div>
+            <h3 class="text-red-800 font-bold mb-1">System Error</h3>
+            <p class="text-red-700 text-sm leading-relaxed">{{ error }}</p>
+        </div>
     </div>
 
-    <!-- No Data State -->
-    <div *ngIf="!isLoading && !error && !analyticsData" class="p-10 text-center text-gray-500">
-        No analytics data available.
-    </div>
-
-    <!-- content -->
-    <div *ngIf="analyticsData as data" class="space-y-6">
-
-        <!-- Key Metrics Cards -->
+    <div *ngIf="analyticsData as data" class="space-y-8 animate-in fade-in duration-500">
+        <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Revenue Card -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
-                <h3 class="text-sm font-medium text-muted-foreground">Total Revenue</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ data.paymentMetrics.totalRevenue |
-                    currency }}</p>
-                <p class="text-xs text-muted-foreground mt-1">Total earnings across all channels</p>
-            </div>
-
             <!-- Users Card -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
-                <h3 class="text-sm font-medium text-muted-foreground">Total Users</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ data.usersMetrics.totalUsers }}</p>
-                <div class="flex items-center mt-1 text-green-600">
-                    <span class="text-xs font-medium">+{{ data.usersMetrics.newSignUpsToday }} today</span>
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition group overflow-hidden relative">
+                <div
+                    class="absolute -right-4 -top-4 bg-blue-50 w-24 h-24 rounded-full group-hover:scale-110 transition duration-500">
+                </div>
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-blue-100 text-blue-600 rounded-xl">
+                            <i class="pi pi-users text-xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-green-500 bg-green-50 px-2 py-1 rounded-full">+{{
+                            data.usersMetrics.newSignUpsToday }} today</span>
+                    </div>
+                    <p class="text-gray-500 text-sm font-medium">Total Users</p>
+                    <div class="flex items-baseline space-x-2">
+                        <span class="text-3xl font-bold text-gray-900">{{ data.usersMetrics.totalUsers | number
+                            }}</span>
+                        <span class="text-xs text-gray-400">active now: {{ data.usersMetrics.activeUsers }}</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Listings Card -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
-                <h3 class="text-sm font-medium text-muted-foreground">Active Listings</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ data.propertyMetrics.activeListings }}
-                </p>
-                <p class="text-xs text-muted-foreground mt-1">{{ data.propertyMetrics.pendingListings }}
-                    pending approval</p>
+            <!-- Properties Card -->
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition group overflow-hidden relative">
+                <div
+                    class="absolute -right-4 -top-4 bg-purple-50 w-24 h-24 rounded-full group-hover:scale-110 transition duration-500">
+                </div>
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-purple-100 text-purple-600 rounded-xl">
+                            <i class="pi pi-home text-xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded-full">{{
+                            data.propertyMetrics.activeListings }} active</span>
+                    </div>
+                    <p class="text-gray-500 text-sm font-medium">Total Properties</p>
+                    <div class="flex items-baseline space-x-2">
+                        <span class="text-3xl font-bold text-gray-900">{{ data.propertyMetrics.totalProperties | number
+                            }}</span>
+                        <span class="text-xs text-gray-400">Sold: {{ data.propertyMetrics.soldOrRentedUnits }}</span>
+                    </div>
+                </div>
             </div>
 
-            <!-- Transactions Card -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
-                <h3 class="text-sm font-medium text-muted-foreground">Total Transactions</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ data.paymentMetrics.totalTransactions
-                    }}
-                </p>
-                <p class="text-xs text-muted-foreground mt-1">Processed successfully</p>
+            <!-- Valuations Card -->
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition group overflow-hidden relative">
+                <div
+                    class="absolute -right-4 -top-4 bg-green-50 w-24 h-24 rounded-full group-hover:scale-110 transition duration-500">
+                </div>
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-green-100 text-green-600 rounded-xl">
+                            <i class="pi pi-chart-line text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-500 text-sm font-medium">Total Valuations</p>
+                    <div class="flex items-baseline space-x-2">
+                        <span class="text-3xl font-bold text-gray-900">{{ data.valuationMetrics.totalValuations | number
+                            }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Card -->
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition group overflow-hidden relative">
+                <div
+                    class="absolute -right-4 -top-4 bg-orange-50 w-24 h-24 rounded-full group-hover:scale-110 transition duration-500">
+                </div>
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-orange-100 text-orange-600 rounded-xl">
+                            <i class="pi pi-dollar text-xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-full">{{
+                            data.paymentMetrics.totalTransactions }} txn</span>
+                    </div>
+                    <p class="text-gray-500 text-sm font-medium">Total Revenue</p>
+                    <div class="flex items-baseline space-x-2">
+                        <span class="text-3xl font-bold text-gray-900">${{ data.paymentMetrics.totalRevenue |
+                            number:'1.0-0' }}</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Detailed Stats Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            <!-- User Statistics -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm">
-                <h3 class="text-lg font-semibold text-foreground mb-4">User Statistics</h3>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center p-3 bg-secondary/10 rounded-lg">
-                        <span class="text-muted-foreground">Active Users</span>
-                        <span class="font-bold text-foreground">{{ data.usersMetrics.activeUsers }}</span>
-                    </div>
-
-                    <div class="pt-2">
-                        <h4 class="text-sm font-medium text-foreground mb-3">Roles Distribution</h4>
-                        <div style="display: block; height: 300px;">
-                            <canvas baseChart [data]="pieChartData" [options]="pieChartOptions" [type]="pieChartType">
-                            </canvas>
-                        </div>
-                    </div>
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Role Distribution -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
+                <div class="w-full flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-gray-900">User Role Distribution</h3>
+                    <i class="pi pi-info-circle text-gray-400 cursor-help"></i>
                 </div>
-            </div>
-
-            <!-- Property Insights -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm">
-                <h3 class="text-lg font-semibold text-foreground mb-4">Property Insights</h3>
-                <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="p-3 bg-secondary/10 rounded-lg text-center">
-                            <span class="block text-xs text-muted-foreground">Total Properties</span>
-                            <span class="block text-xl font-bold text-foreground">{{
-                                data.propertyMetrics.totalProperties }}</span>
-                        </div>
-                        <div class="p-3 bg-secondary/10 rounded-lg text-center">
-                            <span class="block text-xs text-muted-foreground">Sold/Rented</span>
-                            <span class="block text-xl font-bold text-foreground">{{
-                                data.propertyMetrics.soldOrRentedUnits }}</span>
-                        </div>
-                    </div>
-
-                    <div class="pt-2">
-                        <h4 class="text-sm font-medium text-foreground mb-3">Top Categories</h4>
-                        <div class="space-y-2">
-                            <div *ngFor="let cat of data.propertyMetrics.topCategories"
-                                class="flex justify-between items-center text-sm">
-                                <span class="text-muted-foreground">{{ cat.categoryName }}</span>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-24 h-2 bg-secondary/20 rounded-full overflow-hidden">
-                                        <div class="h-full bg-primary"
-                                            [style.width.%]="(cat.count / (data.propertyMetrics.totalProperties || 1)) * 100">
-                                        </div>
-                                    </div>
-                                    <span class="font-medium text-foreground w-8 text-right">{{ cat.count }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Valuations Trends -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm lg:col-span-2">
-                <h3 class="text-lg font-semibold text-foreground mb-4">Valuations per Period</h3>
-                <div style="display: block; height: 350px;">
-                    <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="barChartType">
+                <div class="relative w-full aspect-square max-w-[400px]">
+                    <canvas baseChart [data]="pieChartData" [options]="pieChartOptions" [type]="pieChartType">
                     </canvas>
                 </div>
             </div>
 
-            <!-- Engagement -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm lg:col-span-2">
-                <h3 class="text-lg font-semibold text-foreground mb-4">Engagement & Traffic</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="text-center p-4 border border-border rounded-lg">
-                        <span class="text-sm text-muted-foreground">Total Page Visits</span>
-                        <p class="text-2xl font-bold text-foreground mt-1">{{
-                            data.engagementMetrics.pageVisits
-                            }}</p>
+            <!-- Valuation Trends -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div class="w-full flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-gray-900">Valuation Volume Trends</h3>
+                    <i class="pi pi-chart-bar text-gray-400"></i>
+                </div>
+                <div class="relative w-full aspect-[4/3]">
+                    <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="barChartType">
+                    </canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tables/Detailed lists could go here -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h3 class="text-lg font-bold text-gray-900 mb-6">Engagement Overview</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div
+                    class="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-100 transition hover:border-blue-200">
+                    <div class="bg-blue-500 p-3 rounded-lg text-white font-bold text-xl shadow-sm shadow-blue-200">
+                        <i class="pi pi-eye"></i>
                     </div>
-                    <div class="text-center p-4 border border-border rounded-lg">
-                        <span class="text-sm text-muted-foreground">Property Views</span>
-                        <p class="text-2xl font-bold text-foreground mt-1">{{
-                            data.engagementMetrics.propertyViews }}</p>
+                    <div>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Property Views</p>
+                        <p class="text-2xl font-black text-gray-900">{{ data.engagementMetrics.propertyViews | number }}
+                        </p>
                     </div>
-                    <div class="p-4 border border-border rounded-lg">
-                        <span class="text-sm text-muted-foreground block mb-2 text-center">Top Search Trends</span>
-                        <div class="flex flex-wrap gap-2 justify-center">
-                            <span *ngFor="let trend of data.engagementMetrics.searchTrends | keyvalue"
-                                class="px-2 py-1 bg-secondary/20 text-xs rounded-full text-foreground">
-                                {{ trend.key }}
-                            </span>
-                        </div>
+                </div>
+                <div
+                    class="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-100 transition hover:border-purple-200">
+                    <div class="bg-purple-500 p-3 rounded-lg text-white font-bold text-xl shadow-sm shadow-purple-200">
+                        <i class="pi pi-globe"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Page Visits</p>
+                        <p class="text-2xl font-black text-gray-900">{{ data.engagementMetrics.pageVisits | number }}
+                        </p>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
