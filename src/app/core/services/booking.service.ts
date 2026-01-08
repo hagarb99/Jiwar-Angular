@@ -24,9 +24,9 @@ export interface CustomerBooking {
   id: number;
   propertyID: number;
   propertyTitle: string;
-  bookingDate: string; // startDate
-  bookingTime?: string;
-  status: number; // 0 = Pending, 1 = Confirmed, 2 = Rejected
+  startDate: string;
+  endDate?: string;
+  status: BookingStatus; // 0 = Pending, 1 = Confirmed, 2 = Rejected
 }
 
 

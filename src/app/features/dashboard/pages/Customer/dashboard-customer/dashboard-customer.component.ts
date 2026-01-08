@@ -104,8 +104,8 @@ this.bookingService.getCustomerBookings().subscribe({
     return bookings.map(b => ({
       id: b.id,
       property: b.propertyTitle,
-      date: new Date(b.bookingDate).toISOString().split('T')[0],
-      time: b.bookingTime || '',
+      date: new Date(b.startDate).toISOString().split('T')[0],
+      time: b.endDate || '',
       status: this.mapBookingStatus(b.status)
     }));
   }
