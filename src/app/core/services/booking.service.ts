@@ -6,11 +6,12 @@ import { ApiBaseService } from './api-base.service';
 export interface Booking {
   id: number;
   propertyID: number;
-  customerID: string;
+  propertyTitle: string;
+  customerName: string;
   startDate: string;
   endDate?: string;
   cost: number;
-  status: string; // Pending, Confirmed, Rejected
+  status: BookingStatus; // Pending, Confirmed, Rejected
 }
 export enum BookingStatus {
   Pending = 0,
@@ -23,9 +24,9 @@ export interface CustomerBooking {
   id: number;
   propertyID: number;
   propertyTitle: string;
-  bookingDate: string; // startDate
-  bookingTime?: string;
-  status: number; // 0 = Pending, 1 = Confirmed, 2 = Rejected
+  startDate: string;
+  endDate?: string;
+  status: BookingStatus; // 0 = Pending, 1 = Confirmed, 2 = Rejected
 }
 
 

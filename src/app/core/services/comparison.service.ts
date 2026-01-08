@@ -16,6 +16,7 @@ export interface PropertyComparisonDTO {
     propertyType: string;
     status: string;
     thumbnailUrl: string;
+    ThumbnailUrl?: string;
     features: string[];
 }
 

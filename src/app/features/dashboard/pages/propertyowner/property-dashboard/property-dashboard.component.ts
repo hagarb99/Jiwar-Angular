@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Property, PropertyService } from '../../../../../core/services/property.service';
 import { BookingService } from '../../../../../core/services/booking.service';
 import { environment } from '../../../../../../environments/environment';
-
+import { BookingStatus } from '../../../../../core/services/booking.service';
 @Component({
   selector: 'app-property-dashboard',
   standalone: true,
@@ -87,19 +87,19 @@ export class PropertyDashboardComponent implements OnInit {
     });
   }
 
-  private loadBookingStats(): void {
-    this.bookingService.getOwnerBookings().subscribe({
-      next: (bookings) => {
-        // Count active bookings (confirmed status)
-        const activeBookings = bookings.filter(b => b.status === 'Confirmed').length;
-        this.overviewStats[1].value = activeBookings.toString(); // Active Bookings
-      },
-      error: (error) => {
-        console.error('Error loading booking stats:', error);
-        this.overviewStats[1].value = '0'; // Default to 0 on error
-      }
-    });
-  }
+ private loadBookingStats(): void {
+  this.bookingService.getOwnerBookings().subscribe({ 
+    next: (bookings) => {
+      // Count active bookings (Confirmed status)
+      const activeBookings = bookings.filter(b => b.status === BookingStatus.Confirmed).length;
+      this.overviewStats[1].value = activeBookings.toString(); // Active Bookings
+    },
+    error: (error) => {
+      console.error('Error loading booking stats:', error);
+      this.overviewStats[1].value = '0'; // Default to 0 on error
+    }
+  });
+}
 
   navigateToAddProperty(): void {
     this.router.navigate(['/add-property']);
