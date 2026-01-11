@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { ProfileService, PropertyOwnerProfile } from '../profile.service';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-
+import { environment } from '../../../../../../environments/environment';
 @Component({
   selector: 'app-profile-propertyowner',
   standalone: true,
@@ -53,4 +53,16 @@ export class ProfilePropertyownerComponent implements OnInit {
       }
     });
   }
+  getProfileImageUrl(url: string | undefined | null): string {
+    if (!url) {
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.profile?.name || 'Jiwar'}`;
+    }
+
+    if (url.startsWith('http')) return url;
+
+    // تنظيف الرابط من /api إذا وجد في آخره لضبط مسار الملفات الاستاتيكية
+    const base = environment.apiBaseUrl.replace(/\/api\/?$/, '');
+    return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
+  }
+
 }

@@ -271,31 +271,27 @@ export class AuthService extends ApiBaseService {
 
   /**
    * Updates current user data with profile information from API response
-   */
-  updateUserFromProfile(profileData: {
-    name?: string;
-    email?: string;
-    profilePicURL?: string;
-    phoneNumber?: string;
-    title?: string;
-    location?: string;
-    bio?: string;
-  }): void {
+   */// auth.service.ts
+  updateUserFromProfile(profileData: Partial<UserData>): void {
     const currentUser = this.currentUserSubject.value;
-    if (!currentUser) {
-      console.warn('[AuthService] Cannot update profile: no user logged in');
-      return;
-    }
+    if (!currentUser) return;
 
+    // تحديث البيانات مع الحفاظ على التوكن والـ ID
     const updatedUser: UserData = {
       ...currentUser,
       name: profileData.name ?? currentUser.name,
       email: profileData.email ?? currentUser.email,
-      profilePicURL: profileData.profilePicURL ?? currentUser.profilePicURL
+      profilePicURL: profileData.profilePicURL ?? currentUser.profilePicURL,
+      phoneNumber: profileData.phoneNumber ?? currentUser.phoneNumber
     };
 
-    this.setUserData(updatedUser);
+    // 1. تحديث الـ Subject (هذا ما يجعل الناف بار والسايد بار "يشعرون" بالتغيير)
+    this.currentUserSubject.next(updatedUser);
+
+    // 2. تحديث الـ localStorage (للحفاظ على الصورة بعد عمل Refresh للمتصفح)
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
   }
+
 
   /**
   * الإصلاح ليتوافق مع AccountController في الباك-إند

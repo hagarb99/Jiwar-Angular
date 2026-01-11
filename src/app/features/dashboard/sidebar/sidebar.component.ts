@@ -24,13 +24,18 @@ export class SidebarComponent {
 
   currentUser$ = this.authService.currentUser$;
 
-  getActionUrl(url: string): string {
+  getActionUrl(url: string | null | undefined): string {
     if (!url) return '';
+
+    // إذا كان الرابط خارجياً (مثل صور جوجل)
     if (url.startsWith('http')) return url;
 
-    // apiBaseUrl usually ends in /api, but images are at root /uploads
+    // تنظيف apiBaseUrl للحصول على الدومين الرئيسي (مثلاً http://localhost:5001)
     const base = environment.apiBaseUrl.replace(/\/api\/?$/, '');
+
+    // التأكد من أن المسار يبدأ بـ /
     const path = url.startsWith('/') ? url : `/${url}`;
+
     return `${base}${path}`;
   }
 
