@@ -1,9 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ComparisonService, PropertyComparisonDTO } from '../../core/services/comparison.service';
+import { ComparisonService, PropertyComparisonDTO, AiComparisonResultDTO, PropertyComparisonUserType } from '../../core/services/comparison.service';
 import { Property } from '../../core/services/property.service';
 import { environment } from '../../../environments/environment';
-import { LucideAngularModule, X, Scale, MapPin, Maximize2, Bed, Bath, Info, Sparkles, TrendingUp } from 'lucide-angular';
+import { LucideAngularModule, X, Scale, MapPin, Maximize2, Bed, Bath, Info, Sparkles, TrendingUp, Brain, Check } from 'lucide-angular';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -20,6 +20,12 @@ export class ComparisonPageComponent implements OnInit {
     myProperties: Property[] = [];
     showAddModal = false;
 
+    // AI Analysis
+    aiResult: AiComparisonResultDTO | null = null;
+    isLoadingAi = false;
+    selectedUserType: PropertyComparisonUserType = PropertyComparisonUserType.Family;
+    UserTypeEnum = PropertyComparisonUserType; // For template access
+
     // Icons
     X = X;
     Scale = Scale;
@@ -30,10 +36,16 @@ export class ComparisonPageComponent implements OnInit {
     Info = Info;
     Sparkles = Sparkles;
     TrendingUp = TrendingUp;
+    Brain = Brain;
+    Check = Check;
 
     ngOnInit(): void {
         this.comparisonService.comparisonList$.subscribe(list => {
             this.properties = list;
+            // potential clear AI result if properties change?
+            if (this.aiResult) {
+                // optional: this.aiResult = null; 
+            }
         });
     }
 
@@ -62,6 +74,32 @@ export class ComparisonPageComponent implements OnInit {
             // Maybe show specific error message if full
             alert('Cannot add property. Comparisons are limited to 5 items or it is already added.');
         }
+    }
+
+    analyze(): void {
+        if (this.properties.length < 2) {
+            alert('Please add at least 2 properties to compare.');
+            return;
+        }
+
+        this.isLoadingAi = true;
+        this.aiResult = null;
+
+        this.comparisonService.analyzeWithAi(this.selectedUserType).subscribe({
+            next: (res) => {
+                this.aiResult = res;
+                this.isLoadingAi = false;
+            },
+            error: (err) => {
+                console.error('AI Analysis failed', err);
+                this.isLoadingAi = false;
+                alert('AI Analysis failed. Please try again.');
+            }
+        });
+    }
+
+    setUserType(type: PropertyComparisonUserType): void {
+        this.selectedUserType = type;
     }
 
     getBestValue(category: 'price' | 'area' | 'rooms'): number | null {
@@ -107,5 +145,11 @@ export class ComparisonPageComponent implements OnInit {
         const path = url.startsWith('/') ? url : `/${url}`;
 
         return `${baseUrl}${path}`;
+    }
+
+    getScoreColor(score: number): string {
+        if (score >= 80) return 'bg-green-500';
+        if (score >= 60) return 'bg-yellow-500';
+        return 'bg-red-500';
     }
 }

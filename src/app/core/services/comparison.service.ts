@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, forkJoin } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Property } from './property.service';
+import { Property, PropertyService } from './property.service';
 
 export interface PropertyComparisonDTO {
     propertyID: number;
@@ -20,6 +20,33 @@ export interface PropertyComparisonDTO {
     features: string[];
 }
 
+export enum PropertyComparisonUserType {
+    Investor = 0,
+    Family = 1,
+    BudgetBuyer = 2
+}
+
+export interface PropertyComparisonRequestDTO {
+    propertyIds: number[];
+    userType: PropertyComparisonUserType;
+}
+
+export interface AiPropertyScoreBreakdownDTO {
+    propertyId: number;
+    priceValue: number;
+    location: number;
+    space: number;
+    investmentPotential: number;
+    comfort: number;
+    totalScore: number;
+}
+
+export interface AiComparisonResultDTO {
+    bestPropertyId: number;
+    summary: string;
+    scores: AiPropertyScoreBreakdownDTO[];
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -31,7 +58,7 @@ export class ComparisonService {
 
     private readonly STORAGE_KEY = 'jiwar_comparison_ids';
 
-    constructor(private http: HttpClient) {
+    constructor(private http: HttpClient, private propertyService: PropertyService) {
         this.loadFromStorage();
     }
 
@@ -80,16 +107,47 @@ export class ComparisonService {
             return;
         }
 
-        this.http.post<PropertyComparisonDTO[]>(`${this.apiUrl}/compare`, this.comparisonIds)
-            .subscribe({
-                next: (data) => {
-                    this.comparisonListSubject.next(data);
-                },
-                error: (err) => {
-                    console.error('Error fetching comparison data', err);
-                    // If error (e.g., some properties deleted), maybe clear custom handling?
-                }
-            });
+        // Use forkJoin to fetch details for each property individually
+        const requests = this.comparisonIds.map(id => this.propertyService.getPropertyById(id));
+
+        forkJoin(requests).subscribe({
+            next: (properties: Property[]) => {
+                const dtos: PropertyComparisonDTO[] = properties.map(p => {
+                    // robust thumbnail resolution
+                    let thumb = p.thumbnailUrl || p.ThumbnailUrl;
+                    if (!thumb && p.mediaUrls && p.mediaUrls.length > 0) {
+                        thumb = p.mediaUrls[0];
+                    }
+
+                    return {
+                        propertyID: p.propertyID,
+                        title: p.title,
+                        city: p.city,
+                        address: p.address,
+                        price: p.price,
+                        area_sqm: p.area_sqm,
+                        numBedrooms: p.numBedrooms,
+                        numBathrooms: p.numBathrooms,
+                        propertyType: p.propertyType !== undefined ? p.propertyType.toString() : 'Unknown',
+                        status: 'Available',
+                        thumbnailUrl: thumb || '',
+                        features: []
+                    };
+                });
+                this.comparisonListSubject.next(dtos);
+            },
+            error: (err) => {
+                console.error('Error fetching comparison data', err);
+            }
+        });
+    }
+
+    analyzeWithAi(userType: PropertyComparisonUserType): Observable<AiComparisonResultDTO> {
+        const payload: PropertyComparisonRequestDTO = {
+            propertyIds: this.comparisonIds,
+            userType: userType
+        };
+        return this.http.post<AiComparisonResultDTO>(`${this.apiUrl}/compare`, payload);
     }
 
     getMyProperties(): Observable<Property[]> {
