@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { BookingService, Booking, BookingStatus} from '../../../../../core/services/booking.service';
+import { NotificationService } from '../../../../../core/services/notification.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 
 export type BookingTab = 'requests' | 'income';
 
@@ -18,22 +20,31 @@ export class OwnerBookingsComponent implements OnInit {
 
    public BookingStatus = BookingStatus;
    
-  constructor(private bookingService: BookingService) {}
+  constructor(private bookingService: BookingService,
+    private notificationService: NotificationService,
+    private authService: AuthService
+  ) {}
 
-  ngOnInit() { 
+  ngOnInit() : void{ 
+  this.loadBookings();
+
+  this.notificationService.notifications$.subscribe(() => {
     this.loadBookings();
+  });
   }
 
-  loadBookings() {
-  this.loading = true;
+  loadBookings() : void{
+   this.loading = true;
 
-  this.bookingService.getOwnerBookings().subscribe({
-    next: (data) => {
-      this.bookings = data;
-      this.loading = false;
-    },
-    error: () => (this.loading = false)
-  });
+    this.bookingService.getOwnerBookings().subscribe({
+      next: (data) => {
+        this.bookings = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
 }
 
 

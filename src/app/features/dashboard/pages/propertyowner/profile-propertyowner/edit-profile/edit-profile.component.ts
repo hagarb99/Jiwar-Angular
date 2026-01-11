@@ -35,6 +35,18 @@ export class EditProfilePropertyownerComponent implements OnInit {
     uploadingImage = false;
     previewUrl: string | null = null;
 
+    getProfileImageUrl(): string {
+        if (this.previewUrl) return this.previewUrl;
+
+        const url = this.profileForm.get('profilePicURL')?.value;
+        if (!url) return `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.profileForm.get('name')?.value}`;
+
+        if (url.startsWith('http')) return url;
+
+        const base = this.environment.apiBaseUrl.replace(/\/api\/?$/, '');
+        return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
+    }
+
     constructor(
         private fb: FormBuilder,
         private profileService: ProfileService,

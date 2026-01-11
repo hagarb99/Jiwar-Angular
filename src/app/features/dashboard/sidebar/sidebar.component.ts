@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 interface SidebarMenuItem {
   label: string;
@@ -22,6 +23,16 @@ export class SidebarComponent {
   private router = inject(Router);
 
   currentUser$ = this.authService.currentUser$;
+
+  getActionUrl(url: string): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+
+    // apiBaseUrl usually ends in /api, but images are at root /uploads
+    const base = environment.apiBaseUrl.replace(/\/api\/?$/, '');
+    const path = url.startsWith('/') ? url : `/${url}`;
+    return `${base}${path}`;
+  }
 
   private allMenuItems: SidebarMenuItem[] = [
 
@@ -111,10 +122,10 @@ export class SidebarComponent {
       roles: ['PropertyOwner'] // Only designers see available requests
     },
     {
-        label: 'My Bookings',
-        path: '/dashboard/customer/MyBooking',
-        icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-        roles: ['Customer']
+      label: 'My Bookings',
+      path: '/dashboard/customer/MyBooking',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+      roles: ['Customer']
     },
     {
       label: 'Tenants/Buyers',

@@ -298,14 +298,17 @@ export class AuthService extends ApiBaseService {
   }
 
   /**
-   * Uploads a profile picture file to the server
-   */
+  * الإصلاح ليتوافق مع AccountController في الباك-إند
+  */
   uploadProfilePicture(file: File): Observable<{ profilePicURL: string }> {
     const formData = new FormData();
-    formData.append('file', file);
 
+    // 1. تغيير اسم الحقل من 'file' إلى 'image' ليطابق [FromForm] IFormFile image
+    formData.append('image', file);
+
+    // 2. تغيير الرابط من 'upload-profile-picture' إلى 'profile/upload-image'
     return this.httpClient.post<{ profilePicURL: string }>(
-      `${this.apiBaseUrl}/account/upload-profile-picture`,
+      `${this.apiBaseUrl}/account/profile/upload-image`,
       formData
     ).pipe(
       catchError(this.handleError)
