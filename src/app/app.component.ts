@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { ToastModule } from 'primeng/toast';
 import { AuthService } from './core/services/auth.service';
 import { NotificationService } from './core/services/notification.service';
 import { SpinnerComponent } from "./shared/components/spinner/spinner.component";
@@ -18,10 +19,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('AppComponent initialized');
-    
+
     const token = this.authService.getToken();
     console.log('Token available on app init:', !!token);
-    
+
     if (token) {
       console.log('Starting SignalR connection from AppComponent');
       this.notificationService.startConnection(token).catch(err => {
@@ -34,7 +35,7 @@ export class AppComponent implements OnInit, OnDestroy {
     // Subscribe to auth state changes to handle login/logout
     this.authService.currentUser$.subscribe(user => {
       console.log('Auth state changed:', user ? user.email : 'Logged out');
-      
+
       if (user) {
         const token = this.authService.getToken();
         if (token) {

@@ -184,7 +184,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
 
     if (this.currentUserRole === 'InteriorDesigner') {
-      this.router.navigate(['/dashboard/interiordesigner/dashboard']);
+      this.router.navigate(['/dashboard/designer/dashboard']);
     }
 
     if (this.currentUserRole === 'Admin') {
@@ -228,59 +228,68 @@ export class NavbarComponent implements OnInit, OnDestroy {
     // Close dropdown
     this.toggleNotificationsDropdown = false;
 
-    // --- Enhanced Navigation Logic ---
-    const message = notification.message.toLowerCase();
-    const requestMatch = notification.message.match(/design request (\d+)/i);
-    const bookingMatch = notification.message.match(/booking.*(\d+)/i);
-    const requestId = requestMatch ? requestMatch[1] : null;
-    const bookingId = bookingMatch ? bookingMatch[1] : null;
+    // Navigate based on notification content
+    // Extract ID from message like "You have received a new proposal for your design request 11"
+    const idMatch = notification.message.match(/\d+/);
+    if (idMatch && this.currentUserRole === 'PropertyOwner') {
+      const requestId = idMatch[0];
+      this.router.navigate(['/dashboard/propertyowner/design-requests', requestId]);
+    } else if (this.currentUserRole === 'InteriorDesigner') {
+      // If designer, maybe go to My Proposals or the specific project
+      this.router.navigate(['/dashboard/designer/my-proposals']);
+      // --- Enhanced Navigation Logic ---
+      const message = notification.message.toLowerCase();
+      const requestMatch = notification.message.match(/design request (\d+)/i);
+      const bookingMatch = notification.message.match(/booking.*(\d+)/i);
+      const requestId = requestMatch ? requestMatch[1] : null;
+      const bookingId = bookingMatch ? bookingMatch[1] : null;
 
-    console.log('🔗 Navigation logic triggered:', {
-      message: notification.message,
-      notificationType: notification.notificationType,
-      requestId,
-      bookingId,
-      userRole: this.currentUserRole
-    });
+      console.log('🔗 Navigation logic triggered:', {
+        message: notification.message,
+        notificationType: notification.notificationType,
+        requestId,
+        bookingId,
+        userRole: this.currentUserRole
+      });
 
-    if (this.currentUserRole === 'PropertyOwner') {
-      // Handle booking notifications
-      if (bookingId || notification.notificationType === 'proposal' || message.includes('booking')) {
-        console.log('🏠 Navigating to bookings');
-        this.router.navigate(['/dashboard/propertyowner/owner-bookings']);
+      if (this.currentUserRole === 'PropertyOwner') {
+        // Handle booking notifications
+        if (bookingId || notification.notificationType === 'proposal' || message.includes('booking')) {
+          console.log('🏠 Navigating to bookings');
+          this.router.navigate(['/dashboard/propertyowner/owner-bookings']);
+        }
+        // Handle design request notifications
+        else if (requestId) {
+          console.log('🎨 Navigating to design request:', requestId);
+          this.router.navigate(['/dashboard/propertyowner/design-requests', requestId]);
+        }
+        // Default fallback
+        else {
+          console.log('📋 Navigating to my requests');
+          this.router.navigate(['/dashboard/propertyowner/my-requests']);
+        }
       }
-      // Handle design request notifications
-      else if (requestId) {
-        console.log('🎨 Navigating to design request:', requestId);
-        this.router.navigate(['/dashboard/propertyowner/design-requests', requestId]);
+      else if (this.currentUserRole === 'InteriorDesigner') {
+        if (message.includes('accepted') || message.includes('approved')) {
+          this.router.navigate(['/dashboard/designer/active-projects']);
+        } else if (requestId) {
+          // Find if this is an active project or just a proposal
+          this.router.navigate(['/dashboard/designer/my-proposals']);
+        } else {
+          this.router.navigate(['/dashboard/designer/available-projects']);
+        }
       }
-      // Default fallback
-      else {
-        console.log('📋 Navigating to my requests');
-        this.router.navigate(['/dashboard/propertyowner/my-requests']);
+      else if (this.currentUserRole === 'Customer') {
+        // Handle customer notifications
+        if (message.includes('booking')) {
+          console.log('🏠 Navigating to customer bookings');
+          this.router.navigate(['/dashboard/customer/my-bookings']);
+        } else {
+          console.log('📋 Navigating to customer dashboard');
+          this.router.navigate(['/dashboard']);
+        }
       }
     }
-    else if (this.currentUserRole === 'InteriorDesigner') {
-      if (message.includes('accepted') || message.includes('approved')) {
-        this.router.navigate(['/dashboard/designer/active-projects']);
-      } else if (requestId) {
-        // Find if this is an active project or just a proposal
-        this.router.navigate(['/dashboard/designer/my-proposals']);
-      } else {
-        this.router.navigate(['/dashboard/designer/available-projects']);
-      }
-    }
-    else if (this.currentUserRole === 'Customer') {
-      // Handle customer notifications
-      if (message.includes('booking')) {
-        console.log('🏠 Navigating to customer bookings');
-        this.router.navigate(['/dashboard/customer/my-bookings']);
-      } else {
-        console.log('📋 Navigating to customer dashboard');
-        this.router.navigate(['/dashboard']);
-      }
-    }
-  }
 
   private getAbsoluteUrl(url: string | null | undefined): string | null {
     if (!url) return null;
