@@ -1,3 +1,9 @@
+export enum DesignerProposalStatus {
+    Pending = 0,
+    Accepted = 1,
+    Rejected = 2
+}
+
 export interface DesignerProposal {
     id?: number;
     designRequestID: number;
@@ -7,7 +13,7 @@ export interface DesignerProposal {
     estimatedDays: number;
     sampleDesignURL: string;
 
-    status?: string;
+    status?: string | number;
 
     // Extra UI fields
     designerName?: string;
@@ -27,7 +33,7 @@ export interface CreateDesignerProposal {
     sampleDesignURL: string;
 
     // Backend compatibility fields
-    status?: string;
+    status?: string | number;
     designerName?: string;
     designerEmail?: string;
     offerDetails?: string;

@@ -1,11 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { MessageService } from 'primeng/api';
-import { AuthService } from './auth.service';
 
 export interface NotificationDto {
     notificationID: number;
@@ -23,6 +22,7 @@ export interface NotificationDto {
 export class NotificationService {
     private apiUrl = `${environment.apiBaseUrl}/Notification`;
     private hubConnection!: signalR.HubConnection;
+    private notificationSound: HTMLAudioElement = new Audio();
 
     // Observable for notifications list
     public notifications$ = new BehaviorSubject<NotificationDto[]>([]);
@@ -33,70 +33,83 @@ export class NotificationService {
     constructor(
         private http: HttpClient,
         private messageService: MessageService,
-        private authService: AuthService
+        private zone: NgZone
     ) {
-        // Load from local storage immediately on startup
-        this.loadFromStorage();
+        // Classic Nokia SMS notification tone - simple and familiar
+        this.notificationSound.src = 'https://www.soundjay.com/phone/sounds/sms-alert-1.mp3';
+        this.notificationSound.volume = 1.0;
+        this.notificationSound.load();
+
+        // Browser Autoplay Policy: Audio must be "unlocked" by a user gesture
+        this.unlockAudioContext();
     }
 
-    private getStorageKey(): string {
-        const userEmail = this.authService.getUserEmail() || 'guest';
-        return `jiwar_notifications_${userEmail}`;
-    }
-
-    private saveToStorage(notifications: NotificationDto[]): void {
-        try {
-            localStorage.setItem(this.getStorageKey(), JSON.stringify(notifications));
-        } catch (e) {
-            console.warn('Could not save notifications to local storage', e);
-        }
-    }
-
-    private loadFromStorage(): void {
-        try {
-            const saved = localStorage.getItem(this.getStorageKey());
-            if (saved) {
-                const notifications = JSON.parse(saved);
-                this.notifications$.next(notifications);
-                const unreadCount = notifications.filter((n: NotificationDto) => !n.isRead).length;
-                this.unreadCount$.next(unreadCount);
-            }
-        } catch (e) {
-            console.warn('Could not load notifications from local storage', e);
-        }
+    /**
+     * Common trick to unlock audio on mobile/modern browsers
+     */
+    private unlockAudioContext(): void {
+        const unlock = () => {
+            this.notificationSound.play().then(() => {
+                this.notificationSound.pause();
+                this.notificationSound.currentTime = 0;
+                document.removeEventListener('click', unlock);
+                console.log('🔊 Audio context unlocked by user interaction');
+            }).catch(e => {
+                // If it fails, we wait for next click
+            });
+        };
+        document.addEventListener('click', unlock);
     }
 
     /**
      * Initialize SignalR connection with JWT token
      */
     public startConnection(token: string): void {
-        this.loadFromStorage(); // Refresh for current user
+        const hubUrl = `${environment.assetsBaseUrl}/notificationhub`;
+
+        // If connection already exists, check its state
         if (this.hubConnection) {
-            return; // Already connected
+            if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
+                console.log('✅ SignalR: Already connected');
+                return;
+            }
+            if (this.hubConnection.state === signalR.HubConnectionState.Connecting ||
+                this.hubConnection.state === signalR.HubConnectionState.Reconnecting) {
+                console.log('⏳ SignalR: Connection in progress...');
+                return;
+            }
+            // If disconnected, we can try to start it again
+        } else {
+            // Build connection if it doesn't exist
+            this.hubConnection = new signalR.HubConnectionBuilder()
+                .withUrl(hubUrl, {
+                    accessTokenFactory: () => localStorage.getItem('token') || token,
+                    skipNegotiation: false,
+                    transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling
+                })
+                .withAutomaticReconnect()
+                .build();
+
+            // Set up listeners BEFORE starting
+            this.setupListeners();
         }
 
-        const baseUrl = environment.apiBaseUrl.replace('/api', '');
-        const hubUrl = `${baseUrl}/notificationHub`;
-
-        this.hubConnection = new signalR.HubConnectionBuilder()
-            .withUrl(hubUrl, {
-                accessTokenFactory: () => token,
-                skipNegotiation: false,
-                transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling
-            })
-            .withAutomaticReconnect()
-            .build();
-
+        console.log('🚀 SignalR: Starting connection to', hubUrl);
         this.hubConnection
             .start()
             .then(() => {
                 console.log('✅ SignalR Connected to NotificationHub');
-                this.setupListeners();
-                // Load initial notifications
+                // Load initial notifications to sync
                 this.loadNotifications().subscribe();
             })
             .catch(err => {
                 console.error('❌ SignalR Connection Error:', err);
+                // Attempt to reconnect after delay if not already handled by automatic reconnect
+                setTimeout(() => {
+                    if (this.hubConnection.state === signalR.HubConnectionState.Disconnected) {
+                        this.startConnection(token);
+                    }
+                }, 5000);
             });
 
         // Handle reconnection
@@ -110,19 +123,66 @@ export class NotificationService {
      * Setup SignalR event listeners
      */
     private setupListeners(): void {
-        this.hubConnection.on('ReceiveNotification', (title: string, message: string) => {
-            console.log('📬 New Notification:', title, message);
+        // Remove existing listeners to avoid duplicates if re-setup
+        this.hubConnection.off('ReceiveNotification');
 
-            // Show toast notification
-            this.messageService.add({
-                severity: 'info',
-                summary: title,
-                detail: message,
-                life: 5000
+        this.hubConnection.on('ReceiveNotification', (arg1: any, arg2?: string) => {
+            // CRITICAL: Play sound FIRST with zero delay
+            this.playNotificationSound();
+
+            console.log('📬 SignalR ReceiveNotification trigger:', { arg1, arg2 });
+
+            let title = 'New Notification';
+            let message = '';
+            let type = 'Info';
+            let data = arg1;
+
+            // Handle multiple argument formats from backend
+            if (typeof arg1 === 'string' && typeof arg2 === 'string') {
+                // Format: (title, message)
+                title = arg1;
+                message = arg2;
+            } else if (typeof arg1 === 'object') {
+                // Format: (dataObject)
+                title = arg1.title || title;
+                message = arg1.message || '';
+                type = arg1.type || 'Info';
+            }
+
+            // 1. Show toast notification
+            this.zone.run(() => {
+                this.messageService.add({
+                    severity: type.toLowerCase() === 'success' ? 'success' : (type.toLowerCase() === 'error' ? 'error' : 'info'),
+                    summary: title,
+                    detail: message,
+                    life: 6000
+                });
             });
 
-            // Refresh the notification list
-            this.loadNotifications().subscribe();
+            // 2. Refresh count and list from server to ensure data integrity
+            this.loadNotifications().subscribe({
+                next: (notifs) => {
+                    this.zone.run(() => {
+                        console.log('✅ Notifications refreshed after real-time update');
+                    });
+                },
+                error: (err) => {
+                    // Fallback to local update if refresh fails
+                    this.zone.run(() => {
+                        const newNotif: NotificationDto = {
+                            notificationID: (data && data.id) || Math.floor(Math.random() * 100000),
+                            title,
+                            message,
+                            notificationType: type,
+                            isRead: false,
+                            sentDate: new Date().toISOString(),
+                            timeAgo: 'Just now'
+                        };
+                        this.notifications$.next([newNotif, ...this.notifications$.value]);
+                        this.unreadCount$.next(this.unreadCount$.value + 1);
+                    });
+                }
+            });
         });
     }
 
@@ -143,10 +203,11 @@ export class NotificationService {
     public loadNotifications(): Observable<NotificationDto[]> {
         return this.http.get<NotificationDto[]>(this.apiUrl).pipe(
             tap(notifications => {
-                this.notifications$.next(notifications);
-                const unreadCount = notifications.filter(n => !n.isRead).length;
-                this.unreadCount$.next(unreadCount);
-                this.saveToStorage(notifications);
+                this.zone.run(() => {
+                    this.notifications$.next(notifications);
+                    const unreadCount = notifications.filter(n => !n.isRead).length;
+                    this.unreadCount$.next(unreadCount);
+                });
             })
         );
     }
@@ -157,14 +218,14 @@ export class NotificationService {
     public markAsRead(notificationId: number): Observable<any> {
         return this.http.put(`${this.apiUrl}/${notificationId}/read`, {}).pipe(
             tap(() => {
-                // Update local state
-                const notifications = this.notifications$.value.map(n =>
-                    n.notificationID === notificationId ? { ...n, isRead: true } : n
-                );
-                this.notifications$.next(notifications);
-                const unreadCount = notifications.filter(n => !n.isRead).length;
-                this.unreadCount$.next(unreadCount);
-                this.saveToStorage(notifications);
+                this.zone.run(() => {
+                    const notifications = this.notifications$.value.map(n =>
+                        n.notificationID === notificationId ? { ...n, isRead: true } : n
+                    );
+                    this.notifications$.next(notifications);
+                    const unreadCount = notifications.filter(n => !n.isRead).length;
+                    this.unreadCount$.next(unreadCount);
+                });
             })
         );
     }
@@ -175,13 +236,28 @@ export class NotificationService {
     public markAllAsRead(): Observable<any> {
         return this.http.put(`${this.apiUrl}/read-all`, {}).pipe(
             tap(() => {
-                // Update local state
-                const notifications = this.notifications$.value.map(n => ({ ...n, isRead: true }));
-                this.notifications$.next(notifications);
-                this.unreadCount$.next(0);
-                this.saveToStorage(notifications);
+                this.zone.run(() => {
+                    const notifications = this.notifications$.value.map(n => ({ ...n, isRead: true }));
+                    this.notifications$.next(notifications);
+                    this.unreadCount$.next(0);
+                });
             })
         );
+    }
+
+    /**
+     * Play notification sound with zero delay
+     */
+    private playNotificationSound(): void {
+        try {
+            this.notificationSound.volume = 1.0; // Boost to maximum
+            this.notificationSound.currentTime = 0;
+            this.notificationSound.play().catch(err => {
+                console.warn('🔇 Audio play prevented (User interaction required):', err);
+            });
+        } catch (e) {
+            console.error('🔊 Error playing sound:', e);
+        }
     }
 
     /**

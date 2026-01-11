@@ -71,11 +71,11 @@ export class DesignerDashboardComponent implements OnInit {
         this.overviewStats[0].value = data.length.toString();
 
         // Count accepted proposals (active projects)
-        const acceptedCount = data.filter(p => p.status === 'Accepted').length;
+        const acceptedCount = data.filter(p => p.status === 'Accepted' || p.status === 1 || p.status === '1').length;
         this.overviewStats[1].value = acceptedCount.toString();
 
-        // Count completed (you might need to check designs for this)
-        const completedCount = data.filter(p => p.status === 'Completed').length;
+        // Count completed
+        const completedCount = data.filter(p => p.status === 'Completed' || p.status === 3 || p.status === '3').length;
         this.overviewStats[2].value = completedCount.toString();
 
 
