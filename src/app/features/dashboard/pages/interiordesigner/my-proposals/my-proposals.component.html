@@ -70,7 +70,7 @@
         <div class="flex flex-col gap-2 min-w-[150px]">
           <button pButton label="Submit Project" icon="pi pi-upload" class="p-button-success"
             [routerLink]="['/dashboard/interiordesigner/upload-design']" [queryParams]="{ proposalId: proposal.id }"
-            [disabled]="proposal.status !== 'Accepted'"
+            [disabled]="proposal.status !== 'Accepted' && proposal.status !== 1 && proposal.status !== '1'"
             [pTooltip]="proposal.status !== 'Accepted' ? 'Wait for the property owner to accept your proposal' : 'Upload your final design'"
             tooltipPosition="left">
           </button>

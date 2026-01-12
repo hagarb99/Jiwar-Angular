@@ -10,4 +10,7 @@ import { NavbarComponent } from "../../../shared/components/navbar/navbar.compon
   styleUrls: ['./dashboard-layout.component.css']
 })
 
-export class DashboardLayoutComponent { }
+export class DashboardLayoutComponent { 
+  
+}
+ 

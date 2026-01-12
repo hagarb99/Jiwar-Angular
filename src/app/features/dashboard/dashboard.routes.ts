@@ -13,7 +13,6 @@ export const DASHBOARD_ROUTES: Routes = [
           import('./pages/profile-placeholder/profile-placeholder.component')
             .then(m => m.ProfilePlaceholderComponent)
       },
-
       {
         path: 'designer',
         canActivate: [() => roleGuard(['InteriorDesigner'])],
@@ -21,8 +20,6 @@ export const DASHBOARD_ROUTES: Routes = [
           import('./pages/interiordesigner/interior-designer.routes')
             .then(m => m.interiorDesignerRoutes)
       },
-
-      // ===== PROPERTY OWNER =====
       {
         path: 'propertyowner',
         canActivate: [() => roleGuard(['PropertyOwner'])],
@@ -30,14 +27,31 @@ export const DASHBOARD_ROUTES: Routes = [
           import('./pages/propertyowner/property-owner.routes')
             .then(m => m.propertyOwnerRoutes)
       },
-
-      // ===== ADMIN =====
       {
         path: 'admin',
         canActivate: [() => roleGuard(['Admin'])],
         loadChildren: () =>
           import('./pages/Admin/admin.routes')
             .then(m => m.ADMIN_ROUTES)
+      },
+
+
+      // Default child route
+      {
+        path: '',
+        redirectTo: 'profile',
+        pathMatch: 'full'
+      },
+      {
+        path: 'customer',
+        canActivate: [roleGuard(['Customer'])],
+        loadChildren: () =>
+          import('./pages/Customer/customer.routes').then(m => m.CustomerRoutes)
+      },
+      {
+        path: '',
+        redirectTo: 'profile',
+        pathMatch: 'full'
       }
     ]
   }

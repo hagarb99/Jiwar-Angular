@@ -1,0 +1,49 @@
+<div *ngIf="isLoadingBookings">Loading your bookings...</div>
+
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">My Bookings</h1>
+    <p class="text-gray-600 mt-1">
+      Manage your property bookings and requests
+    </p>
+  </div>
+
+
+<!-- Tabs -->
+<div class="tabs" *ngIf="!isLoadingBookings">
+  <button class="tab" [class.active]="activeTab === 'pending'" (click)="setTab('pending')">
+    Requests Sent
+  </button>
+
+  <button class="tab" [class.active]="activeTab === 'approved'" (click)="setTab('approved')">
+    Approved
+  </button>
+
+  <button class="tab" [class.active]="activeTab === 'rejected'" (click)="setTab('rejected')">
+    Rejected
+  </button>
+</div>
+
+<!-- Table -->
+<div class="table-wrapper"
+     *ngIf="!isLoadingBookings && filteredBookings.length">
+
+  <table class="booking-table">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let booking of filteredBookings">
+        <td class="property">{{ booking.propertyTitle }}</td>
+        <td class="date">{{ booking.startDate }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="!isLoadingBookings && filteredBookings.length === 0">
+  No bookings in this section.
+</div>

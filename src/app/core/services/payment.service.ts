@@ -27,8 +27,13 @@ export class PaymentService extends ApiBaseService {
      * Initiates a subscription payment and returns the Paymob iframe URL
      * Backend: POST api/payment/subscription/{planId}
      */
-    createSubscriptionPayment(planId: number): Observable<{ iframeUrl: string }> {
-        return this.httpClient.post<{ iframeUrl: string }>(`${this.baseUrl}/subscription/${planId}`, {});
+    createSubscriptionPayment(planId: number, billingData: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        phoneNumber: string;
+    }): Observable<{ iframeUrl: string }> {
+        return this.httpClient.post<{ iframeUrl: string }>(`${this.baseUrl}/subscription/${planId}`, billingData);
     }
 
     /**

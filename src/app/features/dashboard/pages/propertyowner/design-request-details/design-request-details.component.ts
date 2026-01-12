@@ -7,7 +7,7 @@ import { DesignRequestService } from '../../../../../core/services/design-reques
 import { DesignerProposalService } from '../../../../../core/services/designer-proposal.service';
 import { DesignService } from '../../../../../core/services/design.service';
 import { DesignRequest } from '../../../../../core/interfaces/design-request.interface';
-import { DesignerProposal } from '../../../../../core/interfaces/designer-proposal.interface';
+import { DesignerProposal, DesignerProposalStatus } from '../../../../../core/interfaces/designer-proposal.interface';
 import { Design } from '../../../../../core/interfaces/design.interface';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
@@ -30,7 +30,6 @@ import { DialogModule } from 'primeng/dialog';
     ProgressSpinnerModule,
     DialogModule
   ],
-  providers: [MessageService],
   templateUrl: './design-request-details.component.html',
   styleUrls: ['./design-request-details.component.css']
 })
@@ -105,13 +104,25 @@ export class DesignRequestDetailsComponent implements OnInit {
         // to prevent users from trying to Accept/Reject and getting errors.
         if (['InProgress', 'Active', 'Completed'].includes(request.status)) {
           this.proposals = proposals.map(p => {
-            if (p.status === 'Pending' || p.status === '0') {
-              return { ...p, status: 'Accepted' };
+            // Keep numerical status if present, otherwise map strings to numbers for consistency
+            let status = p.status;
+            if (status === 'Accepted' || status === '1' || status === 1) status = 1;
+            else if (status === 'Rejected' || status === '2' || status === 2) status = 2;
+            else if (status === 'Pending' || status === '0' || status === 0) {
+              // If request is active but proposal is pending, it should be the accepted one
+              // This handles legacy data or backend inconsistencies
+              status = 1;
             }
-            return p;
+            return { ...p, status };
           });
         } else {
-          this.proposals = proposals;
+          this.proposals = proposals.map(p => {
+            let status = p.status;
+            if (status === 'Accepted' || status === '1' || status === 1) status = 1;
+            else if (status === 'Rejected' || status === '2' || status === 2) status = 2;
+            else if (status === 'Pending' || status === '0' || status === 0) status = 0;
+            return { ...p, status };
+          });
         }
 
         if (request.propertyID) {
@@ -163,19 +174,29 @@ export class DesignRequestDetailsComponent implements OnInit {
     });
   }
 
-  getStatusSeverity(status: string): string {
-    switch (status?.toLowerCase()) {
-      case 'open':
-        return 'info';
-      case 'accepted':
-        return 'success';
-      case 'rejected':
-        return 'danger';
-      case 'completed':
-        return 'success';
-      default:
-        return 'secondary';
-    }
+  getStatusSeverity(status: string | number): string {
+    const statusStr = String(status).toLowerCase();
+    if (statusStr === '1' || statusStr === 'accepted' || statusStr === 'completed') return 'success';
+    if (statusStr === '2' || statusStr === 'rejected') return 'danger';
+    if (statusStr === '0' || statusStr === 'pending' || statusStr === 'open') return 'info';
+    return 'secondary';
+  }
+
+  getStatusLabel(status: string | number | undefined): string {
+    if (status === 0 || status === '0' || status === 'Pending') return 'Pending';
+    if (status === 1 || status === '1' || status === 'Accepted') return 'Accepted';
+    if (status === 2 || status === '2' || status === 'Rejected') return 'Rejected';
+    return String(status || 'Pending');
+  }
+
+  hasAcceptedProposal(): boolean {
+    return this.proposals.some(p => p.status === 1 || p.status === '1' || p.status === 'Accepted');
+  }
+
+  canManageProposal(proposal: DesignerProposal): boolean {
+    // Can only manage if status is Pending (0) AND no other proposal is accepted
+    const isPending = proposal.status === 0 || proposal.status === '0' || proposal.status === 'Pending';
+    return isPending && !this.hasAcceptedProposal();
   }
 
   viewProposalDetails(proposal: DesignerProposal): void {
@@ -184,15 +205,19 @@ export class DesignRequestDetailsComponent implements OnInit {
   }
 
   chooseProposal(proposalId: number): void {
+    // Show local loading or disable interaction
     this.proposalService.chooseProposal(proposalId).subscribe({
-      next: () => {
+      next: (updatedProposals) => {
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
           detail: 'Proposal accepted successfully!'
         });
+
+        // Update local array with full list from response
+        this.proposals = updatedProposals;
+
         this.loadRequestDetails();
-        this.loadProposals();
         this.showProposalDialog = false;
       },
       error: (err) => {
@@ -224,14 +249,17 @@ export class DesignRequestDetailsComponent implements OnInit {
 
   rejectProposal(proposalId: number): void {
     this.proposalService.rejectProposal(proposalId).subscribe({
-      next: () => {
+      next: (updatedProposals) => {
         this.messageService.add({
           severity: 'info',
           summary: 'Success',
           detail: 'Proposal rejected.'
         });
+
+        // Update local array with full list from response
+        this.proposals = updatedProposals;
+
         this.loadRequestDetails();
-        this.loadProposals();
         this.showProposalDialog = false;
       },
       error: (err) => {

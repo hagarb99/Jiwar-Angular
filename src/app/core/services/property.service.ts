@@ -11,6 +11,16 @@ export interface PropertyOwner {
     profilePicURL?: string;
     phoneNumber?: string;
   }
+export interface BookingCreateDTO {
+  propertyID: number;
+  startDate: string; // ISO format
+  message?: string;
+  phone: string;
+  email: string;
+  name: string;
+  offerID?: number | null; // 0 -> null في backend
+}
+
 export interface Property {
     propertyID: number;
     id?: number; // fallback
@@ -90,7 +100,7 @@ export class PropertyService {
         return this.http.get<PropertyAnalytics[]>(`${this.apiUrl}/${id}/analytics`);
     }
 
-    getFilteredProperties(filter: PropertyFilterDTO): Observable<Property[]> {
+    getFilteredProperties(filter: PropertyFilterDTO): Observable<any> {
         let params = new HttpParams();
 
         if (filter.district) {
@@ -118,7 +128,7 @@ export class PropertyService {
             params = params.set('propertyType', filter.propertyType.toString());
         }
 
-        return this.http.get<Property[]>(`${this.apiUrl}/browse`, { params });
+        return this.http.get<any>(`${this.apiUrl}/browse`, { params });
     }
 
     getPropertyById(id: number): Observable<Property> {
@@ -153,6 +163,10 @@ export class PropertyService {
 
     getMyProperties(): Observable<Property[]> {
         return this.http.get<Property[]>(`${this.apiUrl}/my`);
+    }
+
+    getAllProperties(): Observable<Property[]> {
+        return this.http.get<Property[]>(`${this.apiUrl}/all`);
     }
 
     // property.service.ts
@@ -190,6 +204,9 @@ export class PropertyService {
     deleteProperty(id: number): Observable<any> {
         return this.http.delete(`${this.apiUrl}/${id}`);
     }
+    createBooking(booking: BookingCreateDTO) {
+        return this.http.post(`${environment.apiBaseUrl}/Booking`, booking);
+      }      
 
 
 }

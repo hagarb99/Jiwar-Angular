@@ -1,0 +1,156 @@
+<div class="min-h-screen bg-gray-50 p-6">
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">My Bookings</h1>
+    <p class="text-gray-600 mt-1">
+      Manage your property bookings and requests
+    </p>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-16">
+    <div class="animate-pulse space-y-4">
+      <div class="h-8 bg-gray-200 rounded w-1/3 mx-auto"></div>
+      <div class="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading">
+
+    <!-- Tabs -->
+    <div class="flex gap-3 mb-8">
+      <button
+        (click)="setActiveTab('requests')"
+        class="px-5 py-2 rounded-full border font-medium flex items-center gap-2"
+        [ngClass]="activeTab === 'requests'
+          ? 'bg-[#d4af37] text-white border-[#d4af37]'
+          : 'text-[#d4af37] border-[#d4af37]'">
+        Requests
+        <span class="text-xs bg-white/30 px-2 py-0.5 rounded-full">
+          {{ pendingBookings.length }}
+        </span>
+      </button>
+
+      <button
+        (click)="setActiveTab('income')"
+        class="px-5 py-2 rounded-full border font-medium flex items-center gap-2"
+        [ngClass]="activeTab === 'income'
+          ? 'bg-[#d4af37] text-white border-[#d4af37]'
+          : 'text-[#d4af37] border-[#d4af37]'">
+        Approved
+        <span class="text-xs bg-white/30 px-2 py-0.5 rounded-full">
+          {{ confirmedBookings.length }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Requests Tab -->
+    <div *ngIf="activeTab === 'requests'">
+
+      <div *ngIf="pendingBookings.length === 0"
+           class="text-center py-20 text-gray-500">
+        No pending requests
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+           *ngIf="pendingBookings.length">
+
+        <div *ngFor="let booking of pendingBookings"
+             class="bg-white rounded-2xl border p-6 hover:shadow-lg transition">
+
+          <div class="flex justify-between mb-4">
+            <div>
+              <h3 class="font-semibold text-gray-900">
+                {{ booking.propertyTitle }}
+              </h3>
+              <p class="text-sm text-gray-600">
+                Customer: {{ booking.customerName }}
+              </p>
+            </div>
+
+            <span class="text-xs px-3 py-1 rounded-full
+                         bg-yellow-100 text-yellow-800 font-medium">
+              Pending
+            </span>
+          </div>
+
+          <div class="text-sm text-gray-600 mb-4">
+            Date: {{ booking.startDate | date:'shortDate' }}
+          </div>
+
+          <div *ngIf="booking.cost"
+               class="text-sm font-semibold text-[#b8962e] mb-4">
+            {{ booking.cost }} EGP
+          </div>
+
+          <div class="flex gap-2">
+            <button
+              (click)="acceptBooking(booking)"
+              class="flex-1 bg-green-600 hover:bg-green-700
+                     text-white py-2 rounded-lg font-medium">
+              Accept
+            </button>
+
+            <button
+              (click)="rejectBooking(booking)"
+              class="flex-1 bg-red-600 hover:bg-red-700
+                     text-white py-2 rounded-lg font-medium">
+              Reject
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Approved Tab -->
+    <div *ngIf="activeTab === 'income'">
+
+      <div *ngIf="confirmedBookings.length === 0"
+           class="text-center py-20 text-gray-500">
+        No approved bookings
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+           *ngIf="confirmedBookings.length">
+
+        <div *ngFor="let booking of confirmedBookings"
+             class="bg-white rounded-2xl border p-6 hover:shadow-lg transition">
+
+          <div class="flex justify-between mb-4">
+            <div>
+              <h3 class="font-semibold text-gray-900">
+                {{ booking.propertyTitle }}
+              </h3>
+              <p class="text-sm text-gray-600">
+                Customer: {{ booking.customerName }}
+              </p>
+            </div>
+
+            <span class="text-xs px-3 py-1 rounded-full
+                         bg-green-100 text-green-800 font-medium">
+              Confirmed
+            </span>
+          </div>
+
+          <div class="text-sm text-gray-600 mb-2">
+            Date: {{ booking.startDate | date:'shortDate' }}
+          </div>
+
+          <div class="text-sm font-semibold text-[#b8962e] mb-4">
+            {{ booking.cost }} EGP
+          </div>
+
+          <div class="bg-[#fdf6e3] border border-[#f1e3b0]
+                      rounded-lg p-3 text-sm text-[#8a6d1d] font-medium">
+            ✓ Income Earned
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

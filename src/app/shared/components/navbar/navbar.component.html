@@ -89,21 +89,34 @@
             class="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden">
             <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
               <h3 class="font-semibold text-gray-900">Notifications</h3>
-              <button (click)="markAllAsRead()" class="text-xs text-blue-600 hover:text-blue-800">Mark all as
-                read</button>
+              <button (click)="markAllAsRead()" class="text-xs text-blue-600 hover:text-blue-800"
+                *ngIf="unreadCount > 0">
+                Mark all as read
+              </button>
             </div>
 
             <div class="max-h-80 overflow-y-auto">
               <div *ngIf="notifications.length === 0" class="p-8 text-center bg-gray-50">
                 <i class="pi pi-bell text-gray-300 text-2xl mb-2"></i>
-                <p class="text-gray-500 text-sm">No new notifications</p>
+                <p class="text-gray-500 text-sm">No notifications</p>
               </div>
-              <div *ngFor="let note of notifications"
+              <div *ngFor="let note of notifications" (click)="onNotificationClick(note)"
                 class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors"
-                [class.bg-blue-50]="!note.read">
-                <p class="text-sm font-medium text-gray-900">{{ note.title }}</p>
-                <p class="text-xs text-gray-600 mt-1">{{ note.message }}</p>
-                <p class="text-[10px] text-gray-400 mt-2 text-right">{{ note.timestamp | date:'short' }}</p>
+                [class.bg-blue-50]="!note.isRead" [class.font-semibold]="!note.isRead">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900">{{ note.title }}</p>
+                    <p class="text-xs text-gray-600 mt-1">{{ note.message }}</p>
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="text-[10px] text-gray-400">{{ note.timeAgo }}</span>
+                      <span *ngIf="note.notificationType"
+                        class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                        {{ note.notificationType }}
+                      </span>
+                    </div>
+                  </div>
+                  <div *ngIf="!note.isRead" class="w-2 h-2 bg-blue-600 rounded-full ml-2 mt-1"></div>
+                </div>
               </div>
             </div>
           </div>

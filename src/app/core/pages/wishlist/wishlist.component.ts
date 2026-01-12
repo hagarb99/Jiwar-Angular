@@ -1,11 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { LucideAngularModule, Heart, Trash2, Search, ShoppingBag } from 'lucide-angular';
+import { LucideAngularModule, Heart, Trash2, Search, ShoppingBag, Scale } from 'lucide-angular';
 import { WishlistService } from '../../services/wishlist.service';
 import { Property, PropertyType } from '../../services/property.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import { PropertyCardComponent } from '../../../shared/components/property-card/property-card.component';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -16,7 +17,8 @@ import { environment } from '../../../../environments/environment';
         RouterModule,
         LucideAngularModule,
         NavbarComponent,
-        FooterComponent
+        FooterComponent,
+        PropertyCardComponent
     ],
     templateUrl: './wishlist.component.html',
     styleUrls: ['./wishlist.component.css']
@@ -30,6 +32,7 @@ export class WishlistComponent implements OnInit {
     Trash2 = Trash2;
     Search = Search;
     ShoppingBag = ShoppingBag;
+    Scale = Scale;
 
     wishlistItems: Property[] = [];
 

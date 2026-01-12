@@ -17,6 +17,7 @@ import { SubscriptionPlan } from '../../../../core/models/subscription.model';
 import { PricingCardComponent } from '../../../../shared/components/pricing-card/pricing-card.component';
 import { PaymentModalComponent } from '../../../../shared/components/payment-modal/payment-modal.component';
 import { AuthService } from '../../../../core/services/auth.service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
     selector: 'app-ai-chat',
@@ -139,7 +140,7 @@ export class AiChatComponent implements OnInit {
         forkJoin({
             projectData: this.renovationApi.getResults(this.simulationId).pipe(catchError(() => of(null))),
             history: this.chatService.getHistory(this.simulationId).pipe(catchError(() => of([])))
-        }).subscribe(({ projectData, history }) => {
+        }).subscribe(({ projectData, history }: { projectData: any, history: any[] }) => {
             this.projectInfo = projectData;
             this.messages = history;
 
@@ -167,7 +168,7 @@ export class AiChatComponent implements OnInit {
                 this.isLoading = false;
                 this.scrollToBottom();
             },
-            error: (err) => {
+            error: (err: any) => {
                 console.error('Error starting chat:', err);
                 this.isLoading = false;
             }
@@ -226,7 +227,7 @@ export class AiChatComponent implements OnInit {
                     }, 500);
                 }
             },
-            error: (err) => {
+            error: (err: any) => {
                 console.error('Error sending message:', err);
                 this.isLoading = false;
                 if (err.status === 401) {
@@ -285,6 +286,17 @@ export class AiChatComponent implements OnInit {
         this.messageService.add({ severity: 'info', summary: 'Voice Feature', detail: 'Voice consultation is coming soon for Golden Plans!' });
     }
 
+    // Checkout Logic
+    showCheckout = false;
+    selectedPlan: SubscriptionPlan | null = null;
+    selectedPaymentMethod: 'card' | 'wallet' = 'card';
+    billingDetails = {
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: ''
+    };
+
     handleSubscribe(plan: SubscriptionPlan): void {
         if (!this.authService.isLoggedIn()) {
             this.messageService.add({
@@ -296,16 +308,56 @@ export class AiChatComponent implements OnInit {
             return;
         }
 
-        if (!plan.id) return;
-        this.processingId = plan.id;
+        // Pre-fill email from auth service if available
+        const userEmail = this.authService.getUserEmail();
+        if (userEmail) {
+            this.billingDetails.email = userEmail;
+        }
 
-        this.paymentService.createSubscriptionPayment(plan.id).subscribe({
+        // Pre-fill name if available (simple split)
+        const userName = this.authService.getUserName();
+        if (userName) {
+            const parts = userName.split(' ');
+            this.billingDetails.firstName = parts[0] || '';
+            this.billingDetails.lastName = parts.slice(1).join(' ') || '';
+        }
+
+        this.selectedPlan = plan;
+        this.showCheckout = true;
+    }
+
+    closeCheckout(): void {
+        this.showCheckout = false;
+        this.selectedPlan = null;
+    }
+
+    selectPaymentMethod(method: 'card' | 'wallet'): void {
+        this.selectedPaymentMethod = method;
+    }
+
+    proceedToPayment(): void {
+        if (!this.selectedPlan?.id) return;
+
+        // Basic Validation
+        if (!this.billingDetails.firstName || !this.billingDetails.lastName || !this.billingDetails.email || !this.billingDetails.phoneNumber) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Missing Details',
+                detail: 'Please fill in all billing information.'
+            });
+            return;
+        }
+
+        this.showCheckout = false;
+        this.processingId = this.selectedPlan.id;
+
+        this.paymentService.createSubscriptionPayment(this.selectedPlan.id, this.billingDetails).subscribe({
             next: (res) => {
                 this.paymobUrl = res.iframeUrl;
                 this.showPaymentModal = true;
                 this.processingId = null;
             },
-            error: (err) => {
+            error: (err: any) => {
                 console.error('Payment error', err);
                 this.messageService.add({
                     severity: 'error',
@@ -320,10 +372,26 @@ export class AiChatComponent implements OnInit {
     onPaymentClose() {
         this.showPaymentModal = false;
         this.paymobUrl = '';
+        this.showPlans = false; // Hide plans after payment attempt/success logic (optional)
     }
 
     navigateToSubscriptions() {
         this.router.navigate(['/subscriptions']);
+    }
+
+    getImageUrl(path: string): string {
+        if (!path) return '';
+        if (path.startsWith('http')) return path;
+        // Clean path to ensure no double slashes if path starts with /
+        const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+        return `${environment.assetsBaseUrl}/${cleanPath}`;
+    }
+
+    openImage(path: string): void {
+        const url = this.getImageUrl(path);
+        if (url) {
+            window.open(url, '_blank');
+        }
     }
 
     private scrollToBottom(): void {

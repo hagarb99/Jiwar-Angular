@@ -94,7 +94,7 @@ export class CreateDesignRequestComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProperties();
-    
+
     // Check if returning from browse designers page
     this.route.queryParams.subscribe(params => {
       if (params['designerId']) {
@@ -109,7 +109,7 @@ export class CreateDesignRequestComponent implements OnInit {
           }
         });
       }
-      
+
       // Also check sessionStorage
       const storedDesigner = sessionStorage.getItem('selectedDesigner');
       if (storedDesigner) {
@@ -247,9 +247,9 @@ export class CreateDesignRequestComponent implements OnInit {
     const formValue = this.requestForm.value;
 
     const propertyId = this.selectedProperty!.propertyID || this.selectedProperty!.id;
-    
+
     if (!propertyId) {
-       this.messageService.add({
+      this.messageService.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Selected property does not have a valid ID.'
@@ -279,7 +279,7 @@ export class CreateDesignRequestComponent implements OnInit {
           summary: 'Success',
           detail: 'Design request created successfully!'
         });
-        
+
         setTimeout(() => {
           this.router.navigate(['/dashboard/propertyowner/design-requests', createdRequest.id]);
         }, 1500);
@@ -287,23 +287,28 @@ export class CreateDesignRequestComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error creating design request:', err);
-        
+
         let errorMessage = 'Failed to create design request. Please try again.';
+
         if (err.error) {
-            if (typeof err.error === 'string') {
-                errorMessage = err.error;
-            } else if (err.error.message) {
-                errorMessage = err.error.message;
-            } else if (err.error.title) {
-                errorMessage = err.error.title; // For standard RFC 7807 problem details
-            }
+          if (err.error.errors) {
+            // ASP.NET Core Validation errors
+            const validationErrors = Object.values(err.error.errors).flat().join('\n');
+            errorMessage = validationErrors || 'One or more validation errors occurred.';
+          } else if (typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err.error.message) {
+            errorMessage = err.error.message;
+          } else if (err.error.title) {
+            errorMessage = err.error.title;
+          }
         }
 
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
           detail: errorMessage,
-          life: 5000 
+          life: 5000
         });
         this.saving = false;
       }
@@ -313,7 +318,7 @@ export class CreateDesignRequestComponent implements OnInit {
   // Navigate to browse designers
   navigateToBrowseDesigners(): void {
     this.router.navigate(['/dashboard/propertyowner/browse-designers'], {
-      queryParams: { 
+      queryParams: {
         returnTo: '/dashboard/propertyowner/design-requests/create',
         step: '3'
       }

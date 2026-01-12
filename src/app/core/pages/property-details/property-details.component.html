@@ -1,6 +1,7 @@
 <!-- property-details.component.html -->
 <div class="min-h-screen bg-[#FAFAFA]">
     <app-navbar></app-navbar>
+    <p-toast></p-toast>
 
     <main class="pt-24 pb-12">
         <div class="container mx-auto px-4 md:px-6">
@@ -364,10 +365,9 @@
                                 Virtual Tour
                             </h2>
                             <div class="aspect-video rounded-3xl overflow-hidden bg-gray-900 shadow-2xl relative group">
-                                <iframe [src]="activeTourUrl | safeUrl"
+                                <iframe [src]="safeTourUrl"
                                     class="w-full h-full border-0 opacity-90 group-hover:opacity-100 transition-opacity"
-                                    allow="xr-spatial-tracking; gyroscope; accelerometer" allowfullscreen
-                                    scrolling="no"></iframe>
+                                    allowfullscreen></iframe>
                                 <div
                                     class="absolute inset-0 pointer-events-none border-[6px] border-white/10 rounded-3xl">
                                 </div>
