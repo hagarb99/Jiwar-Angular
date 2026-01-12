@@ -7,6 +7,7 @@ import { PropertyCardComponent } from '../../../shared/components/property-card/
 import { LucideAngularModule, Search, Filter, MapPin, Home, DollarSign, Bed, Bath } from 'lucide-angular';
 import { PropertyService, Property, PropertyType, PropertyFilterDTO } from '../../services/property.service';
 import { environment } from '../../../../environments/environment';
+import { PaginatorModule } from 'primeng/paginator';
 
 @Component({
   selector: 'app-search-page',
@@ -15,9 +16,10 @@ import { environment } from '../../../../environments/environment';
     CommonModule,
     ReactiveFormsModule,
     NavbarComponent,
-    FooterComponent, 
+    FooterComponent,
     PropertyCardComponent,
-    LucideAngularModule
+    LucideAngularModule,
+    PaginatorModule
   ],
   templateUrl: './search-page.component.html',
   styles: [] // Using Tailwind, styles in HTML
@@ -36,6 +38,10 @@ export class SearchPageComponent implements OnInit {
 
   // Properties array - will be populated from backend
   properties: Property[] = [];
+
+  // Pagination
+  first: number = 0;
+  rows: number = 9;
 
   // Loading and error states
   isLoading = false;
@@ -63,6 +69,9 @@ export class SearchPageComponent implements OnInit {
   }
 
   onSubmit() {
+    // Reset to first page on new search
+    this.first = 0;
+
     const formValue = this.searchForm.value;
 
     // Map form values to PropertyFilterDTO
@@ -100,6 +109,13 @@ export class SearchPageComponent implements OnInit {
     this.loadProperties(filter);
   }
 
+  onPageChange(event: any) {
+    this.first = event.first;
+    this.rows = event.rows;
+    // Scroll to top of results
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   /**
    * Loads properties from the backend API
    * @param filter PropertyFilterDTO with optional filter criteria
@@ -111,8 +127,17 @@ export class SearchPageComponent implements OnInit {
     this.propertyService.getFilteredProperties(filter).subscribe({
       next: (properties) => {
         console.log(properties);
-        
-        this.properties = properties;
+
+        // Sort properties by Newest First (Descending ID or publishedAt if available)
+        this.properties = properties.sort((a: any, b: any) => {
+          // If publishedAt exists, use it
+          if (a.publishedAt && b.publishedAt) {
+            return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+          }
+          // Fallback to ID (assuming higher ID = newer)
+          return (b.propertyID || b.id || 0) - (a.propertyID || a.id || 0);
+        });
+
         this.isLoading = false;
         console.log('Properties loaded:', properties.length);
       },
