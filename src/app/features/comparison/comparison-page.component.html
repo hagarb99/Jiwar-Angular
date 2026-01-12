@@ -243,70 +243,146 @@
             </div>
 
             <!-- Results -->
-            <div *ngIf="aiResult" class="space-y-8 animate-fade-in relative z-10">
-                <!-- Summary -->
-                <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                    <h3 class="font-bold text-gray-900 mb-2">Analysis Summary</h3>
-                    <p class="text-gray-600 leading-relaxed">{{ aiResult.summary }}</p>
+            <div *ngIf="aiResult" class="space-y-12 animate-fade-in relative z-10">
+                <!-- Main Summary -->
+                <div class="bg-yellow-50/50 p-8 rounded-3xl border border-yellow-100/50 backdrop-blur-sm">
+                    <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <lucide-angular [img]="Sparkles" class="w-5 h-5 text-yellow-500"></lucide-angular>
+                        AI Analysis Overview
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed text-lg">{{ aiResult.summary }}</p>
                 </div>
 
                 <!-- Scores Breakdown -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div *ngFor="let score of aiResult.scores"
-                        class="bg-white p-5 rounded-2xl border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-lg"
+                        class="bg-white p-8 rounded-[2.5rem] border border-gray-100 relative transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col"
                         [class.ring-2]="score.propertyId === aiResult.bestPropertyId"
-                        [class.ring-green-400]="score.propertyId === aiResult.bestPropertyId">
+                        [class.ring-yellow-400]="score.propertyId === aiResult.bestPropertyId">
 
+                        <!-- Best Choice Badge -->
                         <div *ngIf="score.propertyId === aiResult.bestPropertyId"
-                            class="absolute top-0 right-0 bg-green-500 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-bl-xl z-20">
+                            class="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#D4AF37] text-white text-xs uppercase font-black px-6 py-2 rounded-full shadow-lg shadow-yellow-500/30 flex items-center gap-2 z-20">
+                            <lucide-angular [img]="Check" class="w-3 h-3"></lucide-angular>
                             Best Choice
                         </div>
 
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-lg"
-                                [ngClass]="getScoreColor(score.totalScore)">
-                                {{ score.totalScore }}
+                        <!-- Card Header -->
+                        <div class="flex items-start justify-between mb-8 text-left">
+                            <div class="flex-1 pr-4">
+                                <h3 class="text-2xl font-bold text-gray-900 leading-tight mb-2">
+                                    {{ getPropertyTitle(score.propertyId) }}
+                                </h3>
+                                <div class="flex items-center gap-2 text-gray-400 text-sm font-medium">
+                                    <lucide-angular [img]="MapPin" class="w-4 h-4"></lucide-angular>
+                                    Integrated AI Assessment
+                                </div>
                             </div>
-                            <div>
-                                <div class="text-xs text-gray-400 uppercase tracking-wider">Property ID: {{
-                                    score.propertyId }}</div>
-                                <div class="font-bold text-gray-900">Total Score</div>
+                            <div class="flex flex-col items-center">
+                                <div class="relative w-20 h-20 flex items-center justify-center">
+                                    <svg class="w-full h-full -rotate-90">
+                                        <circle class="text-gray-100" stroke-width="6" stroke="currentColor"
+                                            fill="transparent" r="34" cx="40" cy="40" />
+                                        <circle class="text-[#D4AF37]" stroke-width="6" stroke-dasharray="214"
+                                            [attr.stroke-dashoffset]="214 * (1 - score.totalScore / 100)"
+                                            stroke-linecap="round" stroke="currentColor" fill="transparent" r="34"
+                                            cx="40" cy="40" />
+                                    </svg>
+                                    <span class="absolute text-xl font-black text-gray-900">{{ score.totalScore
+                                        }}</span>
+                                </div>
+                                <span class="text-[10px] uppercase font-bold text-gray-400 mt-1">Total Score</span>
                             </div>
                         </div>
 
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-500">Price Value</span>
-                                <span class="font-bold text-gray-900">{{ score.priceValue }}/100</span>
-                            </div>
-                            <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                                <div class="bg-blue-500 h-full rounded-full" [style.width.%]="score.priceValue"></div>
-                            </div>
-
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-500">Location</span>
-                                <span class="font-bold text-gray-900">{{ score.location }}/100</span>
-                            </div>
-                            <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                                <div class="bg-purple-500 h-full rounded-full" [style.width.%]="score.location"></div>
-                            </div>
-
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-500">Investment</span>
-                                <span class="font-bold text-gray-900">{{ score.investmentPotential }}/100</span>
-                            </div>
-                            <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                                <div class="bg-green-500 h-full rounded-full"
-                                    [style.width.%]="score.investmentPotential"></div>
+                        <!-- Categories Section -->
+                        <div class="space-y-6 flex-1 text-left">
+                            <!-- Price Value -->
+                            <div class="category-item">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-bold text-gray-700">Price Value</span>
+                                    <span class="text-sm font-black text-[#D4AF37]">{{
+                                        score.categoryScores.priceValue.score }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-50 h-2 rounded-full overflow-hidden mb-2">
+                                    <div class="gold-gradient-bg h-full rounded-full transition-all duration-1000"
+                                        [style.width.%]="score.categoryScores.priceValue.score"></div>
+                                </div>
+                                <p class="text-xs text-gray-500 leading-relaxed">{{
+                                    score.categoryScores.priceValue.description }}</p>
                             </div>
 
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-500">Comfort</span>
-                                <span class="font-bold text-gray-900">{{ score.comfort }}/100</span>
+                            <!-- Location -->
+                            <div class="category-item">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-bold text-gray-700">Location Score</span>
+                                    <span class="text-sm font-black text-blue-500">{{
+                                        score.categoryScores.location.score }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-50 h-2 rounded-full overflow-hidden mb-2">
+                                    <div class="bg-blue-500 h-full rounded-full transition-all duration-1000"
+                                        [style.width.%]="score.categoryScores.location.score"></div>
+                                </div>
+                                <p class="text-xs text-gray-500 leading-relaxed">{{
+                                    score.categoryScores.location.description }}</p>
                             </div>
-                            <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                                <div class="bg-orange-400 h-full rounded-full" [style.width.%]="score.comfort"></div>
+
+                            <!-- Space & Layout -->
+                            <div class="category-item">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-bold text-gray-700">Space & Layout</span>
+                                    <span class="text-sm font-black text-purple-500">{{
+                                        score.categoryScores.spaceAndLayout.score }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-50 h-2 rounded-full overflow-hidden mb-2">
+                                    <div class="bg-purple-500 h-full rounded-full transition-all duration-1000"
+                                        [style.width.%]="score.categoryScores.spaceAndLayout.score"></div>
+                                </div>
+                                <p class="text-xs text-gray-500 leading-relaxed">{{
+                                    score.categoryScores.spaceAndLayout.description }}</p>
                             </div>
+
+                            <!-- Features -->
+                            <div class="category-item">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-bold text-gray-700">Features</span>
+                                    <span class="text-sm font-black text-green-500">{{
+                                        score.categoryScores.features.score }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-50 h-2 rounded-full overflow-hidden mb-2">
+                                    <div class="bg-green-500 h-full rounded-full transition-all duration-1000"
+                                        [style.width.%]="score.categoryScores.features.score"></div>
+                                </div>
+                                <p class="text-xs text-gray-500 leading-relaxed">{{
+                                    score.categoryScores.features.description }}</p>
+                            </div>
+
+                            <!-- Investment Potential -->
+                            <div class="category-item">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-bold text-gray-700">Investment Potential</span>
+                                    <span class="text-sm font-black text-indigo-500">{{
+                                        score.categoryScores.investmentPotential.score }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-50 h-2 rounded-full overflow-hidden mb-2">
+                                    <div class="bg-indigo-500 h-full rounded-full transition-all duration-1000"
+                                        [style.width.%]="score.categoryScores.investmentPotential.score"></div>
+                                </div>
+                                <p class="text-xs text-gray-500 leading-relaxed">{{
+                                    score.categoryScores.investmentPotential.description
+                                    }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Overall Explanation -->
+                        <div class="mt-8 pt-6 border-t border-gray-100 text-left">
+                            <h4 class="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <lucide-angular [img]="Info" class="w-4 h-4 text-[#D4AF37]"></lucide-angular>
+                                Why this selection?
+                            </h4>
+                            <p class="text-sm text-gray-600 leading-relaxed italic">
+                                "{{ score.overallReason }}"
+                            </p>
                         </div>
                     </div>
                 </div>

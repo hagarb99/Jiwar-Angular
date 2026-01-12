@@ -32,16 +32,6 @@ export const DASHBOARD_ROUTES: Routes = [
           import('./pages/Admin/admin.routes')
             .then(m => m.ADMIN_ROUTES)
       },
-<<<<<<< HEAD
-=======
-
-      // Default child route
-      {
-        path: '',
-        redirectTo: 'profile',
-        pathMatch: 'full'
-      },
->>>>>>> 5f5238d8c969a99f1fb2eeee931ce698bedcafbb
       {
         path: 'customer',
         canActivate: [roleGuard(['Customer'])],
