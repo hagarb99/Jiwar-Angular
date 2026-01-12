@@ -7,16 +7,16 @@ export const DASHBOARD_ROUTES: Routes = [
     path: '',
     component: DashboardLayoutComponent,
     children: [
-      { 
-        path: 'interiordesigner',
       {
         path: 'profile',
-        loadComponent: () => import('./pages/profile-placeholder/profile-placeholder.component').then(m => m.ProfilePlaceholderComponent)
+        loadComponent: () =>
+          import('./pages/profile-placeholder/profile-placeholder.component')
+            .then(m => m.ProfilePlaceholderComponent)
       },
 
       {
         path: 'designer',
-        canActivate: [roleGuard(['InteriorDesigner'])],
+        canActivate: [() => roleGuard(['InteriorDesigner'])],
         loadChildren: () =>
           import('./pages/interiordesigner/interior-designer.routes')
             .then(m => m.interiorDesignerRoutes)
@@ -25,7 +25,7 @@ export const DASHBOARD_ROUTES: Routes = [
       // ===== PROPERTY OWNER =====
       {
         path: 'propertyowner',
-        canActivate: [roleGuard(['PropertyOwner'])],
+        canActivate: [() => roleGuard(['PropertyOwner'])],
         loadChildren: () =>
           import('./pages/propertyowner/property-owner.routes')
             .then(m => m.propertyOwnerRoutes)
@@ -34,7 +34,7 @@ export const DASHBOARD_ROUTES: Routes = [
       // ===== ADMIN =====
       {
         path: 'admin',
-        canActivate: [roleGuard(['Admin'])],
+        canActivate: [() => roleGuard(['Admin'])],
         loadChildren: () =>
           import('./pages/Admin/admin.routes')
             .then(m => m.ADMIN_ROUTES)

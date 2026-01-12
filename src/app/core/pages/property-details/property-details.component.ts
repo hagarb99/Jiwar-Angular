@@ -46,6 +46,8 @@ import { AdminAnalyticsService } from '../../services/admin-analytics.service';
 import { AdminAnalyticsDTO, TopDistrictDTO, TopCategoryDTO } from '../../models/admin-analytics.dto';
 import { SafeUrlPipe } from '../../../shared/pipes/safe-url.pipe';
 
+
+
 @Component({
   selector: 'app-property-details',
   standalone: true,
@@ -360,13 +362,21 @@ export class PropertyDetailsComponent implements OnInit {
 
   private getTourEmbedUrl(url: string): string {
     if (!url) return '';
-    // Basic YouTube/Vimeo support if they are used as tours
+
+    // Support YouTube
     if (url.includes('youtube.com/watch?v=')) {
       return url.replace('watch?v=', 'embed/');
     }
     if (url.includes('youtu.be/')) {
       return url.replace('youtu.be/', 'youtube.com/embed/');
     }
+
+    // Support Kuula
+    if (url.includes('kuula.co/share/')) {
+      // Kuula share links work directly as embed links
+      return url;
+    }
+
     return url;
   }
 
