@@ -186,10 +186,17 @@
 
       <!-- Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" *ngIf="properties.length > 0 && !isLoading">
-        <app-property-card *ngFor="let prop of properties" [id]="prop.id" [propertyID]="prop.propertyID"
-          [title]="prop.title" [location]="prop.district" [price]="formatPrice(prop.price)"
-          [type]="getPropertyTypeName(prop.propertyType)" [purpose]="'sale'" [image]="getThumbnailUrl(prop)"
-          [size]="'small'" [propertyData]="prop"></app-property-card>
+        <app-property-card *ngFor="let prop of properties.slice(first, first + rows)" [id]="prop.id"
+          [propertyID]="prop.propertyID" [title]="prop.title" [location]="prop.district"
+          [price]="formatPrice(prop.price)" [type]="getPropertyTypeName(prop.propertyType)" [purpose]="'sale'"
+          [image]="getThumbnailUrl(prop)" [size]="'small'" [propertyData]="prop"></app-property-card>
+      </div>
+
+      <!-- Pagination -->
+      <div class="mt-12" *ngIf="properties.length > 0 && !isLoading">
+        <p-paginator [rows]="rows" [totalRecords]="properties.length" [first]="first"
+          (onPageChange)="onPageChange($event)" styleClass="bg-white border border-gray-100 rounded-xl shadow-sm">
+        </p-paginator>
       </div>
 
       <!-- No Results State -->
