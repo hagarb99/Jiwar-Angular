@@ -1,8 +1,45 @@
 .bg-navy-overlay {
-  background: linear-gradient(
-    to right,
-    rgba(8, 25, 55, 0.92),
-    rgba(8, 25, 55, 0.75),
-    rgba(8, 25, 55, 0.2)
-  );
+  background: linear-gradient(to right,
+      rgba(8, 25, 55, 0.92),
+      rgba(8, 25, 55, 0.75),
+      rgba(8, 25, 55, 0.2));
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #D4AF37 0%, #F8E79C 50%, #B49020 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: #D4AF37;
+  /* Fallback */
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #D4AF37 0%, #F0D57A 100%);
+  color: #0F172A;
+  /* dark slate */
+  font-weight: bold;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -5px rgba(212, 175, 55, 0.4);
+}
+
+.shadow-luxury {
+  box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.05), 0 10px 20px -5px rgba(0, 0, 0, 0.02);
+}
+
+.shadow-gold {
+  box-shadow: 0 20px 40px -5px rgba(212, 175, 55, 0.15);
+}
+
+/* Ensure images cover nicely */
+img {
+  max-width: 100%;
 }

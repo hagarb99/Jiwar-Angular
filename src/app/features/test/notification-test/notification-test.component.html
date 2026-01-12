@@ -1,0 +1,158 @@
+<div class="container mx-auto p-6">
+  <p-toast></p-toast>
+  
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Test Controls -->
+    <div class="card">
+      <h2 class="text-2xl font-bold mb-4">🧪 Notification System Test</h2>
+      
+      <div class="space-y-4">
+        <div class="flex gap-2">
+          <button pButton 
+                  label="Run Full Test" 
+                  [disabled]="isTestRunning"
+                  (click)="testNotificationFlow()"
+                  class="p-button-primary"></button>
+          <button pButton 
+                  label="Check Backend" 
+                  [disabled]="isTestRunning"
+                  (click)="checkBackendNotifications()"
+                  class="p-button-info"></button>
+          <button pButton 
+                  label="Manual Test" 
+                  [disabled]="isTestRunning"
+                  (click)="testManualNotification()"
+                  class="p-button-warning"></button>
+          <button pButton 
+                  label="Clear Results" 
+                  [disabled]="isTestRunning"
+                  (click)="clearResults()"
+                  class="p-button-secondary"></button>
+          <button pButton 
+                  label="Export Results" 
+                  (click)="exportResults()"
+                  class="p-button-outlined"></button>
+        </div>
+
+        <!-- Test Status -->
+        <div class="p-4 bg-gray-100 rounded-lg">
+          <div class="flex justify-between items-center">
+            <span class="font-semibold">Test Status:</span>
+            <span [class]="isTestRunning ? 'text-orange-500' : 'text-green-500'">
+              {{ isTestRunning ? 'Running...' : 'Ready' }}
+            </span>
+          </div>
+          <div class="flex justify-between items-center mt-2">
+            <span>Success: {{ getSuccessCount() }}</span>
+            <span>Errors: {{ getErrorCount() }}</span>
+            <span>Total: {{ testResults.length }}</span>
+          </div>
+        </div>
+
+        <!-- Test Booking Form -->
+        <div class="p-4 border rounded-lg">
+          <h3 class="font-semibold mb-3">Test Booking Data</h3>
+          <div class="space-y-3">
+            <div>
+              <label for="propertyId" class="block text-sm font-medium mb-1">Property ID</label>
+              <input pInputText 
+                     id="propertyId"
+                     type="number" 
+                     [(ngModel)]="testBooking.propertyId"
+                     class="w-full">
+            </div>
+            <div>
+              <label for="name" class="block text-sm font-medium mb-1">Name</label>
+              <input pInputText 
+                     id="name"
+                     type="text" 
+                     [(ngModel)]="testBooking.name"
+                     class="w-full">
+            </div>
+            <div>
+              <label for="email" class="block text-sm font-medium mb-1">Email</label>
+              <input pInputText 
+                     id="email"
+                     type="email" 
+                     [(ngModel)]="testBooking.email"
+                     class="w-full">
+            </div>
+            <div>
+              <label for="phone" class="block text-sm font-medium mb-1">Phone</label>
+              <input pInputText 
+                     id="phone"
+                     type="tel" 
+                     [(ngModel)]="testBooking.phone"
+                     class="w-full">
+            </div>
+            <div>
+              <label for="startDate" class="block text-sm font-medium mb-1">Start Date</label>
+              <p-calendar id="startDate" 
+                         [(ngModel)]="testBooking.startDate"
+                         [showIcon]="true"
+                         class="w-full"></p-calendar>
+            </div>
+            <div>
+              <label for="message" class="block text-sm font-medium mb-1">Message</label>
+              <textarea pTextarea 
+                        id="message"
+                        [(ngModel)]="testBooking.message"
+                        rows="3"
+                        class="w-full"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Results -->
+    <div class="card">
+      <h2 class="text-2xl font-bold mb-4">📊 Test Results</h2>
+      
+      <div class="max-h-96 overflow-y-auto space-y-2">
+        <div *ngFor="let result of testResults" 
+             [class]="'p-3 rounded-lg border-l-4 ' + 
+                     (result.type === 'success' ? 'bg-green-50 border-green-500' :
+                      result.type === 'error' ? 'bg-red-50 border-red-500' :
+                      result.type === 'warning' ? 'bg-yellow-50 border-yellow-500' :
+                      'bg-blue-50 border-blue-500')">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="font-semibold">{{ result.step }}</span>
+              <p class="text-sm mt-1">{{ result.message }}</p>
+              <p class="text-xs text-gray-500 mt-1">{{ result.timestamp }}</p>
+            </div>
+            <span [class]="'px-2 py-1 text-xs rounded-full ' +
+                     (result.type === 'success' ? 'bg-green-100 text-green-800' :
+                      result.type === 'error' ? 'bg-red-100 text-red-800' :
+                      result.type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-blue-100 text-blue-800')">
+              {{ result.type.toUpperCase() }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="card mt-6">
+    <h3 class="text-lg font-bold mb-3">📋 Test Instructions</h3>
+    <ol class="list-decimal list-inside space-y-2 text-sm">
+      <li>Ensure you are logged in as a <strong>Customer</strong> user</li>
+      <li>Make sure you have a valid authentication token</li>
+      <li>Check that SignalR connection is established (see console logs)</li>
+      <li>Click "Run Test" to create a test booking</li>
+      <li>Monitor the console for real-time notification logs</li>
+      <li>Expected notification should contain:
+        <ul class="list-disc list-inside ml-4 mt-1">
+          <li>title: "New Booking Request"</li>
+          <li>message: "You have a new booking request for [Property Title]"</li>
+          <li>type: "proposal"</li>
+          <li>link: "/owner/bookings"</li>
+        </ul>
+      </li>
+      <li>Check both the test results and browser console for detailed logs</li>
+    </ol>
+  </div>
+</div>

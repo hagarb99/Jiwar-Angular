@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { BookingCreateDTO } from '../pages/property-details/property-details.component';
 
 // Define interfaces matching your backend models
 export interface PropertyOwner {
@@ -12,6 +11,16 @@ export interface PropertyOwner {
     profilePicURL?: string;
     phoneNumber?: string;
   }
+export interface BookingCreateDTO {
+  propertyID: number;
+  startDate: string; // ISO format
+  message?: string;
+  phone: string;
+  email: string;
+  name: string;
+  offerID?: number | null; // 0 -> null في backend
+}
+
 export interface Property {
     propertyID: number;
     id?: number; // fallback
