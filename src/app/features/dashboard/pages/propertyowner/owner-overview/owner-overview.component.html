@@ -1,0 +1,135 @@
+<!-- owner-overview.component.html -->
+<div class="dashboard-container space-y-8 animate-fade-in">
+
+    <!-- Welcome Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-foreground">Overview & Analytics</h1>
+            <p class="text-muted-foreground">Manage your portfolio and track your performance</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="btn btn-outline" (click)="onExport()">
+                <i class="pi pi-download"></i>
+                Export Report
+            </button>
+            <button class="btn btn-gold" (click)="navigateToAddProperty()">
+                <i class="pi pi-plus"></i>
+                Add New Property
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="pi pi-home"></i></div>
+            <span class="stat-label">Total Properties</span>
+            <p class="stat-value">{{ stats.totalProperties }}</p>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="color: #059669; background: #ecfdf5;"><i class="pi pi-check-circle"></i></div>
+            <span class="stat-label">Active Listings</span>
+            <p class="stat-value">{{ stats.activeListings }}</p>
+        </div>
+        <div class="stat-card stat-card-gold">
+            <div class="stat-icon"><i class="pi pi-wallet"></i></div>
+            <span class="stat-label">Monthly Revenue</span>
+            <p class="stat-value">{{ stats.monthlyRevenue | currency:'EGP ':'symbol':'1.0-0' }}</p>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="color: #2563eb; background: #eff6ff;"><i class="pi pi-users"></i></div>
+            <span class="stat-label">Response Rate</span>
+            <p class="stat-value">{{ stats.responseRate }}%</p>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3">
+        <!-- Revenue Analytics -->
+        <div class="card lg:col-span-2">
+            <div class="card-header">
+                <h2 class="card-title"><i class="pi pi-chart-bar"></i> Revenue Trends</h2>
+                <div class="flex gap-2">
+                    <span class="badge badge-leased">Year 2024</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="income-chart">
+                    <div *ngFor="let m of monthlyData" class="chart-bar">
+                        <div class="chart-bar-fill" [style.height.%]="m.value"></div>
+                        <span class="chart-label">{{ m.month }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Tasks -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="pi pi-bolt"></i> Quick Actions</h2>
+            </div>
+            <div class="card-content space-y-4">
+                <button class="btn btn-outline w-full justify-start"
+                    (click)="navigateTo('/dashboard/propertyowner/my-Booking')">
+                    <i class="pi pi-calendar-plus"></i>
+                    Review Booking Requests
+                </button>
+                <button class="btn btn-outline w-full justify-start"
+                    (click)="navigateTo('/dashboard/propertyowner/my-requests')">
+                    <i class="pi pi-comments"></i>
+                    Unread Messages
+                </button>
+                <button class="btn btn-outline w-full justify-start" (click)="navigateTo('/subscriptions')">
+                    <i class="pi pi-star"></i>
+                    Upgrade Subscription
+                </button>
+                <div class="mt-6 p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Pro Tip</p>
+                    <p class="text-sm text-slate-600">Adding a 3D tour can increase your booking rate by up to 35%.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Properties Summary -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="pi pi-building"></i> My Properties</h2>
+            <button class="btn btn-outline btn-sm" (click)="navigateTo('/dashboard/propertyowner/my-properties')">View
+                All</button>
+        </div>
+        <div class="card-content">
+            <div class="grid md:grid-cols-2 gap-4">
+                <div *ngFor="let p of propertiesSummary" class="property-row">
+                    <img [src]="p.image" class="property-thumb" alt="property" (error)="onImageError($event)">
+                    <div class="property-main">
+                        <p class="property-name">{{ p.title }}</p>
+                        <p class="property-meta">{{ p.location }} • {{ p.price }}</p>
+                    </div>
+                    <span class="badge" [ngClass]="'badge-' + p.status">{{ p.status }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="pi pi-history"></i> Recent Activity</h2>
+        </div>
+        <div class="card-content">
+            <div class="space-y-6">
+                <div *ngFor="let act of recentActivities" class="flex gap-4">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                        [style.background]="act.bg" [style.color]="act.color">
+                        <i [class]="'pi ' + act.icon"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-foreground">{{ act.title }}</p>
+                        <p class="text-xs text-muted-foreground">{{ act.time }} • {{ act.description }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
