@@ -1,8 +1,6 @@
 <nav class="fixed top-0 inset-x-0 z-50 transition-all duration-300" [ngClass]="{
-       'bg-transparent': isDarkBgPage,
-       'bg-background/98 backdrop-blur-md border-b shadow-luxury': !isDarkBgPage,
-       'is-home': isDarkBgPage,
-       'is-not-home': !isDarkBgPage
+       'bg-transparent': isHomePage,
+       'bg-background/98 backdrop-blur-md border-b shadow-luxury': !isHomePage
      }">
   <div class="container mx-auto px-6">
     <div class="flex items-center justify-between h-20">
@@ -12,10 +10,11 @@
       </a>
 
       <!-- Desktop Menu -->
-      <div class="hidden lg:flex items-center gap-6" [ngClass]="isDarkBgPage ? 'text-white' : 'text-slate-900'">
+      <div class="hidden lg:flex items-center gap-6 transition-colors duration-300"
+        [ngClass]="isHomePage ? 'text-white' : 'text-slate-900'">
 
         <!-- Sell (Direct Link) -->
-        <a routerLink="/add-property" class="nav-btn transition-colors">
+        <a routerLink="/add-property" class="nav-btn hover:opacity-80 transition-opacity">
           Sell
         </a>
 
@@ -54,23 +53,23 @@
 
         <!-- Explore Properties -->
         <a routerLink="/properties">
-          <button class="gradient-gold text-primary px-4 py-2 rounded-lg font-medium">
+          <button class="gradient-gold text-primary px-4 py-2 rounded-lg">
             Explore Properties
           </button>
         </a>
       </div>
 
       <!-- Right Side (Desktop) -->
-      <div class="hidden lg:flex items-center gap-4" [ngClass]="isDarkBgPage ? 'text-white' : 'text-slate-900'">
+      <div class="hidden lg:flex items-center gap-4 transition-colors duration-300"
+        [ngClass]="isHomePage ? 'text-white' : 'text-slate-900'">
         <!-- Notifications -->
         <div class="relative" *ngIf="isLoggedIn">
-          <button class="relative p-2 rounded-full transition-colors hover:bg-black/5" (click)="toggleNotifications()"
-            [ngClass]="{
-              'hover:bg-white/10': isDarkBgPage,
-              'hover:bg-gray-100': !isDarkBgPage
+          <button class="relative p-2 rounded-full transition-colors" (click)="toggleNotifications()" [ngClass]="{
+              'hover:bg-white/10': isHomePage,
+              'hover:bg-gray-100': !isHomePage
             }">
             <lucide-angular [img]="Bell" class="w-5 h-5 transition-colors"
-              [ngClass]="isDarkBgPage ? 'text-white' : 'text-slate-900'"></lucide-angular>
+              [ngClass]="isHomePage ? 'text-white' : 'text-slate-900'"></lucide-angular>
             <span *ngIf="unreadCount > 0"
               class="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">
               {{ unreadCount > 9 ? '9+' : unreadCount }}
@@ -116,20 +115,25 @@
         </div>
 
         <!-- Wishlist -->
-        <a routerLink="/wishlist" class="relative p-2 rounded-full transition-colors hover:bg-black/5">
-          <lucide-angular [img]="Heart" class="w-5 h-5 transition-colors"></lucide-angular>
+        <a routerLink="/wishlist" class="relative p-2 rounded-full transition-colors" [ngClass]="{
+             'hover:bg-white/10': isHomePage,
+             'hover:bg-gray-100': !isHomePage
+           }">
+          <lucide-angular [img]="Heart" class="w-5 h-5 transition-colors"
+            [ngClass]="isHomePage ? 'text-white' : 'text-slate-900'"></lucide-angular>
         </a>
 
         <!-- Language -->
-        <button (click)="toggleLanguage()" class="flex items-center gap-2 hover:opacity-80 transition-opacity nav-btn">
-          <lucide-angular [img]="Globe"></lucide-angular>
+        <button (click)="toggleLanguage()" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <lucide-angular [img]="Globe" [ngClass]="isHomePage ? 'text-white' : 'text-slate-900'"></lucide-angular>
           EN | AR
         </button>
 
         <!-- Not Logged In -->
         <div *ngIf="!isLoggedIn" class="flex items-center gap-4">
           <a routerLink="/login">
-            <button class="text-primary px-4 py-2 rounded-lg border border-primary">
+            <button class="px-4 py-2 rounded-lg border hover:bg-white/10 transition-colors"
+              [ngClass]="isHomePage ? 'text-white border-white' : 'text-primary border-primary'">
               Login
             </button>
           </a>
@@ -144,16 +148,19 @@
         <div *ngIf="isLoggedIn" class="relative">
           <button class="flex items-center gap-3 rounded-full focus:outline-none hover:opacity-90 transition-opacity"
             (click)="toggleUserDropdown = !toggleUserDropdown">
-            <div *ngIf="profilePicUrl" class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary shadow-md">
+            <div *ngIf="profilePicUrl" class="w-10 h-10 rounded-full overflow-hidden border-2 shadow-md"
+              [ngClass]="isHomePage ? 'border-white' : 'border-primary'">
               <img [src]="profilePicUrl" alt="Profile" class="w-full h-full object-cover" />
             </div>
             <div *ngIf="!profilePicUrl"
-              class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center border-2 border-primary shadow-md font-semibold">
+              class="w-10 h-10 rounded-full text-white flex items-center justify-center border-2 shadow-md font-semibold"
+              [ngClass]="isHomePage ? 'bg-white/20 border-white' : 'bg-primary border-primary'">
               {{ (currentUserName || 'U').charAt(0).toUpperCase() }}
             </div>
-            <span class="text-primary font-medium hidden md:block">{{ currentUserName || 'User' }}</span>
-            <lucide-angular [img]="ChevronDown" class="w-4 h-4 text-primary transition-transform"
-              [class.rotate-180]="toggleUserDropdown">
+            <span class="font-medium hidden md:block" [ngClass]="isHomePage ? 'text-white' : 'text-primary'">{{
+              currentUserName || 'User' }}</span>
+            <lucide-angular [img]="ChevronDown" class="w-4 h-4 transition-transform"
+              [class.rotate-180]="toggleUserDropdown" [ngClass]="isHomePage ? 'text-white' : 'text-primary'">
             </lucide-angular>
           </button>
 
@@ -203,16 +210,22 @@
 
       <!-- Mobile Toggle -->
       <button class="lg:hidden" (click)="toggleMobileMenu()">
-        <lucide-angular [img]="mobileMenuOpen ? X : Menu"></lucide-angular>
+        <lucide-angular [img]="mobileMenuOpen ? X : Menu"
+          [ngClass]="isHomePage ? 'text-white' : 'text-slate-900'"></lucide-angular>
       </button>
     </div>
 
     <!-- Mobile Menu -->
-    <div *ngIf="mobileMenuOpen" class="lg:hidden py-6 space-y-4">
-      <div *ngFor="let item of buyDropdownItems">
-        <a [routerLink]="item.path" (click)="closeMobileMenu()">
+    <div *ngIf="mobileMenuOpen" class="lg:hidden py-6 space-y-4 rounded-xl mt-4"
+      [ngClass]="isHomePage ? 'bg-black/90 text-white' : 'bg-white shadow-xl text-slate-900'">
+      <div *ngFor="let item of buyDropdownItems" class="px-6">
+        <a [routerLink]="item.path" (click)="closeMobileMenu()" class="block py-2">
           {{ item.label }}
         </a>
+      </div>
+      <div class="px-6 border-t" [ngClass]="isHomePage ? 'border-white/10' : 'border-gray-100'">
+        <a routerLink="/add-property" class="block py-3 mt-2">Sell</a>
+        <a routerLink="/subscriptions" class="block py-3">Pricing</a>
       </div>
     </div>
   </div>

@@ -140,82 +140,10 @@
   /* gray-900 */
 }
 
-/* Global Transition for Navbar Elements */
+/* Transitions */
 .nav-link,
 .logo-text,
 .nav-btn,
-.pi,
-.lucide,
-button {
-  transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
-}
-
-/* =========================================
-   Home Page Mode (Dark Background)
-   ========================================= */
-.is-home {
-  /* No specific background set here, handled by bg-transparent utility in HTML */
-}
-
-/* Base Text Color */
-.is-home .nav-btn,
-.is-home .nav-link,
-.is-home a,
-.is-home .lucide {
-  color: #ffffff;
-}
-
-/* Hover Effect (Gold) */
-.is-home .nav-btn:hover,
-.is-home .nav-link:hover,
-.is-home a:not(.btn-primary):hover,
-/* Exclude main CTA buttons if needed */
-.is-home button:not(.gradient-gold):hover .lucide,
-.is-home a:hover .lucide {
-  color: #D4AF37;
-  /* Jiwar Gold */
-}
-
-/* =========================================
-   Standard Mode (Light Background)
-   ========================================= */
-.is-not-home {
-  /* Background handled by utility classes */
-}
-
-/* Base Text Color */
-.is-not-home .nav-btn,
-.is-not-home .nav-link,
-.is-not-home a,
-.is-not-home .lucide {
-  color: #0f172a;
-  /* Slate 900 */
-}
-
-/* Hover Effect (Gold) */
-.is-not-home .nav-btn:hover,
-.is-not-home .nav-link:hover,
-.is-not-home a:not(.btn-primary):hover,
-.is-not-home button:not(.gradient-gold):hover .lucide,
-.is-not-home a:hover .lucide {
-  color: #D4AF37;
-  /* Jiwar Gold */
-}
-
-/* Ensure Dropdown items retain their specific styling and don't get overridden strictly by parent */
-.dropdown-item,
-.dropdown-link {
-  color: #0f172a !important;
-  /* Always dark inside white dropdowns */
-}
-
-.dropdown-item:hover {
-  background-color: #f6f6f6;
-  color: #D4AF37 !important;
-}
-
-/* Specific fix for Explore Properties button text */
-.gradient-gold.text-primary {
-  color: #0f172a !important;
-  /* Ensure button text matches design */
+.lucide {
+  transition: color 0.3s ease-in-out;
 }
