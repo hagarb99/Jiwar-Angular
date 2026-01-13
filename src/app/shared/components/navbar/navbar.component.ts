@@ -325,36 +325,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (url.startsWith('http')) return url;
     const base = environment.apiBaseUrl.replace(/\/api\/?$/, '');
     return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
-
-    if (idMatch) {
-      const id = idMatch[0];
-
-      if (this.currentUserRole === 'PropertyOwner') {
-        // If project delivered, go to workspace and trigger review modal
-        if (msg.includes('delivered') || msg.includes('completed')) {
-          this.router.navigate(['/dashboard/workspace', id], { queryParams: { openReview: 'true' } });
-        } else {
-          // Default: Go to request details for new proposals etc.
-          this.router.navigate(['/dashboard/propertyowner/design-requests', id]);
-        }
-      } else if (this.currentUserRole === 'InteriorDesigner') {
-        // Designer redirection logic
-        if (msg.includes('review') || msg.includes('star')) {
-          this.router.navigate(['/dashboard/designer/reviews']);
-        } else if (msg.includes('accepted') || msg.includes('workspace') || msg.includes('chat')) {
-          this.router.navigate(['/dashboard/workspace', id]);
-        } else {
-          this.router.navigate(['/dashboard/designer/my-proposals']);
-        }
-      }
-    } else {
-      // If no ID but message is about review, go to reviews page
-      if (this.currentUserRole === 'InteriorDesigner' && (msg.includes('review') || msg.includes('star'))) {
-        this.router.navigate(['/dashboard/designer/reviews']);
-      } else {
-        this.goToDashboard();
-      }
-    }
   }
 
   toggleMessages(): void {

@@ -1,7 +1,7 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap, catchError } from 'rxjs/operators';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
@@ -15,7 +15,7 @@ export interface NotificationDto {
     title: string;
     message: string;
     notificationType: string;
-    isRead: boolean; // Note: Backend DTO might use IsRead (PascalCase) or isRead (camelCase), adjust if necessary
+    isRead: boolean;
     sentDate: string;
     timeAgo: string;
     link?: string;
@@ -44,7 +44,9 @@ export class NotificationService implements OnDestroy {
         private http: HttpClient,
         private messageService: MessageService,
         private authService: AuthService,
-        private zone: NgZone
+        private zone: NgZone,
+        private chatService: ChatService,
+        private router: Router
     ) {
         // Initialize Notification Sound
         this.notificationSound.src = 'https://www.soundjay.com/phone/sounds/sms-alert-1.mp3';
@@ -105,307 +107,241 @@ export class NotificationService implements OnDestroy {
             console.warn('Could not load notifications from local storage', e);
         }
     }
-    private zone: NgZone,
-    private chatService: ChatService,
-    private router: Router
-    ) {
-    // Audio handled by playBeep() utility function
-}
-
-
 
     /**
      * Initialize SignalR connection with JWT token
      */
-    public startConnection(token: string): Promise < void> {
-    console.log('🚀 Starting SignalR connection...');
+    public startConnection(token: string): Promise<void> {
+        console.log('🚀 Starting SignalR connection...');
 
-    if(this.isDestroyed) {
-    return Promise.reject(new Error('Service destroyed'));
-}
+        if (this.isDestroyed) {
+            return Promise.reject(new Error('Service destroyed'));
+        }
 
-// Return existing connection promise if connection is in progress
-if (this.connectionPromise) {
-    return this.connectionPromise;
-}
+        // Return existing connection promise if connection is in progress
+        if (this.connectionPromise) {
+            return this.connectionPromise;
+        }
 
-        // Clean up existing connection
-    public startConnection(token: string): void {
-    const hubUrl = `${environment.assetsBaseUrl}/notificationHub`;
+        // If connection already exists, check its state
+        if (this.hubConnection) {
+            this.stopConnection();
+        }
 
-    // If connection already exists, check its state
-    if(this.hubConnection) {
-    this.stopConnection();
-}
+        // Update storage key for current user (in case of user switch)
+        this.loadFromStorage();
 
-// Update storage key for current user (in case of user switch)
-this.loadFromStorage();
+        // Construct Hub URL
+        const baseUrl = environment.apiBaseUrl.replace('/api', '');
+        const hubUrl = `${baseUrl}/notificationHub`;
 
-// Construct Hub URL
-const baseUrl = environment.apiBaseUrl.replace('/api', '');
-const hubUrl = `${baseUrl}/notificationHub`;
+        // Build Connection
+        this.hubConnection = new signalR.HubConnectionBuilder()
+            .withUrl(hubUrl, {
+                accessTokenFactory: () => token,
+                skipNegotiation: false,
+                transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling
+            })
+            .withAutomaticReconnect()
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
 
-// Build Connection
-this.hubConnection = new signalR.HubConnectionBuilder()
-    .withUrl(hubUrl, {
-        accessTokenFactory: () => token,
-        skipNegotiation: false,
-        transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling
-    })
-    .withAutomaticReconnect()
-    .configureLogging(signalR.LogLevel.Information)
-    .build();
+        // Setup Listeners
+        this.setupListeners();
 
-// Setup Listeners
-this.setupListeners();
+        // Start Connection
+        this.connectionPromise = this.hubConnection
+            .start()
+            .then(() => {
+                console.log('✅ SignalR Connected');
 
-// Start Connection
-this.connectionPromise = this.hubConnection
-    .start()
-    .then(() => {
-        console.log('✅ SignalR Connected');
+                // Load initial notifications from API to sync
+                this.loadNotifications().subscribe();
+            })
+            .catch(err => {
+                console.error('❌ SignalR Connection Error:', err);
+                this.connectionPromise = null;
+                throw err;
+            });
 
-        // Load initial notifications from API to sync
-        this.loadNotifications().subscribe();
-    })
-    .catch(err => {
-        console.error('❌ SignalR Connection Error:', err);
-        this.connectionPromise = null;
-        throw err;
-    });
-
-return this.connectionPromise;
+        return this.connectionPromise;
     }
 
     /**
      * Setup SignalR event listeners
      */
     private setupListeners(): void {
-    if(!this.hubConnection) return;
+        if (!this.hubConnection) return;
 
-    // Life-cycle events
-    this.hubConnection.onreconnecting((error) => {
-        console.warn('🔄 SignalR Reconnecting:', error);
-    });
-
-    this.hubConnection.onreconnected((connectionId) => {
-        console.log('🔄 SignalR Reconnected');
-        this.loadNotifications().subscribe();
-    });
-
-    this.hubConnection.onclose((error) => {
-        console.error('❌ SignalR Connection Closed:', error);
-        this.connectionPromise = null;
-    });
-
-    // Notification Event
-    // Remove existing listeners to avoid duplicates if re-setup
-    this.hubConnection.off('ReceiveNotification');
-    this.hubConnection.off('ReceiveChatNotification');
-
-    this.hubConnection.on('ReceiveChatNotification', (data: any) => {
-        console.log('💬 SignalR ReceiveChatNotification trigger:', data);
-
-        this.zone.run(() => {
-            // 1. Update the Chat Icon Badge directly from payload
-            // Handle both camelCase and PascalCase
-            const count = data.unreadCount !== undefined ? data.unreadCount : data.UnreadCount;
-            if (count !== undefined) {
-                this.chatService.updateUnreadCount(count);
-            }
-
-            // 2. Play sound
-            this.playNotificationSound();
-
-            // 3. Show a specialized chat toast (ONLY if not currently in that specific chat room)
-            const currentUrl = this.router.url;
-            const workspaceUrl = `/dashboard/workspace/${data.relatedId}`;
-
-            if (currentUrl !== workspaceUrl) {
-                this.messageService.add({
-                    severity: 'info',
-                    summary: data.title || 'New Message',
-                    detail: data.message || 'You have a new message',
-                    life: 5000,
-                    icon: 'pi pi-comments',
-                    data: { relatedId: data.relatedId, type: 'Chat' }
-                });
-            }
-
-            // 4. Trigger refresh for any subscribers (like the messages list)
-            this.refresh$.next();
+        // Life-cycle events
+        this.hubConnection.onreconnecting((error) => {
+            console.warn('🔄 SignalR Reconnecting:', error);
         });
-    });
 
-    this.hubConnection.on('ReceiveNotification', (arg1: any, arg2?: string) => {
-        this.handleNotification(arg1, arg2);
-    });
+        this.hubConnection.onreconnected((connectionId) => {
+            console.log('🔄 SignalR Reconnected');
+            this.loadNotifications().subscribe();
+        });
 
-    // Legacy/Alternative Event Support
-    this.hubConnection.on('ReceiveNotificationObject', (data: any) => {
-        this.handleNotification(data);
-    });
-}
+        this.hubConnection.onclose((error) => {
+            console.error('❌ SignalR Connection Closed:', error);
+            this.connectionPromise = null;
+        });
+
+        // Remove existing listeners to avoid duplicates if re-setup
+        this.hubConnection.off('ReceiveNotification');
+        this.hubConnection.off('ReceiveChatNotification');
+
+        this.hubConnection.on('ReceiveChatNotification', (data: any) => {
+            console.log('💬 SignalR ReceiveChatNotification trigger:', data);
+
+            this.zone.run(() => {
+                // 1. Update the Chat Icon Badge directly from payload
+                // Handle both camelCase and PascalCase
+                const count = data.unreadCount !== undefined ? data.unreadCount : data.UnreadCount;
+                if (count !== undefined) {
+                    this.chatService.updateUnreadCount(count);
+                }
+
+                // 2. Play sound
+                this.playNotificationSound();
+
+                // 3. Show a specialized chat toast (ONLY if not currently in that specific chat room)
+                const currentUrl = this.router.url;
+                const workspaceUrl = `/dashboard/workspace/${data.relatedId}`;
+
+                if (currentUrl !== workspaceUrl) {
+                    this.messageService.add({
+                        severity: 'info',
+                        summary: data.title || 'New Message',
+                        detail: data.message || 'You have a new message',
+                        life: 5000,
+                        icon: 'pi pi-comments',
+                        data: { relatedId: data.relatedId, type: 'Chat' }
+                    });
+                }
+
+                // 4. Trigger refresh for any subscribers (like the messages list)
+                this.refresh$.next();
+            });
+        });
+
+        this.hubConnection.on('ReceiveNotification', (arg1: any, arg2?: string) => {
+            this.handleNotification(arg1, arg2);
+        });
+
+        // Legacy/Alternative Event Support
+        this.hubConnection.on('ReceiveNotificationObject', (data: any) => {
+            this.handleNotification(data);
+        });
+    }
 
     /**
      * Centralized handler for incoming real-time notifications
      */
-    private handleNotification(arg1: any, arg2 ?: string): void {
-    // Play Sound
-    this.playNotificationSound();
-    console.log('📬 SignalR ReceiveNotification trigger:', { arg1, arg2 });
-
-    // Play sound based on backend playSound property
-    const isObject = typeof arg1 === 'object' && arg1 !== null;
-    const playSoundRequested = isObject && arg1.playSound === true;
-
-    // If it's a simple string notification, we still play sound by default
-    const shouldPlaySound = playSoundRequested || !isObject;
-
-    if(shouldPlaySound) {
+    private handleNotification(arg1: any, arg2?: string): void {
+        // Play Sound
         this.playNotificationSound();
-    }
+        console.log('📬 SignalR ReceiveNotification trigger:', { arg1, arg2 });
 
         let title = 'New Notification';
-    let message = '';
-    let type = 'Info';
-    let data: any = {};
-    let title = 'New Notification';
-    let message = '';
-    let type = 'Info';
-    let data = arg1;
+        let message = '';
+        let type = 'Info';
+        let data: any = {};
 
-    let relatedId = null;
+        // Handle multiple argument formats from backend
+        if (typeof arg1 === 'string' && typeof arg2 === 'string') {
+            // Format: (title, message)
+            title = arg1;
+            message = arg2;
+        } else if (typeof arg1 === 'object') {
+            // Format: (dataObject)
+            data = arg1;
+            title = data.title || title;
+            message = data.message || '';
+            type = data.type || type;
+        }
 
-    if(typeof arg1 === 'string' && typeof arg2 === 'string') {
-    title = arg1;
-    message = arg2;
-} else if (typeof arg1 === 'object') {
-    data = arg1;
-    title = data.title || title;
-    message = data.message || '';
-    type = data.type || type;
-}
-// Handle multiple argument formats from backend
-if (typeof arg1 === 'string' && typeof arg2 === 'string') {
-    // Format: (title, message)
-    title = arg1;
-    message = arg2;
-} else if (typeof arg1 === 'object') {
-    // Format: (dataObject)
-    title = arg1.title || title;
-    message = arg1.message || '';
-    type = arg1.type || 'Info';
-    relatedId = arg1.relatedId || arg1.RelatedId;
-}
+        const relatedId = data.relatedId || data.RelatedId;
 
-// 1. Show Toast
-this.zone.run(() => {
-    this.messageService.add({
-        severity: type.toLowerCase() === 'success' ? 'success' : (type.toLowerCase() === 'error' ? 'error' : 'info'),
-        summary: title,
-        detail: message,
-        life: 5000
-    });
-    // 1. Show toast notification (EXCEPT for Chat type which is handled separately)
-    if (type.toLowerCase() !== 'chat') {
-        this.zone.run(() => {
-            this.messageService.add({
-                severity: type.toLowerCase() === 'success' ? 'success' : (type.toLowerCase() === 'error' ? 'error' : 'info'),
-                summary: title,
-                detail: message,
-                life: 6000,
-                data: { relatedId, type } // Pass ID and Type for click handling
+        // Custom Sound check (if payload has playSound=true)
+        const isObject = typeof arg1 === 'object' && arg1 !== null;
+        if (isObject && arg1.playSound === true) {
+            this.playNotificationSound();
+        }
+
+        // 1. Show toast notification (EXCEPT for Chat type which is handled separately)
+        if (type.toLowerCase() !== 'chat') {
+            this.zone.run(() => {
+                this.messageService.add({
+                    severity: type.toLowerCase() === 'success' ? 'success' : (type.toLowerCase() === 'error' ? 'error' : 'info'),
+                    summary: title,
+                    detail: message,
+                    life: 6000,
+                    data: { relatedId, type } // Pass ID and Type for click handling
+                });
             });
+        }
+
+        // 2. Optimistic Update or Refresh
+        this.zone.run(() => {
+            // Create a temporary object to prepend immediately
+            const newNotif: NotificationDto = {
+                notificationID: (data && data.id) || Date.now(),
+                title: title,
+                message: message,
+                notificationType: type,
+                isRead: false,
+                sentDate: new Date().toISOString(),
+                timeAgo: 'Just now',
+                link: data?.link
+            };
+
+            const current = this.notifications$.value;
+            const updated = [newNotif, ...current];
+
+            this.notifications$.next(updated);
+            this.unreadCount$.next(updated.filter(n => !n.isRead).length);
+            this.saveToStorage(updated);
         });
     }
 
-    // 2. Optimistic Update or Refresh
-    // We'll create a temporary object to prepend immediately
-    const newNotif: NotificationDto = {
-        notificationID: (data && data.id) || Date.now(),
-        title: title,
-        message: message,
-        notificationType: type,
-        isRead: false,
-        sentDate: new Date().toISOString(),
-        timeAgo: 'Just now',
-        link: data.link
-    };
-
-    const current = this.notifications$.value;
-    const updated = [newNotif, ...current];
-
-    this.notifications$.next(updated);
-    this.unreadCount$.next(updated.filter(n => !n.isRead).length);
-    this.saveToStorage(updated);
-
-    // Optionally fetch from server to ensure full consistency
-    // this.loadNotifications().subscribe(); 
-});
-    }
-
     private playNotificationSound(): void {
-    try {
-        this.notificationSound.currentTime = 0;
-        this.notificationSound.play().catch(() => { });
-    } catch(e) {
-        console.warn('Could not play notification sound');
-    }
-}
-
-    public stopConnection(): Promise < void> {
-    // 2. Refresh count and list from server to ensure data integrity
-    this.loadNotifications().subscribe({
-        next: (notifs) => {
-            this.zone.run(() => {
-                console.log('✅ Notifications refreshed after real-time update');
-                this.refresh$.next(); // Trigger reload in observers
-            });
-        },
-        error: (err) => {
-            // Fallback to local update if refresh fails
-            this.zone.run(() => {
-                const newNotif: NotificationDto = {
-                    notificationID: (data && data.id) || Math.floor(Math.random() * 100000),
-                    title,
-                    message,
-                    notificationType: type,
-                    isRead: false,
-                    sentDate: new Date().toISOString(),
-                    timeAgo: 'Just now'
-                };
-                this.notifications$.next([newNotif, ...this.notifications$.value]);
-                this.unreadCount$.next(this.unreadCount$.value + 1);
-            });
+        try {
+            // Use local beeper util as primary
+            console.log('🔔 NOTIFICATION RECEIVED - Playing beep...');
+            playBeep();
+        } catch (e) {
+            console.warn('Could not play notification sound');
         }
-    });
-});
     }
 
     /**
      * Stop SignalR connection (call on logout)
      */
-    public stopConnection(): void {
-    if(this.hubConnection) {
-    this.hubConnection.off('ReceiveNotification');
-    this.hubConnection.off('ReceiveNotificationObject');
+    public stopConnection(): Promise<void> {
+        if (this.hubConnection) {
+            this.hubConnection.off('ReceiveNotification');
+            this.hubConnection.off('ReceiveNotificationObject');
+            this.hubConnection.off('ReceiveChatNotification');
 
-    return this.hubConnection.stop().then(() => {
-        this.hubConnection = null as any;
-        this.connectionPromise = null;
-    }).catch(() => {
-        this.hubConnection = null as any;
-        this.connectionPromise = null;
-    });
-}
-return Promise.resolve();
+            return this.hubConnection.stop().then(() => {
+                this.hubConnection = null as any;
+                this.connectionPromise = null;
+                console.log('SignalR Disconnected');
+            }).catch((err) => {
+                console.error('Error stopping connection:', err);
+                this.hubConnection = null as any;
+                this.connectionPromise = null;
+            });
+        }
+        return Promise.resolve();
     }
 
-ngOnDestroy(): void {
-    this.isDestroyed = true;
-    this.stopConnection();
-}
+    ngOnDestroy(): void {
+        this.isDestroyed = true;
+        this.stopConnection();
+    }
 
     // =========================================================================
     // API Methods
@@ -413,69 +349,63 @@ ngOnDestroy(): void {
 
     /**
      * Load all notifications from API
-     * Note: Backend automatically marks all as read when fetching
      */
-    public loadNotifications(): Observable < NotificationDto[] > {
-    return this.http.get<NotificationDto[]>(this.apiUrl).pipe(
-        tap(notifications => {
-            this.zone.run(() => {
-                this.notifications$.next(notifications);
-                this.unreadCount$.next(notifications.filter(n => !n.isRead).length);
-                this.saveToStorage(notifications);
-                // Backend auto-marks as read, so count should be 0 after fetching
-                const unreadCount = notifications.filter(n => !n.isRead).length;
-                this.unreadCount$.next(unreadCount);
-            });
-        }),
-        catchError(err => {
-            console.error('Failed to load notifications', err);
-            throw err;
-        })
-    );
-}
-
-    public markAsRead(notificationId: number): Observable < any > {
-    return this.http.put(`${this.apiUrl}/${notificationId}/read`, {}).pipe(
-        tap(() => {
-            this.zone.run(() => {
-                const current = this.notifications$.value;
-                const updated = current.map(n =>
-                    n.notificationID === notificationId ? { ...n, isRead: true } : n
-                );
-                this.notifications$.next(updated);
-                this.unreadCount$.next(updated.filter(n => !n.isRead).length);
-                this.saveToStorage(updated);
-            });
-        })
-    );
-}
-
-    public markAllAsRead(): Observable < void> {
-    return this.http.put<void>(`${this.apiUrl}/read-all`, {}).pipe(
-        tap(() => {
-            this.zone.run(() => {
-                const current = this.notifications$.value;
-                const updated = current.map(n => ({ ...n, isRead: true }));
-                this.notifications$.next(updated);
-                this.unreadCount$.next(0);
-                this.saveToStorage(updated);
-            });
-        })
-    );
-}
+    public loadNotifications(): Observable<NotificationDto[]> {
+        return this.http.get<NotificationDto[]>(this.apiUrl).pipe(
+            tap(notifications => {
+                this.zone.run(() => {
+                    this.notifications$.next(notifications);
+                    this.unreadCount$.next(notifications.filter(n => !n.isRead).length);
+                    this.saveToStorage(notifications);
+                });
+            }),
+            catchError(err => {
+                console.error('Failed to load notifications', err);
+                return throwError(() => err);
+            })
+        );
+    }
 
     /**
-     * Play notification sound
+     * Mark a single notification as read
      */
-    private playNotificationSound(): void {
-    console.log('🔔 NOTIFICATION RECEIVED - Playing beep...');
-    playBeep();
-}
+    public markAsRead(notificationId: number): Observable<any> {
+        return this.http.put(`${this.apiUrl}/${notificationId}/read`, {}).pipe(
+            tap(() => {
+                this.zone.run(() => {
+                    const current = this.notifications$.value;
+                    const updated = current.map(n =>
+                        n.notificationID === notificationId ? { ...n, isRead: true } : n
+                    );
+                    this.notifications$.next(updated);
+                    this.unreadCount$.next(updated.filter(n => !n.isRead).length);
+                    this.saveToStorage(updated);
+                });
+            })
+        );
+    }
+
+    /**
+     * Mark all notifications as read
+     */
+    public markAllAsRead(): Observable<void> {
+        return this.http.put<void>(`${this.apiUrl}/read-all`, {}).pipe(
+            tap(() => {
+                this.zone.run(() => {
+                    const current = this.notifications$.value;
+                    const updated = current.map(n => ({ ...n, isRead: true }));
+                    this.notifications$.next(updated);
+                    this.unreadCount$.next(0);
+                    this.saveToStorage(updated);
+                });
+            })
+        );
+    }
 
     /**
      * Get unread notifications count
      */
     public getUnreadCount(): number {
-    return this.unreadCount$.value;
-}
+        return this.unreadCount$.value;
+    }
 }
