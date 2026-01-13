@@ -34,13 +34,13 @@ export const DASHBOARD_ROUTES: Routes = [
           import('./pages/Admin/admin.routes')
             .then(m => m.ADMIN_ROUTES)
       },
-
-
-      // Default child route
       {
-        path: '',
-        redirectTo: 'profile',
-        pathMatch: 'full'
+        path: 'workspace/:id',
+        loadComponent: () => import('./pages/project-workspace/project-workspace.component').then(m => m.ProjectWorkspaceComponent)
+      },
+      {
+        path: 'messages',
+        loadComponent: () => import('./pages/messages/messages.component').then(m => m.MessagesComponent)
       },
       {
         path: 'customer',

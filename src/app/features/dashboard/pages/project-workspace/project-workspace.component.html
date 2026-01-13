@@ -1,0 +1,232 @@
+<div class="h-[85vh] flex flex-col bg-gray-50 rounded-lg shadow-lg overflow-hidden border border-gray-200">
+
+    <!-- Workspace Header -->
+    <header class="bg-white px-6 py-4 border-b flex items-center justify-between z-10">
+        <div class="flex items-center gap-4">
+            <div class="p-2 bg-indigo-50 rounded-full">
+                <i class="pi pi-briefcase text-indigo-600 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">{{ projectName }}</h2>
+                <div *ngIf="workspaceData" class="flex items-center gap-2 text-sm text-gray-500">
+                    <span class="w-2 h-2 rounded-full" [ngClass]="{'bg-green-500': projectStatus === 'InProgress' || projectStatus === 'Active', 
+                            'bg-blue-500': projectStatus === 'Completed'}">
+                    </span>
+                    <span>Status: {{ projectStatus }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Loading State -->
+            <p-tag *ngIf="loading" value="Loading..." severity="info" icon="pi pi-spin pi-spinner"></p-tag>
+
+            <!-- DESIGNER Actions -->
+            <ng-container *ngIf="userRole === 'InteriorDesigner' && workspaceData">
+                <!-- Upload Design Button -->
+                <p-button label="Upload Design" icon="pi pi-upload" severity="help" (onClick)="goToSubmission()">
+                </p-button>
+
+                <!-- Deliver Project Button OR Already Delivered Tag -->
+                <p-button *ngIf="canDeliverProject" label="Deliver Project" icon="pi pi-check-circle" severity="success"
+                    [loading]="deliveringProject" (onClick)="deliverProject()">
+                </p-button>
+
+                <p-tag *ngIf="isProjectDelivered" value="✅ Delivered" severity="success">
+                </p-tag>
+            </ng-container>
+
+            <!-- Property Owner Actions -->
+            <ng-container *ngIf="userRole === 'PropertyOwner' && workspaceData">
+                <!-- Leave Review Button -->
+                <p-button *ngIf="canReview" label="Leave Review" icon="pi pi-star" severity="warn"
+                    (onClick)="openReviewModal()">
+                </p-button>
+
+                <!-- Already Reviewed Tag -->
+                <p-tag *ngIf="isProjectReviewed" value="⭐ Reviewed" severity="success">
+                </p-tag>
+
+                <!-- Awaiting Delivery Tag -->
+                <p-tag *ngIf="!isProjectDelivered && !isProjectReviewed" value="⏳ Awaiting Delivery" severity="info">
+                </p-tag>
+            </ng-container>
+        </div>
+    </header>
+
+    <!-- Chat Area -->
+    <div class="flex-1 flex flex-col relative bg-slate-50 overflow-hidden">
+
+        <!-- Chat Header (Contact Info) -->
+        <div class="bg-white border-b px-6 py-3 flex items-center justify-between shadow-sm z-10">
+            <div class="flex items-center gap-3">
+                <p-avatar [image]="contactPhoto" icon="pi pi-user" shape="circle" size="large"
+                    [styleClass]="'border-2 border-indigo-100 shadow-sm'">
+                </p-avatar>
+                <div>
+                    <h3 class="font-bold text-gray-800 leading-none">{{ contactName }}</h3>
+                    <span class="text-xs text-green-500 flex items-center gap-1 mt-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                        Active in Workspace
+                    </span>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button pButton icon="pi pi-phone" class="p-button-rounded p-button-text p-button-secondary"></button>
+                <button pButton icon="pi pi-video" class="p-button-rounded p-button-text p-button-secondary"></button>
+            </div>
+        </div>
+
+        <!-- Messages Feed -->
+        <div #chatContainer class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+
+            <div *ngIf="messages.length === 0" class="h-full flex flex-col items-center justify-center text-gray-400">
+                <div
+                    class="bg-indigo-50 w-24 h-24 rounded-full flex items-center justify-center mb-4 animate-bounce-slow">
+                    <i class="pi pi-comments text-4xl text-indigo-400"></i>
+                </div>
+                <p class="font-medium text-lg text-gray-600">No messages yet</p>
+                <p class="text-sm">Start the conversation with {{ contactName }}</p>
+            </div>
+
+            <div *ngFor="let msg of messages; let last = last" class="flex gap-3 mb-4 animate-fade-in group"
+                [ngClass]="{'justify-end': msg.isMe, 'justify-start': !msg.isMe}">
+
+                <!-- Avatar (only for received messages, on the left) -->
+                <div *ngIf="!msg.isMe" class="flex-shrink-0">
+                    <p-avatar [image]="msg.senderPhoto" icon="pi pi-user"
+                        styleClass="bg-gray-100 text-gray-600 border shadow-sm" shape="circle" size="normal">
+                    </p-avatar>
+                </div>
+
+                <!-- Message Bubble -->
+                <div class="flex flex-col max-w-[70%]" [ngClass]="{'items-end': msg.isMe, 'items-start': !msg.isMe}">
+                    <!-- Sender Name (only for received messages) -->
+                    <div *ngIf="!msg.isMe" class="text-xs text-gray-500 font-medium mb-1 px-1">
+                        {{ msg.senderName }}
+                    </div>
+
+                    <!-- Message Content -->
+                    <div class="px-4 py-3 rounded-2xl text-sm shadow-sm transition-all hover:shadow-md relative"
+                        [ngClass]="{
+                            'bg-indigo-600 text-white rounded-br-sm': msg.isMe,
+                            'bg-white text-gray-800 border border-gray-200 rounded-bl-sm': !msg.isMe
+                         }">
+
+                        <!-- Text Message (Type 0 or undefined) -->
+                        <div *ngIf="!msg.messageType || msg.messageType === 0"
+                            class="whitespace-pre-wrap leading-relaxed">
+                            {{ msg.messageText || msg.message }}
+                        </div>
+
+                        <!-- Image Message (Type 1) -->
+                        <div *ngIf="msg.messageType === 1" class="mt-1">
+                            <img [src]="msg.messageText"
+                                class="rounded-lg max-w-full max-h-60 cursor-pointer hover:opacity-90 transition-opacity"
+                                alt="Shared Image" />
+                        </div>
+
+                        <!-- PDF/File Message (Type 2) -->
+                        <div *ngIf="msg.messageType === 2"
+                            class="flex items-center gap-3 p-3 bg-black/5 rounded-lg border border-white/10 hover:bg-black/10 transition-colors cursor-pointer">
+                            <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+                                <i class="pi pi-file-pdf text-red-500 text-lg"></i>
+                            </div>
+                            <div class="flex-1 overflow-hidden">
+                                <p class="text-xs font-bold truncate">Project Document.pdf</p>
+                                <a [href]="msg.messageText" target="_blank"
+                                    class="text-[10px] underline opacity-80 hover:opacity-100">
+                                    Click to Download
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timestamp -->
+                    <div class="flex items-center gap-1 mt-1 px-1">
+                        <span class="text-[10px] text-gray-400 font-medium">
+                            {{ msg.timestamp | date:'shortTime' }}
+                        </span>
+                        <i *ngIf="msg.isMe" class="pi pi-check-circle text-[10px]"
+                            [ngClass]="msg.isRead ? 'text-blue-500' : 'text-gray-400'"></i>
+                    </div>
+                </div>
+
+                <!-- Avatar (only for sent messages, on the right) -->
+                <div *ngIf="msg.isMe" class="flex-shrink-0">
+                    <p-avatar [image]="msg.senderPhoto" icon="pi pi-user"
+                        styleClass="bg-indigo-600 text-white shadow-md" shape="circle" size="normal">
+                    </p-avatar>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Message Input -->
+        <div class="p-4 bg-white border-t mt-auto shadow-2xl z-10">
+            <form [formGroup]="chatForm" (ngSubmit)="sendMessage()"
+                class="flex gap-3 items-center container max-w-4xl mx-auto">
+                <div class="flex gap-1">
+                    <button pButton type="button" icon="pi pi-plus" [disabled]="!canChat"
+                        class="p-button-rounded p-button-text p-button-secondary"></button>
+                    <button pButton type="button" icon="pi pi-image" [disabled]="!canChat"
+                        class="p-button-rounded p-button-text p-button-secondary"></button>
+                </div>
+                <div class="relative flex-1">
+                    <input pInputText formControlName="message" [readOnly]="!canChat"
+                        class="w-full pl-4 pr-10 py-3 rounded-full bg-gray-50 border-gray-200 focus:bg-white transition-all shadow-inner"
+                        [placeholder]="canChat ? 'Type your message to ' + contactName + '...' : 'Chat is available only after proposal acceptance'"
+                        autocomplete="off" />
+                    <i *ngIf="canChat"
+                        class="pi pi-face-smile absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-indigo-500"></i>
+                </div>
+                <button pButton type="submit" icon="pi pi-send"
+                    class="p-button-rounded p-button-indigo shadow-lg transition-transform active:scale-95"
+                    [disabled]="!chatForm.valid || !chatForm.value.message?.trim() || !canChat">
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<p-dialog header="Rate Your Experience" [(visible)]="showReviewModal" [modal]="true" [style]="{width: '500px'}"
+    [draggable]="false" [resizable]="false">
+    <div class="flex flex-col items-center pt-4" [formGroup]="reviewForm">
+        <div class="mb-6 text-center">
+            <i class="pi pi-star-fill text-yellow-400 text-5xl mb-3"></i>
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Project Completed!</h3>
+            <p class="text-gray-500 text-sm">How was your experience with this designer?</p>
+        </div>
+
+        <div class="mb-6">
+            <p-rating formControlName="rating" [stars]="5" styleClass="text-yellow-400 text-3xl"></p-rating>
+        </div>
+
+        <div class="w-full mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Your Review
+                <span class="text-red-500">*</span>
+                <span class="text-gray-400 text-xs ml-1">(minimum 10 characters)</span>
+            </label>
+            <textarea pInputTextarea formControlName="comment" rows="5" class="w-full"
+                placeholder="Share your feedback about the design quality, communication, and overall experience...">
+            </textarea>
+            <small class="text-red-500 block mt-1"
+                *ngIf="reviewForm.get('comment')?.invalid && reviewForm.get('comment')?.touched">
+                <i class="pi pi-exclamation-circle mr-1"></i>
+                Please write at least 10 characters
+            </small>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="Cancel" icon="pi pi-times" (onClick)="showReviewModal=false" severity="secondary" [text]="true"
+            [disabled]="submittingReview">
+        </p-button>
+        <p-button label="Submit Review" icon="pi pi-star-fill" (onClick)="submitReview()" [loading]="submittingReview"
+            [disabled]="reviewForm.invalid">
+        </p-button>
+    </ng-template>
+</p-dialog>
+
+<p-toast position="bottom-right"></p-toast>

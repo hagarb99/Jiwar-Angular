@@ -5,17 +5,20 @@ import { ProfileService, InteriorDesigner } from './profile.service';
 import { DesignerProposalService } from '../../../../../core/services/designer-proposal.service';
 import { DesignService } from '../../../../../core/services/design.service';
 import { DesignRequestService } from '../../../../../core/services/design-request.service';
-import { DesignerProposal } from '../../../../../core/interfaces/designer-proposal.interface'; // Ensure interface availability
+import { DesignerProposal } from '../../../../../core/interfaces/designer-proposal.interface';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { forkJoin, of } from 'rxjs';
+import { WorkspaceService } from '../../../../../core/services/workspace.service';
+import { DesignerReview } from '../../../../../core/interfaces/workspace.interface';
+import { forkJoin, of, Subject, takeUntil, Subscription } from 'rxjs';
 import { catchError, filter, map, switchMap } from 'rxjs/operators';
-import { Subscription } from 'rxjs';
+import { NotificationService } from '../../../../../core/services/notification.service';
+import { PaginatorModule } from 'primeng/paginator';
 
 @Component({
   selector: 'app-profile-interiordesigner',
   standalone: true,
-  imports: [CommonModule, RouterModule, ToastModule],
+  imports: [CommonModule, RouterModule, ToastModule, PaginatorModule],
   templateUrl: './profile-interiordesigner.component.html',
   styleUrl: './profile-interiordesigner.component.css',
   providers: [MessageService]
@@ -23,13 +26,28 @@ import { Subscription } from 'rxjs';
 export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
   loading = true;
   profile: InteriorDesigner | null = null;
+  reviews: any[] = [];
+  pagedReviews: any[] = [];
+  averageRating: number = 0;
+  totalReviews: number = 0;
+
+  // Review expansion tracking
+  expandedReviews: Set<number> = new Set();
+
+  // Pagination stats
+  rows = 3;
+  first = 0;
+
   private routerSubscription?: Subscription;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private profileService: ProfileService,
     private proposalService: DesignerProposalService,
     private designService: DesignService,
     private designRequestService: DesignRequestService,
+    private workspaceService: WorkspaceService,
+    private notificationService: NotificationService,
     private messageService: MessageService,
     private router: Router
   ) { }
@@ -37,15 +55,22 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.fetchProfile();
 
-    // Reload profile when navigating back from edit page
     this.routerSubscription = this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
       .subscribe((event: any) => {
-        // If we're on the profile page and coming from edit page, reload data
         if (event.url === '/dashboard/interiordesigner/profile' ||
           event.urlAfterRedirects === '/dashboard/interiordesigner/profile') {
           this.fetchProfile();
         }
+      });
+
+    this.notificationService.refresh$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.fetchProfile(false);
       });
   }
 
@@ -53,89 +78,64 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
+  fetchProfile(showLoading = true): void {
+    if (showLoading) this.loading = true;
 
-  fetchProfile(): void {
-    this.loading = true;
-
-    // Fetch profile, proposals, and designs in parallel
     this.profileService.getProfile().pipe(
-      switchMap(profile => {
+      switchMap(profileRaw => {
+        // Handle wrapper from backend structure update
+        const profile = profileRaw?.interiorDesigner || profileRaw;
+        const id = profile?.id || profile?.Id || profileRaw?.id || profileRaw?.Id;
+
         return forkJoin({
           profile: of(profile),
           proposals: this.proposalService.getMyProposals().pipe(catchError(() => of([]))),
-          designs: this.designService.getMyDesigns().pipe(catchError(() => of([])))
+          reviews: id ? this.workspaceService.getDesignerReviews(id).pipe(catchError(() => of({ designerId: '', averageRating: 0, totalReviews: 0, reviews: [] }))) : of({ designerId: '', averageRating: 0, totalReviews: 0, reviews: [] })
         });
       }),
-      switchMap(({ profile, proposals, designs }) => {
-        // Now verify pending proposals status
-        const pendingProposals = proposals.filter((p: any) => p.status === 'Pending' || p.status === '0');
-
-        if (pendingProposals.length === 0) {
-          return of({ profile, proposals, designs });
-        }
-
-        const checks = pendingProposals.map((prop: any) =>
-          this.designRequestService.getDesignRequestById(prop.designRequestID).pipe(
-            map(req => {
-              if (req.status === 'InProgress' || req.status === 'Active' || req.status === 'Completed') {
-                prop.status = 'Accepted';
-              }
-              return prop;
-            }),
-            catchError(() => of(prop))
-          )
-        );
-
-        return forkJoin(checks).pipe(
-          map(() => ({ profile, proposals, designs }))
-        );
-      })
+      takeUntil(this.destroy$)
     ).subscribe({
-      next: ({ profile, proposals, designs }) => {
-        // Calculate stats from real data
+      next: ({ profile, proposals, reviews }: any) => {
+        this.reviews = reviews.reviews || [];
+        this.averageRating = reviews.averageRating || 0;
+        this.totalReviews = reviews.totalReviews || 0;
+
+        this.updatePagedReviews();
+
         const totalProposals = (proposals || []).length;
-        // Re-filter now that statuses might be updated
-        const acceptedProposals = (proposals || []).filter((p: any) => p.status === 'Accepted' || p.status === 'Completed').length;
-        const completedDesigns = (designs || []).length;
+        const acceptedCount = (proposals || []).filter((p: any) =>
+          Number(p.status) === 1
+        ).length;
+        const completedCount = (proposals || []).filter((p: any) =>
+          Number(p.status) === 3
+        ).length;
 
-        // Active projects: accepted proposals that don't have a submitted design yet
-        // However, if your business logic says 'Active' is 'Accepted', user might just want 'Accepted' count.
-        // Let's stick to "Active" usually means "In Progress" for the designer.
+        const rawBio = (profile?.bio || profile?.Bio || '').trim();
+        const bio = (rawBio === 'No bio information provided yet.') ? '' : rawBio;
 
-        const activeProposalsList = (proposals || []).filter((p: any) =>
-          p.status === 'Accepted'
-        );
-
-        // Filter out those that already have a design linked? 
-        // For simplicity and to match the user's "Active Projects" page which lists Accepted proposals:
-        const activeProjects = activeProposalsList.length;
-
-        // Update profile object
         this.profile = {
           name: profile?.name || profile?.Name || '',
           email: profile?.email || profile?.Email || '',
           phoneNumber: profile?.phoneNumber || profile?.PhoneNumber || '',
-          profilePicURL: profile?.profilePicURL || profile?.ProfilePicURL || profile?.avatarUrl || profile?.AvatarUrl || '',
+          profilePicURL: profile?.profilePicURL || profile?.ProfilePicURL || '',
           title: profile?.title || profile?.Title || 'Interior Designer',
           location: profile?.location || profile?.Location || '',
-          bio: profile?.bio || profile?.Bio || '',
-          specializations: profile?.specialization ? [profile.specialization] :
-            (profile?.Specialization ? [profile.Specialization] :
-              (Array.isArray(profile?.specializations) ? profile.specializations :
-                (Array.isArray(profile?.Specializations) ? profile.Specializations : []))),
-          certifications: Array.isArray(profile?.certifications) ? profile.certifications :
-            (Array.isArray(profile?.Certifications) ? profile.Certifications : []),
-          website: profile?.website || profile?.Website || profile?.portfolioUrl || profile?.PortfolioUrl || '',
-          hourlyRate: profile?.hourlyRate ?? profile?.HourlyRate ?? null,
-          projectMinimum: profile?.projectMinimum ?? profile?.ProjectMinimum ?? null,
-          yearsOfExperience: profile?.yearsOfExperience ?? profile?.YearsOfExperience ?? null,
+          bio: bio,
+          specializations: profile?.specialization ? [profile.specialization] : (Array.isArray(profile?.specializations) ? profile.specializations : (Array.isArray(profile?.Specializations) ? profile.Specializations : [])),
+          certifications: Array.isArray(profile?.certifications) ? profile.certifications : (Array.isArray(profile?.Certifications) ? profile.Certifications : []),
+          website: profile?.website || '',
+          hourlyRate: profile?.hourlyRate ?? null,
+          projectMinimum: profile?.projectMinimum ?? null,
+          yearsOfExperience: profile?.yearsOfExperience ?? null,
           stats: [
+            { label: 'Rating', value: this.averageRating > 0 ? this.averageRating.toFixed(1) + ' ★' : 'No Ratings' },
             { label: 'Total Proposals', value: totalProposals },
-            { label: 'Accepted Proposals', value: acceptedProposals },
-            { label: 'Completed Designs', value: completedDesigns },
-            { label: 'Active Projects', value: activeProjects }
+            { label: 'Accepted', value: acceptedCount },
+            { label: 'Completed', value: completedCount }
           ]
         };
 
@@ -143,14 +143,37 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error fetching profile:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load profile data.'
-        });
         this.loading = false;
       }
     });
+  }
+
+  onPageChange(event: any) {
+    this.first = event.first;
+    this.rows = event.rows;
+    this.updatePagedReviews();
+  }
+
+  updatePagedReviews() {
+    this.pagedReviews = this.reviews.slice(this.first, this.first + this.rows);
+  }
+
+  isReviewExpanded(reviewId: number): boolean {
+    return this.expandedReviews.has(reviewId);
+  }
+
+  toggleReview(reviewId: number): void {
+    if (this.expandedReviews.has(reviewId)) {
+      this.expandedReviews.delete(reviewId);
+    } else {
+      this.expandedReviews.add(reviewId);
+    }
+  }
+
+  getTruncatedComment(comment: string, limit: number = 100): string {
+    if (!comment) return '';
+    if (comment.length <= limit) return comment;
+    return comment.substring(0, limit) + '...';
   }
 
   trackByIndex(index: number, item: any): any {

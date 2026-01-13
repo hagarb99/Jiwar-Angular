@@ -82,6 +82,13 @@
                   <h4 class="font-semibold text-gray-900">Proposal #{{ proposal.id }}</h4>
                   <p-tag [value]="getStatusLabel(proposal.status)"
                     [severity]="getStatusSeverity(proposal.status || 0)"></p-tag>
+                  <span *ngIf="proposal.designerName" class="text-sm text-gray-500">
+                    by
+                    <a [routerLink]="['/designer', proposal.designerId]"
+                      class="text-blue-600 hover:underline font-medium">
+                      {{ proposal.designerName }}
+                    </a>
+                  </span>
                 </div>
                 <p class="text-gray-600 mb-2">{{ proposal.proposalDescription }}</p>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
@@ -99,8 +106,14 @@
                 <p-button label="View Details" icon="pi pi-eye" (onClick)="viewProposalDetails(proposal)"
                   [outlined]="true" size="small">
                 </p-button>
-                <p-button label="Accept" icon="pi pi-check" (onClick)="chooseProposal(proposal.id!)" severity="success"
-                  size="small" [disabled]="!canManageProposal(proposal)">
+                <p-button *ngIf="getStatusLabel(proposal.status) !== 'Accepted'" label="Accept" icon="pi pi-check"
+                  (onClick)="chooseProposal(proposal.id!)" severity="success" size="small"
+                  [disabled]="!canManageProposal(proposal)">
+                </p-button>
+                <p-button
+                  *ngIf="getStatusLabel(proposal.status) === 'Accepted' || getStatusLabel(proposal.status) === 'Delivered'"
+                  label="Open Workspace" icon="pi pi-comments"
+                  [routerLink]="['/dashboard/workspace', designRequest.id || 0]" severity="primary" size="small">
                 </p-button>
                 <p-button label="Reject" icon="pi pi-times" (onClick)="rejectProposal(proposal.id!)" severity="danger"
                   [outlined]="true" size="small" [disabled]="!canManageProposal(proposal)">
@@ -164,8 +177,14 @@
         <p-button label="Reject Proposal" icon="pi pi-times" (onClick)="rejectProposal(selectedProposal.id!)"
           severity="danger" [outlined]="true" [disabled]="!canManageProposal(selectedProposal)">
         </p-button>
-        <p-button label="Accept Proposal" icon="pi pi-check" (onClick)="chooseProposal(selectedProposal.id!)"
-          severity="success" [disabled]="!canManageProposal(selectedProposal)">
+        <p-button *ngIf="getStatusLabel(selectedProposal.status) !== 'Accepted'" label="Accept Proposal"
+          icon="pi pi-check" (onClick)="chooseProposal(selectedProposal.id!)" severity="success"
+          [disabled]="!canManageProposal(selectedProposal)">
+        </p-button>
+        <p-button
+          *ngIf="getStatusLabel(selectedProposal.status) === 'Accepted' || getStatusLabel(selectedProposal.status) === 'Delivered'"
+          label="Open Workspace" icon="pi pi-comments" [routerLink]="['/dashboard/workspace', designRequest?.id || 0]"
+          severity="primary">
         </p-button>
       </div>
     </div>

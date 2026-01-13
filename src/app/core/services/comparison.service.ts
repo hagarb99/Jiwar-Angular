@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, forkJoin } from 'rxjs';
+import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Property, PropertyService } from './property.service';
+import { catchError } from 'rxjs/operators';
 
 export interface PropertyComparisonDTO {
     propertyID: number;
@@ -31,14 +32,24 @@ export interface PropertyComparisonRequestDTO {
     userType: PropertyComparisonUserType;
 }
 
+export interface CategoryScoreDetailDTO {
+    score: number;
+    description: string;
+}
+
+export interface CategoryScoresDTO {
+    priceValue: CategoryScoreDetailDTO;
+    location: CategoryScoreDetailDTO;
+    spaceAndLayout: CategoryScoreDetailDTO;
+    features: CategoryScoreDetailDTO;
+    investmentPotential: CategoryScoreDetailDTO;
+}
+
 export interface AiPropertyScoreBreakdownDTO {
     propertyId: number;
-    priceValue: number;
-    location: number;
-    space: number;
-    investmentPotential: number;
-    comfort: number;
+    categoryScores: CategoryScoresDTO;
     totalScore: number;
+    overallReason: string;
 }
 
 export interface AiComparisonResultDTO {
@@ -58,17 +69,16 @@ export class ComparisonService {
 
     private readonly STORAGE_KEY = 'jiwar_comparison_ids';
 
-    constructor(private http: HttpClient, private propertyService: PropertyService) {
+    constructor(
+        private http: HttpClient,
+        private propertyService: PropertyService
+    ) {
         this.loadFromStorage();
     }
 
     addToCompare(id: number): boolean {
-        if (this.comparisonIds.length >= 5) {
-            return false; // Limit to 5 properties (per backend constraint)
-        }
-
-        if (this.comparisonIds.includes(id)) {
-            return false; // Already in list
+        if (this.comparisonIds.length >= 5 || this.comparisonIds.includes(id)) {
+            return false;
         }
 
         this.comparisonIds.push(id);
@@ -81,11 +91,11 @@ export class ComparisonService {
         this.comparisonIds = this.comparisonIds.filter(id => id !== propertyId);
         this.saveToStorage();
 
-        // Optimistic update
-        const currentList = this.comparisonListSubject.value.filter(p => p.propertyID !== propertyId);
+        const currentList = this.comparisonListSubject.value
+            .filter(p => p.propertyID !== propertyId);
+
         this.comparisonListSubject.next(currentList);
 
-        // Refresh to ensure sync if needed, but optimistic is usually fine here
         if (this.comparisonIds.length > 0) {
             this.refreshComparisonData();
         }
@@ -107,13 +117,22 @@ export class ComparisonService {
             return;
         }
 
-        // Use forkJoin to fetch details for each property individually
-        const requests = this.comparisonIds.map(id => this.propertyService.getPropertyById(id));
+        const requests = this.comparisonIds.map(id =>
+            this.propertyService.getPropertyById(id).pipe(
+                catchError(err => {
+                    console.error(`Failed to load property ${id}`, err);
+                    return of(null);
+                })
+            )
+        );
 
         forkJoin(requests).subscribe({
-            next: (properties: Property[]) => {
-                const dtos: PropertyComparisonDTO[] = properties.map(p => {
-                    // robust thumbnail resolution
+            next: (results: (Property | null)[]) => {
+                const validProperties = results.filter(
+                    (p): p is Property => p !== null
+                );
+
+                const dtos: PropertyComparisonDTO[] = validProperties.map(p => {
                     let thumb = p.thumbnailUrl || p.ThumbnailUrl;
                     if (!thumb && p.mediaUrls && p.mediaUrls.length > 0) {
                         thumb = p.mediaUrls[0];
@@ -128,15 +147,16 @@ export class ComparisonService {
                         area_sqm: p.area_sqm,
                         numBedrooms: p.numBedrooms,
                         numBathrooms: p.numBathrooms,
-                        propertyType: p.propertyType !== undefined ? p.propertyType.toString() : 'Unknown',
+                        propertyType: p.propertyType?.toString() ?? 'Unknown',
                         status: 'Available',
                         thumbnailUrl: thumb || '',
                         features: []
                     };
                 });
+
                 this.comparisonListSubject.next(dtos);
             },
-            error: (err) => {
+            error: err => {
                 console.error('Error fetching comparison data', err);
             }
         });
@@ -145,18 +165,23 @@ export class ComparisonService {
     analyzeWithAi(userType: PropertyComparisonUserType): Observable<AiComparisonResultDTO> {
         const payload: PropertyComparisonRequestDTO = {
             propertyIds: this.comparisonIds,
-            userType: userType
+            userType
         };
-        return this.http.post<AiComparisonResultDTO>(`${this.apiUrl}/compare`, payload);
+
+        return this.http.post<AiComparisonResultDTO>(
+            `${this.apiUrl}/compare`,
+            payload
+        );
     }
 
     getMyProperties(): Observable<Property[]> {
         return this.http.get<Property[]>(`${this.apiUrl}/my`);
     }
 
-    // Helper to get all properties for browsing (if needed by simple browser)
     getAllProperties(page: number = 1, pageSize: number = 12): Observable<any> {
-        return this.http.get(`${this.apiUrl}/all?page=${page}&pageSize=${pageSize}`);
+        return this.http.get(
+            `${this.apiUrl}/all?page=${page}&pageSize=${pageSize}`
+        );
     }
 
     private saveToStorage(): void {
