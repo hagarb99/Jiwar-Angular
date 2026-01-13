@@ -13,8 +13,8 @@ import { PropertyDetailsComponent } from './core/pages/property-details/property
 import { WishlistComponent } from './core/pages/wishlist/wishlist.component';
 import { SubscriptionListComponent } from './features/subscription/subscription-list/subscription-list.component';
 
-import { ChatComponent } from './shared/components/chat/chat.component';
 import { PropertyOwnerPublicProfileComponent } from './features/dashboard/pages/propertyowner/profile-propertyowner/property-owner-public-profile/property-owner-public-profile.component';
+
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
@@ -32,7 +32,6 @@ const routes: Routes = [
       import('./features/dashboard/dashboard.routes')
         .then(m => m.DASHBOARD_ROUTES)
   },
-  { path: 'chat', component: ChatComponent },
   { path: 'propertyowner/:userId', component: PropertyOwnerPublicProfileComponent },
   { path: 'designer/:userId', loadComponent: () => import('./features/dashboard/pages/propertyowner/designer-public-profile/designer-public-profile.component').then(m => m.DesignerPublicProfileComponent) },
   // {
@@ -98,6 +97,10 @@ const routes: Routes = [
   {
     path: 'subscriptions',
     loadComponent: () => import('./features/subscription/subscription-list/subscription-list.component').then(m => m.SubscriptionListComponent)
+  },
+  {
+    path: 'designers',
+    loadComponent: () => import('./features/designers/pages/designers-list/designers-list.component').then(m => m.DesignersListComponent)
   },
   {
     path: 'compare',
