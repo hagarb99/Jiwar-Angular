@@ -35,6 +35,14 @@ export const DASHBOARD_ROUTES: Routes = [
             .then(m => m.ADMIN_ROUTES)
       },
       {
+        path: 'workspace/:id',
+        loadComponent: () => import('./pages/project-workspace/project-workspace.component').then(m => m.ProjectWorkspaceComponent)
+      },
+      {
+        path: 'messages',
+        loadComponent: () => import('./pages/messages/messages.component').then(m => m.MessagesComponent)
+      },
+      {
         path: 'customer',
         canActivate: [roleGuard(['Customer'])],
         loadChildren: () =>

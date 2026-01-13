@@ -50,13 +50,13 @@ export class DesignerProposalService extends ApiBaseService {
 
         if (typeof statusVal === 'string') {
             const lower = statusVal.toLowerCase().trim();
-            if (lower === 'accepted' || lower === 'approved' || lower === 'chosen' || lower === 'selected' || lower === 'inprogress' || lower === 'active') {
+            if (lower === 'accepted' || lower === 'approved' || lower === 'chosen' || lower === 'selected' || lower === 'inprogress' || lower === 'active' || lower === 'chosen_for_project') {
                 return 1;
             }
             if (lower === 'rejected' || lower === 'declined' || lower === 'cancelled') {
                 return 2;
             }
-            if (lower === 'completed' || lower === 'finished' || lower === 'done') {
+            if (lower === 'completed' || lower === 'finished' || lower === 'done' || lower === 'delivered') {
                 return 3;
             }
         }
@@ -69,7 +69,8 @@ export class DesignerProposalService extends ApiBaseService {
 
         const normalized = {
             id: p.id || p.Id || p.proposalID || p.ProposalID || p.idProposal,
-            designRequestID: p.designRequestID || p.DesignRequestID || p.requestID || p.RequestID || p.requestId || p.idRequest,
+            designerId: p.designerId || p.DesignerId || p.designerID || p.DesignerID || p.userId || p.UserId,
+            designRequestID: p.designRequestID || p.DesignRequestID || p.designRequestId || p.DesignRequestId || p.requestId || p.RequestId || p.requestID || p.RequestID || p.idRequest || p.idDesignRequest || p.IdDesignRequest || p.designRequest?.id || p.DesignRequest?.Id,
             proposalDescription: p.proposalDescription || p.ProposalDescription || p.description || p.Description || p.offerDetails || p.notes,
             estimatedCost: p.estimatedCost ?? p.EstimatedCost ?? p.price ?? p.Price ?? p.cost ?? p.budget ?? 0,
             estimatedDays: p.estimatedDays ?? p.EstimatedDays ?? p.duration ?? p.Duration ?? p.days ?? 0,
@@ -99,6 +100,13 @@ export class DesignerProposalService extends ApiBaseService {
             {}
         ).pipe(
             map(data => Array.isArray(data) ? data.map(p => this.normalizeProposal(p)) : [])
+        );
+    }
+
+    deliverProject(proposalId: number, deliveryNotes: string = 'Completed'): Observable<any> {
+        return this.httpClient.post(
+            `${this.apiBaseUrl}/DesignerProposal/deliver/${proposalId}`,
+            { deliveryNotes }
         );
     }
 

@@ -14,7 +14,7 @@ export const interiorDesignerRoutes: Routes = [
   },
   {
     path: 'profile',
-    component: ProfileInteriordesignerComponent
+    loadComponent: () => import('./profile-interiordesigner/profile-interiordesigner.component').then(m => m.ProfileInteriordesignerComponent)
   },
   {
     path: 'available-projects',
@@ -43,6 +43,10 @@ export const interiorDesignerRoutes: Routes = [
   {
     path: 'dashboard',
     loadComponent: () => import('./designer-dashboard/designer-dashboard.component').then(m => m.DesignerDashboardComponent)
+  },
+  {
+    path: 'reviews',
+    loadComponent: () => import('./designer-reviews/designer-reviews.component').then(m => m.DesignerReviewsComponent)
   }
 ];
 

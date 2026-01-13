@@ -5,6 +5,7 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { PropertyService, Property } from '../../../../../core/services/property.service';
 import { DesignRequestService } from '../../../../../core/services/design-request.service';
 import { DesignerService, Designer } from '../../../../../core/services/designer.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
@@ -85,6 +86,7 @@ export class CreateDesignRequestComponent implements OnInit {
     private propertyService: PropertyService,
     private designRequestService: DesignRequestService,
     private designerService: DesignerService,
+    private authService: AuthService,
     private messageService: MessageService,
     private router: Router,
     private route: ActivatedRoute
@@ -259,6 +261,7 @@ export class CreateDesignRequestComponent implements OnInit {
     }
 
     const requestData: any = {
+      userID: this.authService.getUserId(),
       propertyID: propertyId,
       preferredStyle: formValue.preferredStyle,
       budget: formValue.budget || undefined,

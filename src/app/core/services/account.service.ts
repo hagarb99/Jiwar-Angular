@@ -13,6 +13,16 @@ export interface UserProfile {
   createdAt: string;
 }
 
+export interface DesignerDto {
+  id: string;
+  name: string;
+  profilePicURL?: string;
+  bio?: string;
+  city?: string;
+  rating?: number;
+  completedProjects?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AccountService {
   private http = inject(HttpClient);
@@ -32,5 +42,13 @@ export class AccountService {
       payload
     );
   }
+
+  getDesigners(search?: string): Observable<DesignerDto[]> {
+    let params = new URLSearchParams();
+    if (search) params.append('search', search);
+
+    // Note: HttpClient accepts params object but for simplicity with existing code structure:
+    const queryString = search ? `?search=${encodeURIComponent(search)}` : '';
+    return this.http.get<DesignerDto[]>(`${this.apiUrl}/Account/designers${queryString}`);
+  }
 }
- 

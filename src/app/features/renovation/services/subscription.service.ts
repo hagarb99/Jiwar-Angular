@@ -22,9 +22,7 @@ export class SubscriptionService {
     private http = inject(HttpClient);
 
     getSubscriptions(): Observable<SubscriptionPlan[]> {
-        return this.http.get<SubscriptionPlan[]>(
-            'https://localhost:5001/api/Subscription/plans'
-        );
+        return this.http.get<SubscriptionPlan[]>(`${environment.apiBaseUrl}/Subscription/plans`);
     }
 }
 

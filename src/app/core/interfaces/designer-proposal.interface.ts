@@ -1,11 +1,13 @@
 export enum DesignerProposalStatus {
     Pending = 0,
     Accepted = 1,
-    Rejected = 2
+    Rejected = 2,
+    Delivered = 3
 }
 
 export interface DesignerProposal {
     id?: number;
+    designerId?: string;
     designRequestID: number;
 
     proposalDescription: string;
