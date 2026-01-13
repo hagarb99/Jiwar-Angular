@@ -1,4 +1,7 @@
-<nav class="fixed top-0 inset-x-0 z-50 bg-background/98 backdrop-blur-md border-b shadow-luxury">
+<nav class="fixed top-0 inset-x-0 z-50 transition-all duration-300" [ngClass]="{
+       'bg-transparent': isDarkBgPage,
+       'bg-background/98 backdrop-blur-md border-b shadow-luxury': !isDarkBgPage
+     }">
   <div class="container mx-auto px-6">
     <div class="flex items-center justify-between h-20">
       <!-- Logo -->
@@ -7,25 +10,20 @@
       </a>
 
       <!-- Desktop Menu -->
-      <div class="hidden lg:flex items-center gap-6">
-        <div class="relative" (mouseenter)="setDropdown('sell')" (mouseleave)="setDropdown(null)">
-          <button class="nav-btn">
-            Sell
-            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'sell'"></lucide-angular>
-          </button>
-          <div *ngIf="activeDropdown === 'sell'" class="dropdown">
-            <a *ngFor="let item of sellDropdownItems" [routerLink]="item.path" class="dropdown-item">
-              {{ item.label }}
-            </a>
-          </div>
-        </div>
+      <div class="hidden lg:flex items-center gap-6" [ngClass]="isDarkBgPage ? 'text-white' : 'text-slate-900'">
+
+        <!-- Sell (Direct Link) -->
+        <a routerLink="/add-property" class="nav-btn nav-item">
+          Sell
+        </a>
+
         <!-- Buy -->
         <div class="relative" (mouseenter)="setDropdown('buy')" (mouseleave)="setDropdown(null)">
-          <button class="nav-btn">
+          <button class="nav-btn nav-item">
             Buy
             <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'buy'"></lucide-angular>
           </button>
-          <div *ngIf="activeDropdown === 'buy'" class="dropdown-card">
+          <div *ngIf="activeDropdown === 'buy'" class="dropdown-card text-gray-900">
             <a *ngFor="let item of buyDropdownItems" [routerLink]="item.path" class="dropdown-item"
               (click)="setDropdown(null)">
               {{ item.label }}
@@ -33,26 +31,14 @@
           </div>
         </div>
 
-        <!-- Invest -->
-        <div class="relative" (mouseenter)="setDropdown('invest')" (mouseleave)="setDropdown(null)">
-          <button class="nav-btn">
-            Invest
-            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'invest'"></lucide-angular>
-          </button>
-          <div *ngIf="activeDropdown === 'invest'" class="dropdown">
-            <a *ngFor="let item of investDropdownItems" [routerLink]="item.path" class="dropdown-item">
-              {{ item.label }}
-            </a>
-          </div>
-        </div>
-
         <!-- Renovation -->
         <div class="relative" (mouseenter)="setDropdown('renovation')" (mouseleave)="setDropdown(null)">
-          <button class="nav-btn">
+          <button class="nav-btn nav-item">
             Renovation
             <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'renovation'"></lucide-angular>
           </button>
-          <div *ngIf="activeDropdown === 'renovation'" class="dropdown">
+          <!-- Added text-gray-900 to dropdown to reset color context -->
+          <div *ngIf="activeDropdown === 'renovation'" class="dropdown text-gray-900">
             <a *ngFor="let item of renovationDropdownItems" [routerLink]="item.path" class="dropdown-item">
               {{ item.label }}
             </a>
@@ -60,24 +46,28 @@
         </div>
 
         <!-- Pricing -->
-        <a routerLink="/subscriptions" class="nav-btn">
+        <a routerLink="/subscriptions" class="nav-btn nav-item">
           Pricing
         </a>
 
         <!-- Explore Properties -->
         <a routerLink="/properties">
-          <button class="gradient-gold text-primary px-4 py-2 rounded-lg">
+          <button
+            class="gradient-gold text-primary px-4 py-2 rounded-lg hover:brightness-110 transition-all duration-300">
             Explore Properties
           </button>
         </a>
       </div>
 
       <!-- Right Side (Desktop) -->
-      <div class="hidden lg:flex items-center gap-4">
+      <div class="hidden lg:flex items-center gap-4" [ngClass]="isDarkBgPage ? 'text-white' : 'text-slate-900'">
         <!-- Notifications -->
         <div class="relative" *ngIf="isLoggedIn">
-          <button class="relative p-2 hover:bg-gray-100 rounded-full transition-colors" (click)="toggleNotifications()">
-            <lucide-angular [img]="Bell" class="w-5 h-5 text-gray-600 hover:text-primary"></lucide-angular>
+          <button class="relative p-2 rounded-full nav-item" (click)="toggleNotifications()" [ngClass]="{
+              'hover:bg-white/10': isDarkBgPage,
+              'hover:bg-gray-100': !isDarkBgPage
+            }">
+            <lucide-angular [img]="Bell" class="w-5 h-5 transition-colors"></lucide-angular>
             <span *ngIf="unreadCount > 0"
               class="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">
               {{ unreadCount > 9 ? '9+' : unreadCount }}
@@ -86,7 +76,7 @@
 
           <!-- Notification Dropdown -->
           <div *ngIf="toggleNotificationsDropdown"
-            class="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden">
+            class="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden text-gray-900">
             <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
               <h3 class="font-semibold text-gray-900">Notifications</h3>
               <button (click)="markAllAsRead()" class="text-xs text-blue-600 hover:text-blue-800"
@@ -184,12 +174,15 @@
         </div>
 
         <!-- Wishlist -->
-        <a routerLink="/wishlist" class="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
-          <lucide-angular [img]="Heart" class="w-5 h-5 text-gray-600 hover:text-red-500"></lucide-angular>
+        <a routerLink="/wishlist" class="relative p-2 rounded-full nav-item" [ngClass]="{
+             'hover:bg-white/10': isDarkBgPage,
+             'hover:bg-gray-100': !isDarkBgPage
+           }">
+          <lucide-angular [img]="Heart" class="w-5 h-5 transition-colors"></lucide-angular>
         </a>
 
         <!-- Language -->
-        <button (click)="toggleLanguage()" class="flex items-center gap-2">
+        <button (click)="toggleLanguage()" class="flex items-center gap-2 nav-item">
           <lucide-angular [img]="Globe"></lucide-angular>
           EN | AR
         </button>
@@ -197,13 +190,14 @@
         <!-- Not Logged In -->
         <div *ngIf="!isLoggedIn" class="flex items-center gap-4">
           <a routerLink="/login">
-            <button class="text-primary px-4 py-2 rounded-lg border border-primary">
+            <button class="px-4 py-2 rounded-lg border hover:bg-white/10 transition-colors"
+              [ngClass]="isDarkBgPage ? 'text-white border-white' : 'text-primary border-primary'">
               Login
             </button>
           </a>
           <a routerLink="/register">
             <button class="gradient-gold text-primary px-4 py-2 rounded-lg">
-              Sign Up
+              Join
             </button>
           </a>
         </div>
@@ -212,22 +206,25 @@
         <div *ngIf="isLoggedIn" class="relative">
           <button class="flex items-center gap-3 rounded-full focus:outline-none hover:opacity-90 transition-opacity"
             (click)="toggleUserDropdown = !toggleUserDropdown">
-            <div *ngIf="profilePicUrl" class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary shadow-md">
+            <div *ngIf="profilePicUrl" class="w-10 h-10 rounded-full overflow-hidden border-2 shadow-md"
+              [ngClass]="isDarkBgPage ? 'border-white' : 'border-primary'">
               <img [src]="profilePicUrl" alt="Profile" class="w-full h-full object-cover" />
             </div>
             <div *ngIf="!profilePicUrl"
-              class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center border-2 border-primary shadow-md font-semibold">
+              class="w-10 h-10 rounded-full text-white flex items-center justify-center border-2 shadow-md font-semibold"
+              [ngClass]="isDarkBgPage ? 'bg-white/20 border-white' : 'bg-primary border-primary'">
               {{ (currentUserName || 'U').charAt(0).toUpperCase() }}
             </div>
-            <span class="text-primary font-medium hidden md:block">{{ currentUserName || 'User' }}</span>
-            <lucide-angular [img]="ChevronDown" class="w-4 h-4 text-primary transition-transform"
-              [class.rotate-180]="toggleUserDropdown">
+            <span class="font-medium hidden md:block" [ngClass]="isDarkBgPage ? 'text-white' : 'text-primary'">{{
+              currentUserName || 'User' }}</span>
+            <lucide-angular [img]="ChevronDown" class="w-4 h-4 transition-transform nav-item"
+              [class.rotate-180]="toggleUserDropdown" [ngClass]="isDarkBgPage ? 'text-white' : 'text-primary'">
             </lucide-angular>
           </button>
 
           <!-- Dropdown Menu -->
           <div *ngIf="toggleUserDropdown"
-            class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden">
+            class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden text-gray-900">
             <!-- <a routerLink="/dashboard/property-owner" (click)="toggleUserDropdown = false"
        class="block px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer">
       <p class="text-sm font-medium text-gray-900">{{ currentUserName || 'User' }}</p>
@@ -243,25 +240,26 @@
               Dashboard
             </a> -->
             <button (click)="goToDashboard(); toggleUserDropdown = false"
-              class="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
+              class="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors dropdown-item">
               <i class="pi pi-home mr-3"></i>
               Dashboard
             </button>
 
 
             <a routerLink="/subscriptions" (click)="toggleUserDropdown = false"
-              class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
+              class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors dropdown-item">
               <i class="pi pi-credit-card mr-3"></i>
               Subscriptions
             </a>
 
-            <a routerLink="/change-password" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
+            <a routerLink="/change-password"
+              class="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors dropdown-item">
               <i class="pi pi-key mr-3"></i>
               Change Password
             </a>
 
             <button (click)="logout(); toggleUserDropdown = false"
-              class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors">
+              class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors dropdown-item">
               <i class="pi pi-sign-out mr-3"></i>
               Logout
             </button>
@@ -271,16 +269,22 @@
 
       <!-- Mobile Toggle -->
       <button class="lg:hidden" (click)="toggleMobileMenu()">
-        <lucide-angular [img]="mobileMenuOpen ? X : Menu"></lucide-angular>
+        <lucide-angular [img]="mobileMenuOpen ? X : Menu"
+          [ngClass]="isDarkBgPage ? 'text-white' : 'text-slate-900'"></lucide-angular>
       </button>
     </div>
 
     <!-- Mobile Menu -->
-    <div *ngIf="mobileMenuOpen" class="lg:hidden py-6 space-y-4">
-      <div *ngFor="let item of buyDropdownItems">
-        <a [routerLink]="item.path" (click)="closeMobileMenu()">
+    <div *ngIf="mobileMenuOpen" class="lg:hidden py-6 space-y-4 rounded-xl mt-4"
+      [ngClass]="isDarkBgPage ? 'bg-black/90 text-white' : 'bg-white shadow-xl text-slate-900'">
+      <div *ngFor="let item of buyDropdownItems" class="px-6">
+        <a [routerLink]="item.path" (click)="closeMobileMenu()" class="block py-2">
           {{ item.label }}
         </a>
+      </div>
+      <div class="px-6 border-t" [ngClass]="isDarkBgPage ? 'border-white/10' : 'border-gray-100'">
+        <a routerLink="/add-property" class="block py-3 mt-2">Sell</a>
+        <a routerLink="/subscriptions" class="block py-3">Pricing</a>
       </div>
     </div>
   </div>

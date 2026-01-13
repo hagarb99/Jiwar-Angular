@@ -5,10 +5,6 @@ import { GoogleLoginProvider, SocialAuthService, SocialUser } from '@abacritt/an
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
-// ============================================================================
-// REQUEST/RESPONSE INTERFACES (Matching Backend Exactly)
-// ============================================================================
-
 export interface RegisterRequest {
   username: string;
   name: string;
@@ -30,18 +26,6 @@ export interface LoginRequest {
   password: string;
 }
 
-/**
- * Backend returns this structure for normal login:
- * {
- *   token: string,
- *   id: string,
- *   name: string,
- *   email: string,
- *   profilePicURL: string,
- *   role: string,
- *   isProfileCompleted: boolean
- * }
- */
 export interface LoginResponse {
   token: string;
   id: string;
@@ -52,21 +36,6 @@ export interface LoginResponse {
   isProfileCompleted: boolean;
 }
 
-/**
- * Backend returns this structure for Google login:
- * {
- *   Success: boolean,
- *   Data: {
- *     Token: string,
- *     Id: string,
- *     Name: string,
- *     Email: string,
- *     ProfilePicURL: string,
- *     Role: string,
- *     IsProfileCompleted: boolean
- *   }
- * }
- */
 export interface GoogleLoginBackendResponse {
   success: boolean;
   data: {
@@ -97,9 +66,7 @@ export interface ForgotPasswordResponse {
   message: string;
 }
 
-/**
- * Internal user data structure stored in localStorage
- */
+
 export interface UserData {
   id: string;
   name: string;
@@ -110,9 +77,6 @@ export interface UserData {
   phoneNumber?: string; // Optional field
 }
 
-// ============================================================================
-// AUTH SERVICE
-// ============================================================================
 
 @Injectable({ providedIn: 'root' })
 export class AuthService extends ApiBaseService {
@@ -139,14 +103,7 @@ export class AuthService extends ApiBaseService {
     this.isLoggedIn$ = this.isLoggedInSubject.asObservable();
   }
 
-  // ============================================================================
-  // AUTHENTICATION METHODS
-  // ============================================================================
 
-  /**
-   * Normal email/password login
-   * Backend returns: { token, id, name, email, profilePicURL, role, isProfileCompleted }
-   */
   login(data: LoginRequest): Observable<LoginResponse> {
     return this.httpClient.post<LoginResponse>(
       `${this.apiBaseUrl}/account/login`,
@@ -160,10 +117,6 @@ export class AuthService extends ApiBaseService {
     );
   }
 
-  /**
-   * Google Sign-In backend verification
-   * Backend returns: { Success: true, Data: { Token, Id, Name, ... } }
-   */
   googleBackendLogin(idToken: string): Observable<LoginResponse> {
     return this.httpClient.post<any>(
       `${this.apiBaseUrl}/account/google-signin`,
@@ -178,9 +131,6 @@ export class AuthService extends ApiBaseService {
     );
   }
 
-  /**
-   * Register new user
-   */
   register(data: RegisterRequest): Observable<RegisterResponse> {
     return this.httpClient.post<RegisterResponse>(
       `${this.apiBaseUrl}/account/register`,
@@ -190,9 +140,7 @@ export class AuthService extends ApiBaseService {
     );
   }
 
-  /**
-   * Change password
-   */
+
   changePassword(data: ChangePasswordRequest): Observable<ChangePasswordResponse> {
     return this.httpClient.post<ChangePasswordResponse>(
       `${this.apiBaseUrl}/account/change-password`,
@@ -202,9 +150,6 @@ export class AuthService extends ApiBaseService {
     );
   }
 
-  /**
-   * Forgot password
-   */
   forgotPassword(data: ForgotPasswordRequest): Observable<ForgotPasswordResponse> {
     return this.httpClient.post<ForgotPasswordResponse>(
       `${this.apiBaseUrl}/account/forgot-password`,
@@ -214,9 +159,7 @@ export class AuthService extends ApiBaseService {
     );
   }
 
-  /**
-   * Logout user
-   */
+
   logout(): void {
     console.log('[AuthService] Logging out user');
     localStorage.removeItem('token');
@@ -225,16 +168,10 @@ export class AuthService extends ApiBaseService {
     this.isLoggedInSubject.next(false);
   }
 
-  /**
-   * Google login trigger (opens Google popup)
-   */
   googleLogin(): Promise<SocialUser> {
     return this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
   }
 
-  // ============================================================================
-  // TOKEN MANAGEMENT
-  // ============================================================================
 
   setToken(token: string): void {
     if (!token || token.trim() === '') {
@@ -255,9 +192,6 @@ export class AuthService extends ApiBaseService {
     return !!token && !!user;
   }
 
-  // ============================================================================
-  // USER DATA MANAGEMENT
-  // ============================================================================
 
   setUserData(userData: UserData): void {
     if (!userData || !userData.id || !userData.email) {
@@ -269,60 +203,45 @@ export class AuthService extends ApiBaseService {
     localStorage.setItem('currentUser', JSON.stringify(userData));
   }
 
-  /**
-   * Updates current user data with profile information from API response
-   */
-  updateUserFromProfile(profileData: {
-    name?: string;
-    email?: string;
-    profilePicURL?: string;
-    phoneNumber?: string;
-    title?: string;
-    location?: string;
-    bio?: string;
-  }): void {
+  updateUserFromProfile(profileData: Partial<UserData>): void {
     const currentUser = this.currentUserSubject.value;
-    if (!currentUser) {
-      console.warn('[AuthService] Cannot update profile: no user logged in');
-      return;
-    }
+    if (!currentUser) return;
 
     const updatedUser: UserData = {
       ...currentUser,
       name: profileData.name ?? currentUser.name,
       email: profileData.email ?? currentUser.email,
-      profilePicURL: profileData.profilePicURL ?? currentUser.profilePicURL
+      profilePicURL: profileData.profilePicURL ?? currentUser.profilePicURL,
+      phoneNumber: profileData.phoneNumber ?? currentUser.phoneNumber
     };
 
-    this.setUserData(updatedUser);
+    this.currentUserSubject.next(updatedUser);
+
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
   }
 
-  /**
-   * Uploads a profile picture file to the server
-   */
+
+
   uploadProfilePicture(file: File): Observable<{ profilePicURL: string }> {
     const formData = new FormData();
-    formData.append('file', file);
+
+    formData.append('image', file);
 
     return this.httpClient.post<{ profilePicURL: string }>(
-      `${this.apiBaseUrl}/account/upload-profile-picture`,
+      `${this.apiBaseUrl}/account/profile/upload-image`,
       formData
     ).pipe(
       catchError(this.handleError)
     );
   }
 
-  /**
-   * Clears user data from storage and state
-   */
+
   clearUserData(): void {
     this.currentUserSubject.next(null);
     localStorage.removeItem('currentUser');
   }
 
-  /**
-   * Helper to set all auth data at once
-   */
+
   setAuthData(response: LoginResponse): void {
     this.setToken(response.token);
 
@@ -338,9 +257,6 @@ export class AuthService extends ApiBaseService {
     this.isLoggedInSubject.next(true);
   }
 
-  // ============================================================================
-  // GETTERS
-  // ============================================================================
 
   get userRole(): string | null {
     const user = this.currentUserSubject.value || this.loadUserFromStorage();
@@ -367,13 +283,6 @@ export class AuthService extends ApiBaseService {
     return user?.id ?? null;
   }
 
-  // ============================================================================
-  // PRIVATE HELPER METHODS
-  // ============================================================================
-
-  /**
-   * Load user from localStorage on service initialization
-   */
   private loadUserFromStorage(): UserData | null {
     try {
       const userJson = localStorage.getItem('currentUser');
@@ -396,9 +305,7 @@ export class AuthService extends ApiBaseService {
     }
   }
 
-  /**
-   * Validate and store authentication data
-   */
+
   private validateAndStoreAuth(response: LoginResponse): void {
     if (!response.token) {
       throw new Error('No token in response');
@@ -422,13 +329,8 @@ export class AuthService extends ApiBaseService {
     this.setUserData(userData);
   }
 
-  /**
-   * Normalize Google login response to match LoginResponse interface
-   * Backend returns: { Success, Data: { Token, Id, Name, ... } }
-   * We need: { token, id, name, ... }
-   */
+
   private normalizeGoogleResponse(response: any): LoginResponse {
-    // Handle case-insensitive property names from backend
     const success = response.success ?? response.Success;
     const data = response.data ?? response.Data;
 
@@ -447,17 +349,13 @@ export class AuthService extends ApiBaseService {
     };
   }
 
-  /**
-   * Centralized error handling
-   */
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An unknown error occurred';
 
     if (error.error instanceof ErrorEvent) {
-      // Client-side or network error
       errorMessage = `Network error: ${error.error.message}`;
     } else {
-      // Backend returned an unsuccessful response code
       if (error.status === 0) {
         errorMessage = 'Unable to connect to server. Please check your connection.';
       } else if (error.status === 401) {

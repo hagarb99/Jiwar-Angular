@@ -17,6 +17,7 @@ import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
 import { ChatService } from '../../../core/services/chat.service';
 import { NotificationService, NotificationDto } from '../../../core/services/notification.service';
+import { environment } from '../../../../environments/environment';
 import { DesignRequestService } from '../../../core/services/design-request.service';
 import { DesignerProposalService } from '../../../core/services/designer-proposal.service';
 
@@ -69,30 +70,21 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   buyDropdownItems = [
     { path: '/properties', label: 'Apartments for Sale' },
-    { path: '/properties?type=rent', label: 'Apartments for Rent' },
-    { path: '/properties?type=new', label: 'New Developments' },
-    { path: '/properties?type=virtual', label: 'Virtual Tour Properties (360°)' },
     { path: '/comparison', label: 'Compare Properties' },
-    { path: '/properties?featured=true', label: 'Featured Properties' }
   ];
 
-  investDropdownItems = [
-    { path: '/investment', label: 'Investment Opportunities' },
-    { path: '/calculator', label: 'ROI Calculator' },
-    { path: '/investment#plans', label: 'Investment Plans' },
-    { path: '/analytics', label: 'Market Insights' }
-  ];
+  // investDropdownItems = [
+  //   { path: '/investment', label: 'Investment Opportunities' },
+  //   { path: '/calculator', label: 'ROI Calculator' },
+  //   { path: '/investment#plans', label: 'Investment Plans' },
+  //   { path: '/analytics', label: 'Market Insights' }
+  // ];
 
   renovationDropdownItems = [
-    { path: '/renovation/intro', label: 'Start Simulation' },
-    { path: '/renovation/intro', label: 'Upload Apartment Media' },
-    { path: '/renovation/intro', label: 'View Recommendations' }
+    { path: '/renovation/intro', label: 'Start Simulation' }
   ];
 
-  sellDropdownItems = [
-    { path: '/add-property', label: 'Sell Your Property' },
-    { path: '/sell/rental', label: 'Rent Property' }
-  ];
+  isDarkBgPage = false;
 
   constructor(
     private router: Router,
@@ -110,11 +102,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe(event => {
-        this.currentPath = (event as NavigationEnd).urlAfterRedirects;
+        const url = (event as NavigationEnd).urlAfterRedirects;
+        this.currentPath = url;
+        this.isDarkBgPage = ['/', '/home', '/add-property'].includes(url);
       });
   }
 
   ngOnInit(): void {
+    // Initial check
+    this.isDarkBgPage = ['/', '/home', '/add-property'].includes(this.router.url);
+
     // Subscribe to auth state
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
@@ -122,7 +119,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.currentUserRole = user?.role ?? null;
 
         if (user) {
-          this.profilePicUrl = user.profilePicURL || null;
+          this.profilePicUrl = this.getAbsoluteUrl(user.profilePicURL);
           this.currentUserName = user.name || null;
           this.currentUserEmail = user.email || null;
           this.isLoggedIn = true;
@@ -265,13 +262,69 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   onNotificationClick(notification: NotificationDto): void {
+    if (!notification.isRead) {
+      this.notificationService.markAsRead(notification.notificationID).subscribe({
+        next: () => console.log('Notification marked as read'),
+        error: (err) => console.error('Error marking notification as read:', err)
+      });
+    }
+
     // Backend auto-marks as read, no need for manual call
     // Close dropdown
     this.toggleNotificationsDropdown = false;
 
+    // Parse notification content
+    const message = notification.message.toLowerCase();
+    const requestMatch = notification.message.match(/design request (\d+)/i) || notification.message.match(/request (\d+)/i);
+    const bookingMatch = notification.message.match(/booking.*(\d+)/i);
     // Navigate based on notification content
     const msg = notification.message.toLowerCase();
     const idMatch = notification.message.match(/\d+/);
+
+    // Prefer specific matches, fallback to generic number find
+    const requestId = requestMatch ? requestMatch[1] : (idMatch ? idMatch[0] : null);
+    const bookingId = bookingMatch ? bookingMatch[1] : null;
+
+    console.log('🔗 Navigation logic triggered:', {
+      role: this.currentUserRole,
+      type: notification.notificationType,
+      requestId,
+      bookingId
+    });
+
+    if (this.currentUserRole === 'PropertyOwner') {
+      if (bookingId || notification.notificationType?.toLowerCase().includes('booking') || message.includes('booking')) {
+        this.router.navigate(['/dashboard/propertyowner/owner-bookings']);
+      } else if (requestId) {
+        this.router.navigate(['/dashboard/propertyowner/design-requests', requestId]);
+      } else {
+        this.router.navigate(['/dashboard/propertyowner/my-requests']);
+      }
+    }
+    else if (this.currentUserRole === 'InteriorDesigner') {
+      if (message.includes('accepted') || message.includes('approved')) {
+        this.router.navigate(['/dashboard/designer/active-projects']);
+      } else if (requestId) {
+        // If it looks like a new specific request/proposal
+        this.router.navigate(['/dashboard/designer/my-proposals']);
+      } else {
+        this.router.navigate(['/dashboard/designer/available-projects']);
+      }
+    }
+    else if (this.currentUserRole === 'Customer') {
+      if (message.includes('booking')) {
+        this.router.navigate(['/dashboard/customer/my-bookings']);
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
+    }
+  }
+
+  private getAbsoluteUrl(url: string | null | undefined): string | null {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    const base = environment.apiBaseUrl.replace(/\/api\/?$/, '');
+    return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
 
     if (idMatch) {
       const id = idMatch[0];

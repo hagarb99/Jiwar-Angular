@@ -12,6 +12,7 @@ import { SearchPageComponent } from './core/pages/search-page/search-page.compon
 import { PropertyDetailsComponent } from './core/pages/property-details/property-details.component';
 import { WishlistComponent } from './core/pages/wishlist/wishlist.component';
 import { SubscriptionListComponent } from './features/subscription/subscription-list/subscription-list.component';
+import { NotificationTestComponent } from './features/test/notification-test/notification-test.component';
 
 import { PropertyOwnerPublicProfileComponent } from './features/dashboard/pages/propertyowner/profile-propertyowner/property-owner-public-profile/property-owner-public-profile.component';
 
@@ -105,6 +106,11 @@ const routes: Routes = [
   {
     path: 'compare',
     loadComponent: () => import('./features/comparison/comparison-page.component').then(m => m.ComparisonPageComponent)
+  },
+  {
+    path: 'test-notifications',
+    component: NotificationTestComponent,
+    canActivate: [authGuard]
   }
 ];
 

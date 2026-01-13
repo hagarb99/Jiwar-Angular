@@ -1,0 +1,113 @@
+/* Overlay with premium glassmorphism (Glass Effect) */
+.spinner-overlay {
+  position: fixed;
+  inset: 0;
+  /* subtle dark tint for contrast, but mostly transparent to show blur */
+  background-color: rgba(20, 20, 20, 0.2);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  /* Safari support */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+/* Main text container */
+.jiwar-loader {
+  display: flex;
+  align-items: baseline;
+  column-gap: 6px;
+  /* Elegant letter spacing */
+  position: relative;
+  /* Premium font stack - assuming Playfair or similar serif is available, else fallback */
+  font-family: 'Playfair Display', 'Didot', 'Times New Roman', serif;
+}
+
+/* Individual letters */
+.jiwar-loader span {
+  font-size: 3.5rem;
+  font-weight: 500;
+  color: #D4AF37;
+  /* Metallic Gold */
+  display: inline-block;
+  opacity: 0;
+
+  /* Initial state for simpler renderers */
+  transform: translateY(30px);
+
+  /* Smooth luxury ease */
+  animation: construct-letter 4s ease-in-out infinite;
+
+  /* Subtle glow for premium feel */
+  text-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+}
+
+/* Animation Keyframes: Build up, hold, lift off */
+@keyframes construct-letter {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+    filter: blur(4px);
+  }
+
+  10% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+    color: #D4AF37;
+    /* Gold */
+  }
+
+  45% {
+    opacity: 1;
+    transform: translateY(0);
+    color: #F5F5DC;
+    /* Soft Beige sheen passes through */
+    text-shadow: 0 0 20px rgba(245, 245, 220, 0.4);
+  }
+
+  55% {
+    opacity: 1;
+    transform: translateY(0);
+    color: #D4AF37;
+    /* Back to Gold */
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+  }
+
+  80% {
+    opacity: 0;
+    transform: translateY(-30px);
+    /* Disappear upwards */
+    filter: blur(4px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+}
+
+/* Stagger Delays for Sequential "Building" Effect */
+.jiwar-loader span:nth-child(1) {
+  animation-delay: 0.0s;
+}
+
+.jiwar-loader span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.jiwar-loader span:nth-child(3) {
+  animation-delay: 0.30s;
+}
+
+.jiwar-loader span:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+.jiwar-loader span:nth-child(5) {
+  animation-delay: 0.60s;
+}
+
+/* Optional: Add a "ground" line that fades in/out if desired, but minimal is better. 
+   Keeping it clean as requested. */

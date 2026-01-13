@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 interface SidebarMenuItem {
   label: string;
@@ -23,6 +24,21 @@ export class SidebarComponent {
 
   currentUser$ = this.authService.currentUser$;
 
+  getActionUrl(url: string | null | undefined): string {
+    if (!url) return '';
+
+    // إذا كان الرابط خارجياً (مثل صور جوجل)
+    if (url.startsWith('http')) return url;
+
+    // تنظيف apiBaseUrl للحصول على الدومين الرئيسي (مثلاً http://localhost:5001)
+    const base = environment.apiBaseUrl.replace(/\/api\/?$/, '');
+
+    // التأكد من أن المسار يبدأ بـ /
+    const path = url.startsWith('/') ? url : `/${url}`;
+
+    return `${base}${path}`;
+  }
+
   private allMenuItems: SidebarMenuItem[] = [
 
     {
@@ -37,6 +53,13 @@ export class SidebarComponent {
       icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
       roles: ['PropertyOwner']
     },
+    {
+      label: 'Overview',
+      path: '/dashboard/propertyowner/overview',
+      icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+      roles: ['PropertyOwner']
+    },
+
 
     {
       label: 'Overview',

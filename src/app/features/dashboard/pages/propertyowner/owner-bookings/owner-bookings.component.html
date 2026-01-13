@@ -21,10 +21,8 @@
 
     <!-- Tabs -->
     <div class="flex gap-3 mb-8">
-      <button
-        (click)="setActiveTab('requests')"
-        class="px-5 py-2 rounded-full border font-medium flex items-center gap-2"
-        [ngClass]="activeTab === 'requests'
+      <button (click)="setActiveTab('requests')"
+        class="px-5 py-2 rounded-full border font-medium flex items-center gap-2" [ngClass]="activeTab === 'requests'
           ? 'bg-[#d4af37] text-white border-[#d4af37]'
           : 'text-[#d4af37] border-[#d4af37]'">
         Requests
@@ -33,9 +31,7 @@
         </span>
       </button>
 
-      <button
-        (click)="setActiveTab('income')"
-        class="px-5 py-2 rounded-full border font-medium flex items-center gap-2"
+      <button (click)="setActiveTab('income')" class="px-5 py-2 rounded-full border font-medium flex items-center gap-2"
         [ngClass]="activeTab === 'income'
           ? 'bg-[#d4af37] text-white border-[#d4af37]'
           : 'text-[#d4af37] border-[#d4af37]'">
@@ -44,21 +40,28 @@
           {{ confirmedBookings.length }}
         </span>
       </button>
+
+      <button (click)="setActiveTab('rejected')"
+        class="px-5 py-2 rounded-full border font-medium flex items-center gap-2" [ngClass]="activeTab === 'rejected'
+          ? 'bg-[#d4af37] text-white border-[#d4af37]'
+          : 'text-[#d4af37] border-[#d4af37]'">
+        Rejected
+        <span class="text-xs bg-white/30 px-2 py-0.5 rounded-full">
+          {{ rejectedBookings.length }}
+        </span>
+      </button>
     </div>
 
     <!-- Requests Tab -->
     <div *ngIf="activeTab === 'requests'">
 
-      <div *ngIf="pendingBookings.length === 0"
-           class="text-center py-20 text-gray-500">
+      <div *ngIf="pendingBookings.length === 0" class="text-center py-20 text-gray-500">
         No pending requests
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-           *ngIf="pendingBookings.length">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="pendingBookings.length">
 
-        <div *ngFor="let booking of pendingBookings"
-             class="bg-white rounded-2xl border p-6 hover:shadow-lg transition">
+        <div *ngFor="let booking of pendingBookings" class="bg-white rounded-2xl border p-6 hover:shadow-lg transition">
 
           <div class="flex justify-between mb-4">
             <div>
@@ -80,22 +83,17 @@
             Date: {{ booking.startDate | date:'shortDate' }}
           </div>
 
-          <div *ngIf="booking.cost"
-               class="text-sm font-semibold text-[#b8962e] mb-4">
+          <div *ngIf="booking.cost" class="text-sm font-semibold text-[#b8962e] mb-4">
             {{ booking.cost }} EGP
           </div>
 
           <div class="flex gap-2">
-            <button
-              (click)="acceptBooking(booking)"
-              class="flex-1 bg-green-600 hover:bg-green-700
+            <button (click)="acceptBooking(booking)" class="flex-1 bg-green-600 hover:bg-green-700
                      text-white py-2 rounded-lg font-medium">
               Accept
             </button>
 
-            <button
-              (click)="rejectBooking(booking)"
-              class="flex-1 bg-red-600 hover:bg-red-700
+            <button (click)="rejectBooking(booking)" class="flex-1 bg-red-600 hover:bg-red-700
                      text-white py-2 rounded-lg font-medium">
               Reject
             </button>
@@ -108,16 +106,14 @@
     <!-- Approved Tab -->
     <div *ngIf="activeTab === 'income'">
 
-      <div *ngIf="confirmedBookings.length === 0"
-           class="text-center py-20 text-gray-500">
+      <div *ngIf="confirmedBookings.length === 0" class="text-center py-20 text-gray-500">
         No approved bookings
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-           *ngIf="confirmedBookings.length">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="confirmedBookings.length">
 
         <div *ngFor="let booking of confirmedBookings"
-             class="bg-white rounded-2xl border p-6 hover:shadow-lg transition">
+          class="bg-white rounded-2xl border p-6 hover:shadow-lg transition">
 
           <div class="flex justify-between mb-4">
             <div>
@@ -139,13 +135,58 @@
             Date: {{ booking.startDate | date:'shortDate' }}
           </div>
 
-          <div class="text-sm font-semibold text-[#b8962e] mb-4">
+          <div *ngIf="booking.cost" class="text-sm font-semibold text-[#b8962e] mb-4">
             {{ booking.cost }} EGP
           </div>
 
           <div class="bg-[#fdf6e3] border border-[#f1e3b0]
                       rounded-lg p-3 text-sm text-[#8a6d1d] font-medium">
             ✓ Income Earned
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Rejected Tab -->
+    <div *ngIf="activeTab === 'rejected'">
+
+      <div *ngIf="rejectedBookings.length === 0" class="text-center py-20 text-gray-500">
+        No rejected requests
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="rejectedBookings.length">
+
+        <div *ngFor="let booking of rejectedBookings"
+          class="bg-white rounded-2xl border p-6 hover:shadow-lg transition opacity-75">
+
+          <div class="flex justify-between mb-4">
+            <div>
+              <h3 class="font-semibold text-gray-900">
+                {{ booking.propertyTitle }}
+              </h3>
+              <p class="text-sm text-gray-600">
+                Customer: {{ booking.customerName }}
+              </p>
+            </div>
+
+            <span class="text-xs px-3 py-1 rounded-full
+                         bg-red-100 text-red-800 font-medium">
+              Rejected
+            </span>
+          </div>
+
+          <div class="text-sm text-gray-600 mb-2">
+            Date: {{ booking.startDate | date:'shortDate' }}
+          </div>
+
+          <div *ngIf="booking.cost" class="text-sm font-semibold text-[#b8962e] mb-4">
+            {{ booking.cost }} EGP
+          </div>
+
+          <div class="bg-gray-100 border border-gray-200
+                      rounded-lg p-3 text-sm text-gray-500 font-medium">
+            ✕ Request Rejected
           </div>
 
         </div>

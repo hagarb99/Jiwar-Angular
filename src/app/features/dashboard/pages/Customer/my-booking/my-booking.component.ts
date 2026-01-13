@@ -1,16 +1,22 @@
 import { Component, inject, OnInit } from '@angular/core';
 import {BookingService, CustomerBooking , BookingStatus} from '../../../../../core/services/booking.service';
 import { CommonModule } from '@angular/common';
+import { NotificationService } from '../../../../../core/services/notification.service';
+import { AuthService } from '../../../../../core/services/auth.service';
+
 type BookingTab = 'pending' | 'approved' | 'rejected';
 
 @Component({
   selector: 'app-my-booking',
+   standalone: true,
   imports: [CommonModule],
   templateUrl: './my-booking.component.html',
   styleUrl: './my-booking.component.css'
 })
 export class MyBookingComponent implements OnInit{
   private bookingService = inject(BookingService); // Injection الصحيح
+   private notificationService = inject(NotificationService);
+  private authService = inject(AuthService);
 
   customerBookings: CustomerBooking[] = [];
   isLoadingBookings = true;
@@ -18,7 +24,11 @@ BookingStatus = BookingStatus;
  activeTab: BookingTab = 'pending';
 
   ngOnInit(): void {
+  this.loadCustomerBookings();
+
+  this.notificationService.notifications$.subscribe(() => {
     this.loadCustomerBookings();
+  });
   }
 
   loadCustomerBookings(): void {
