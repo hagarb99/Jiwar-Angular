@@ -1,4 +1,9 @@
-<nav class="fixed top-0 inset-x-0 z-50 bg-background/98 backdrop-blur-md border-b shadow-luxury">
+<nav class="fixed top-0 inset-x-0 z-50 transition-all duration-300" [ngClass]="{
+       'bg-transparent': isDarkBgPage,
+       'bg-background/98 backdrop-blur-md border-b shadow-luxury': !isDarkBgPage,
+       'is-home': isDarkBgPage,
+       'is-not-home': !isDarkBgPage
+     }">
   <div class="container mx-auto px-6">
     <div class="flex items-center justify-between h-20">
       <!-- Logo -->
@@ -7,17 +12,20 @@
       </a>
 
       <!-- Desktop Menu -->
-      <div class="hidden lg:flex items-center gap-6">
-        <div class="relative" (mouseenter)="setDropdown('sell')" (mouseleave)="setDropdown(null)">
-          <a routerLink="/add-property" class="nav-link">Sell</a>
-        </div>
+      <div class="hidden lg:flex items-center gap-6" [ngClass]="isDarkBgPage ? 'text-white' : 'text-slate-900'">
+
+        <!-- Sell (Direct Link) -->
+        <a routerLink="/add-property" class="nav-btn transition-colors">
+          Sell
+        </a>
+
         <!-- Buy -->
         <div class="relative" (mouseenter)="setDropdown('buy')" (mouseleave)="setDropdown(null)">
           <button class="nav-btn">
             Buy
             <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'buy'"></lucide-angular>
           </button>
-          <div *ngIf="activeDropdown === 'buy'" class="dropdown-card">
+          <div *ngIf="activeDropdown === 'buy'" class="dropdown-card text-gray-900">
             <a *ngFor="let item of buyDropdownItems" [routerLink]="item.path" class="dropdown-item"
               (click)="setDropdown(null)">
               {{ item.label }}
@@ -31,7 +39,8 @@
             Renovation
             <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'renovation'"></lucide-angular>
           </button>
-          <div *ngIf="activeDropdown === 'renovation'" class="dropdown">
+          <!-- Added text-gray-900 to dropdown to reset color context -->
+          <div *ngIf="activeDropdown === 'renovation'" class="dropdown text-gray-900">
             <a *ngFor="let item of renovationDropdownItems" [routerLink]="item.path" class="dropdown-item">
               {{ item.label }}
             </a>
@@ -45,18 +54,23 @@
 
         <!-- Explore Properties -->
         <a routerLink="/properties">
-          <button class="gradient-gold text-primary px-4 py-2 rounded-lg">
+          <button class="gradient-gold text-primary px-4 py-2 rounded-lg font-medium">
             Explore Properties
           </button>
         </a>
       </div>
 
       <!-- Right Side (Desktop) -->
-      <div class="hidden lg:flex items-center gap-4">
+      <div class="hidden lg:flex items-center gap-4" [ngClass]="isDarkBgPage ? 'text-white' : 'text-slate-900'">
         <!-- Notifications -->
         <div class="relative" *ngIf="isLoggedIn">
-          <button class="relative p-2 hover:bg-gray-100 rounded-full transition-colors" (click)="toggleNotifications()">
-            <lucide-angular [img]="Bell" class="w-5 h-5 text-gray-600 hover:text-primary"></lucide-angular>
+          <button class="relative p-2 rounded-full transition-colors hover:bg-black/5" (click)="toggleNotifications()"
+            [ngClass]="{
+              'hover:bg-white/10': isDarkBgPage,
+              'hover:bg-gray-100': !isDarkBgPage
+            }">
+            <lucide-angular [img]="Bell" class="w-5 h-5 transition-colors"
+              [ngClass]="isDarkBgPage ? 'text-white' : 'text-slate-900'"></lucide-angular>
             <span *ngIf="unreadCount > 0"
               class="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">
               {{ unreadCount > 9 ? '9+' : unreadCount }}
@@ -65,7 +79,7 @@
 
           <!-- Notification Dropdown -->
           <div *ngIf="toggleNotificationsDropdown"
-            class="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden">
+            class="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden text-gray-900">
             <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
               <h3 class="font-semibold text-gray-900">Notifications</h3>
               <button (click)="markAllAsRead()" class="text-xs text-blue-600 hover:text-blue-800"
@@ -102,12 +116,12 @@
         </div>
 
         <!-- Wishlist -->
-        <a routerLink="/wishlist" class="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
-          <lucide-angular [img]="Heart" class="w-5 h-5 text-gray-600 hover:text-red-500"></lucide-angular>
+        <a routerLink="/wishlist" class="relative p-2 rounded-full transition-colors hover:bg-black/5">
+          <lucide-angular [img]="Heart" class="w-5 h-5 transition-colors"></lucide-angular>
         </a>
 
         <!-- Language -->
-        <button (click)="toggleLanguage()" class="flex items-center gap-2">
+        <button (click)="toggleLanguage()" class="flex items-center gap-2 hover:opacity-80 transition-opacity nav-btn">
           <lucide-angular [img]="Globe"></lucide-angular>
           EN | AR
         </button>
