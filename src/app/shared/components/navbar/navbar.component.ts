@@ -72,7 +72,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     { path: '/renovation/intro', label: 'Start Simulation' }
   ];
 
-  isHomePage = false;
+  isDarkBgPage = false;
 
   constructor(
     private router: Router,
@@ -87,13 +87,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .subscribe(event => {
         const url = (event as NavigationEnd).urlAfterRedirects;
         this.currentPath = url;
-        this.isHomePage = url === '/' || url === '/home';
+        this.isDarkBgPage = ['/', '/home', '/add-property'].includes(url);
       });
   }
 
   ngOnInit(): void {
     // Initial check
-    this.isHomePage = this.router.url === '/' || this.router.url === '/home';
+    this.isDarkBgPage = ['/', '/home', '/add-property'].includes(this.router.url);
 
     // Subscribe to auth state
     this.authService.currentUser$
