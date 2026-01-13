@@ -185,6 +185,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.loadConversations();
+        // Force refresh total unread count
+        this.chatService.getTotalUnreadCount().subscribe();
+      });
+
+    // Explicitly listen to ReceiveChatNotification if available via SignalR service generic listener
+    // Note: The specific listener is inside ChatService, which broadcasts to unreadCount$
+    // We just ensure we update when that stream changes, which we already do.
+    // We add a periodic refresh just in case, or on notification arrival.
+    this.notificationService.refresh$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.chatService.getTotalUnreadCount().subscribe();
       });
   }
 
@@ -298,6 +310,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.toggleNotificationsDropdown = false; // Close other dropdown
       this.toggleUserDropdown = false;
       this.loadConversations();
+
+      // OPTIMISTIC UPDATE: Clear the badge immediately as requested by the user
+      // This gives the "It's been seen" feedback
+      this.unreadMessageCount = 0;
+      this.chatService.updateUnreadCount(0);
     }
   }
 
@@ -315,7 +332,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
               title: r.preferredStyle ? `${r.preferredStyle} Design` : `Project #${r.id}`,
               subtitle: (r as any).lastMessage || `Status: ${r.status}`,
               image: null,
-              time: new Date(r.createdAt || new Date()),
+              time: r.createdAt ? new Date(r.createdAt) : new Date(),
               type: 'request',
               unreadCount: (r as any).unreadCount || 0
             }))
@@ -333,15 +350,19 @@ export class NavbarComponent implements OnInit, OnDestroy {
             .filter(p => p.status === 1 || p.status === 3)
             .map(p => {
               const requestId = p.designRequestID || (p as any).designRequestId || (p as any).requestId || (p as any).id;
+              // Use robust mapping for dynamic content
+              const lastMsg = (p as any).lastMessage;
+              const unread = (p as any).unreadCount || 0;
+
               return {
                 id: requestId,
-                propertyId: (p as any).propertyID || (p as any).propertyId || requestId, // Fallback to requestId if propertyId missing
+                propertyId: (p as any).propertyID || (p as any).propertyId || requestId,
                 title: `Project #${requestId}`,
-                subtitle: (p as any).lastMessage || p.proposalDescription || 'Active Project',
+                subtitle: lastMsg || p.proposalDescription || 'No messages yet',
                 image: p.sampleDesignURL,
                 time: new Date(),
                 type: 'proposal',
-                unreadCount: (p as any).unreadCount || 0
+                unreadCount: unread
               };
             });
 
@@ -357,7 +378,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   private calculateTotalUnread(): void {
     const total = this.conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
-    this.unreadMessageCount = total;
+    // Do NOT overwrite global badge here, as it might be 0 if the list API doesn't return counts.
+    // We rely on ChatService.unreadCount$ (driven by SignalR and specific API) for the global badge.
+    // this.unreadMessageCount = total; 
   }
 
   onMessageClick(item: any): void {

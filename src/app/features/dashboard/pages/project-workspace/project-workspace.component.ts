@@ -31,6 +31,7 @@ interface ChatMessage {
     messageType?: number; // 0=Text, 1=Image, 2=PDF
     timestamp: Date;
     isMe: boolean;
+    isRead?: boolean;
 }
 
 @Component({
@@ -140,62 +141,104 @@ export class ProjectWorkspaceComponent implements OnInit, OnDestroy {
         this.workspaceService.getWorkspaceData(designRequestId).pipe(takeUntil(this.destroy$)).subscribe({
             next: (data) => {
                 const previouslyDelivered = this.workspaceData?.hasDelivered;
-                this.workspaceData = data;
+
+                // Handle Robust Data Mapping (camelCase vs PascalCase)
+                const rawData = data as any;
+                const designRequest = rawData.designRequest || rawData.DesignRequest;
+                const acceptedProposal = rawData.acceptedProposal || rawData.AcceptedProposal;
+                const chatHistory = rawData.chatHistory || rawData.ChatHistory || [];
+
+                // Ensure we have a clean WorkspaceData object with expected camelCase properties
+                this.workspaceData = {
+                    designRequest: {
+                        id: designRequest?.id || designRequest?.Id,
+                        title: designRequest?.title || designRequest?.Title,
+                        status: designRequest?.status || designRequest?.Status,
+                        preferredStyle: designRequest?.preferredStyle || designRequest?.PreferredStyle,
+                        budget: designRequest?.budget || designRequest?.Budget,
+                        notes: designRequest?.notes || designRequest?.Notes,
+                        propertyID: designRequest?.propertyID || designRequest?.PropertyID || designRequest?.propertyId || designRequest?.PropertyId,
+                        userID: designRequest?.userID || designRequest?.UserID || designRequest?.userId || designRequest?.UserId
+                    },
+                    acceptedProposal: acceptedProposal ? {
+                        id: acceptedProposal.id || acceptedProposal.Id,
+                        designerId: acceptedProposal.designerId || acceptedProposal.DesignerId,
+                        designerName: acceptedProposal.designerName || acceptedProposal.DesignerName,
+                        estimatedCost: acceptedProposal.estimatedCost || acceptedProposal.EstimatedCost,
+                        estimatedDays: acceptedProposal.estimatedDays || acceptedProposal.EstimatedDays,
+                        status: acceptedProposal.status || acceptedProposal.Status,
+                        deliveredAt: acceptedProposal.deliveredAt || acceptedProposal.DeliveredAt,
+                        proposalDescription: acceptedProposal.proposalDescription || acceptedProposal.ProposalDescription
+                    } : (null as any),
+                    hasDelivered: rawData.hasDelivered ?? rawData.HasDelivered ?? false,
+                    hasReviewed: rawData.hasReviewed ?? rawData.HasReviewed ?? false,
+                    chatHistory: chatHistory
+                };
+
                 this.loading = false;
-                console.log('✅ Workspace data loaded:', data);
+                console.log('✅ Workspace data loaded (Robust):', this.workspaceData);
+                console.log(`📜 Found ${chatHistory.length} messages in API response`);
 
                 // Backend auto-marks as read when fetching workspace
-                // Just refresh the total unread count to update the badge
-                this.chatService.getTotalUnreadCount().subscribe({
-                    next: () => console.log('✅ Unread count refreshed after opening chat'),
-                    error: (err) => console.error('❌ Failed to refresh unread count:', err)
-                });
+                // Wait a bit to ensure the backend completes the mark-as-read operation
+                setTimeout(() => {
+                    this.chatService.getTotalUnreadCount().subscribe({
+                        next: () => console.log('✅ Unread count refreshed after opening chat'),
+                        error: (err) => console.error('❌ Failed to refresh unread count:', err)
+                    });
+                }, 500);
 
                 // Load Chat History
-                if (data.chatHistory) {
-                    this.messages = data.chatHistory.map(m => ({
-                        senderId: m.senderId,
-                        senderName: m.senderName || (m.senderId === this.currentUser.id ? 'Me' : 'User'),
-                        senderPhoto: m.senderPhoto,
-                        message: m.messageText || m.message || '',
-                        messageText: m.messageText || m.message || '',
-                        messageType: m.messageType || 0,
-                        timestamp: new Date(m.sentDate),
-                        isMe: m.senderId === this.currentUser.id
+                if (chatHistory && chatHistory.length > 0) {
+                    this.messages = chatHistory.map((m: any) => ({
+                        senderId: m.senderId || m.SenderId || m.senderID || m.SenderID,
+                        senderName: m.senderName || m.SenderName || ((m.senderId || m.SenderId || m.senderID || m.SenderID) === this.currentUser.id ? 'Me' : 'User'),
+                        senderPhoto: m.senderPhoto || m.SenderPhoto,
+                        message: m.messageText || m.MessageText || m.message || m.Message || '',
+                        messageText: m.messageText || m.MessageText || m.message || m.Message || '',
+                        messageType: m.messageType ?? m.MessageType ?? 0,
+                        timestamp: new Date(m.sentDate || m.SentDate),
+                        isMe: (m.senderId || m.SenderId || m.senderID || m.SenderID) === this.currentUser.id,
+                        isRead: m.isRead || m.IsRead
                     }));
                     this.scrollToBottom();
+                } else {
+                    console.log('⚠️ No chat history found to display');
                 }
 
                 // Set Contact Info for Header
                 if (this.userRole === 'InteriorDesigner') {
                     // Designer is talking to Owner
-                    this.contactName = data.designRequest?.userID === this.currentUser.id ? 'My Project' : 'Property Owner';
+                    this.contactName = this.workspaceData.designRequest?.userID === this.currentUser.id ? 'My Project' : 'Property Owner';
 
                     // Try to find the other user's photo from chat history
-                    const otherUserMsg = data.chatHistory?.find(m => m.senderId !== this.currentUser.id);
+                    const otherUserMsg = this.messages.find(m => m.senderId !== this.currentUser.id);
                     this.contactPhoto = otherUserMsg?.senderPhoto || '';
                 } else {
                     // Owner is talking to Designer
-                    this.contactName = data.acceptedProposal?.designerName || 'Designer';
+                    this.contactName = this.workspaceData.acceptedProposal?.designerName || 'Designer';
 
                     // Try to find the other user's photo from chat history
-                    const otherUserMsg = data.chatHistory?.find(m => m.senderId !== this.currentUser.id);
+                    const otherUserMsg = this.messages.find(m => m.senderId !== this.currentUser.id);
                     this.contactPhoto = otherUserMsg?.senderPhoto || '';
                 }
 
                 // Join the chat room for this property
-                if (data.designRequest?.propertyID) {
-                    this.chatService.joinChatRoom(data.designRequest.propertyID);
+                if (this.workspaceData.designRequest?.propertyID) {
+                    console.log(`🔌 [Workspace] Connecting to chat for PropertyID: ${this.workspaceData.designRequest.propertyID}`);
+                    this.chatService.joinChatRoom(this.workspaceData.designRequest.propertyID);
+                } else {
+                    console.error('❌ [Workspace] Missing PropertyID in workspace data!', rawData);
                 }
 
                 // Auto-open review modal if:
                 // 1. Explicitly requested via query param
                 // 2. OR it just became delivered via real-time update and user is owner
-                const justDelivered = !previouslyDelivered && data.hasDelivered;
+                const justDelivered = !previouslyDelivered && this.workspaceData.hasDelivered;
                 const shouldAutoOpen = (this.route.snapshot.queryParamMap.get('openReview') === 'true') ||
                     (justDelivered && this.userRole === 'PropertyOwner');
 
-                if (shouldAutoOpen && !data.hasReviewed) {
+                if (shouldAutoOpen && !this.workspaceData.hasReviewed) {
                     setTimeout(() => this.openReviewModal(), 800);
                 }
             },
@@ -226,9 +269,11 @@ export class ProjectWorkspaceComponent implements OnInit, OnDestroy {
             // Listen for single new messages (Real-time)
             this.messageSubscription = this.chatService.messageReceived$.subscribe(m => {
                 const propertyId = this.workspaceData?.designRequest.propertyID;
+                const incomingPropId = m.propertyId;
 
                 // Only add if it belongs to this property and isn't a duplicate of what we just sent
-                if (!propertyId || m.propertyId === propertyId) {
+                // Use loose equality to handle string/number differences
+                if (!propertyId || (incomingPropId as any) == (propertyId as any)) {
                     const newMessage: ChatMessage = {
                         senderId: m.senderId,
                         senderName: m.senderName || (m.senderId === this.currentUser.id ? 'Me' : 'User'),
@@ -237,7 +282,8 @@ export class ProjectWorkspaceComponent implements OnInit, OnDestroy {
                         messageText: m.messageText || m.message || '',
                         messageType: m.messageType || 0,
                         timestamp: m.sentDate ? new Date(m.sentDate) : new Date(),
-                        isMe: m.senderId === this.currentUser.id
+                        isMe: m.senderId === this.currentUser.id,
+                        isRead: false
                     };
 
                     this.messages.push(newMessage);
@@ -263,27 +309,35 @@ export class ProjectWorkspaceComponent implements OnInit, OnDestroy {
             senderPhoto: this.currentUser?.profilePicURL,
             message: msg,
             messageText: msg,
-            messageType: 0,
+            messageType: 0, // Text
             timestamp: new Date(),
-            isMe: true
+            isMe: true,
+            isRead: false
         };
 
         this.messages.push(newMessage);
         this.scrollToBottom();
         this.chatForm.reset();
 
+        console.log(`📡 Sending message... RequestID: ${requestId}, SenderID: ${senderId}`);
+
         this.chatService.sendMessageViaApi(requestId, msg, senderId).subscribe({
-            next: () => {
-                console.log('✅ Message sent successfully');
+            next: (response) => {
+                console.log('✅ Message sent successfully. Response:', response);
                 // Message already added
             },
             error: (err) => {
                 console.error('❌ Failed to send message:', err);
-                // Optionally remove the message or show error state
+
+                // Show user friendly error and robustly handle failure
+                let errorMsg = 'Could not send message. Please try again.';
+                if (err.status === 401) errorMsg = 'Unauthorized. Please login again.';
+                if (err.status === 400) errorMsg = err.error || err.message || 'Invalid message request.';
+
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Send Failed',
-                    detail: 'Could not send message. Please try again.'
+                    detail: errorMsg
                 });
             }
         });

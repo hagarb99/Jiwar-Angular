@@ -104,20 +104,30 @@ export class ChatService {
       console.log(`🔎 Checking notification: Sender=${newMessage.senderId}, Me=${currentUserId}`);
 
       // Only notify if message is from someone else
-      // Use loose equality to handle possible string/int mismatch
+      // Note: Don't increment count here - ReceiveChatNotification will provide accurate count
       if (currentUserId && newMessage.senderId != currentUserId) {
-        // Increment unread count
-        this.unreadCountSubject.next(this.unreadCountSubject.value + 1);
-
         // Play sound notification
         playBeep();
+        console.log('🔔 Sound notification played for incoming message');
       } else {
-        console.log('Notification suppressed (Self message)');
+        console.log('🔕 Notification suppressed (Self message)');
       }
 
 
       // Notify subscribers (UI update)
       this.messageReceivedSubject.next(newMessage);
+    });
+
+    // Listen for global chat notifications (e.g. badge updates)
+    this.hubConnection.on('ReceiveChatNotification', (data: any) => {
+      console.log('🔔 Chat notification received:', data);
+      if (data && typeof data.unreadCount === 'number') {
+        this.updateUnreadCount(data.unreadCount);
+      }
+      // Also play sound if meaningful
+      if (data.title || data.message) {
+        playBeep();
+      }
     });
   }
 
@@ -126,12 +136,12 @@ export class ChatService {
    */
   public joinChatRoom(propertyId: number): void {
     if (this.hubConnection && this.connectionStatusSubject.value) {
-      console.log(`📡 Invoking JoinChat for room: ${propertyId}`);
+      console.log(`📡 [ChatService] Invoking JoinChat for room: ${propertyId}`);
       this.hubConnection.invoke('JoinChat', propertyId.toString())
-        .then(() => console.log(`👥 Joined chat room for property: ${propertyId}`))
-        .catch(err => console.error('❌ Failed to join chat room:', err));
+        .then(() => console.log(`👥 [ChatService] Joined chat room for property: ${propertyId}`))
+        .catch(err => console.error('❌ [ChatService] Failed to join chat room:', err));
     } else {
-      console.log(`⏳ Connection not ready, queuing room join for property: ${propertyId}`);
+      console.log(`⏳ [ChatService] Connection not ready, queuing room join for property: ${propertyId}`);
       this.pendingRoomJoin = propertyId;
     }
   }
@@ -139,12 +149,13 @@ export class ChatService {
   /**
    * Send message via API (Preferred method as per backend spec)
    */
-  /**
+  /**  
    * Send message via DesignRequest API (Used in Project Workspace)
    */
   public sendMessageViaApi(requestId: number, message: string, senderId?: string): Observable<any> {
     // Send both casings to ensure backend model binding works regardless of configuration
     const payload = {
+      messageText: message, // Explicitly sending messageText as requested
       message: message,
       senderId: senderId,
       Message: message,
@@ -156,12 +167,13 @@ export class ChatService {
   }
 
   /**
-   * Send message via Property API (Used in Property Details Chat)
-   * Note: This uses the Account endpoint as previously structured
+   * Send message via Property API - DEPRECATED/REMOVED
+   * This endpoint was moved to DesignRequestController.
+   * Please use sendMessageViaApi with a valid RequestID.
    */
-  public sendPropertyMessageViaApi(propertyId: number, message: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/Account/${propertyId}/chat/send`, { message });
-  }
+  // public sendPropertyMessageViaApi(propertyId: number, message: string): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/Account/${propertyId}/chat/send`, { message });
+  // }
 
   /**
    * Mark all messages in a conversation as read

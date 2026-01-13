@@ -118,8 +118,10 @@ export class NotificationService {
 
             this.zone.run(() => {
                 // 1. Update the Chat Icon Badge directly from payload
-                if (data.unreadCount !== undefined) {
-                    this.chatService.updateUnreadCount(data.unreadCount);
+                // Handle both camelCase and PascalCase
+                const count = data.unreadCount !== undefined ? data.unreadCount : data.UnreadCount;
+                if (count !== undefined) {
+                    this.chatService.updateUnreadCount(count);
                 }
 
                 // 2. Play sound
