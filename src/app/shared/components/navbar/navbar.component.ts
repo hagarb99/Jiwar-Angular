@@ -58,29 +58,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   buyDropdownItems = [
     { path: '/properties', label: 'Apartments for Sale' },
-    { path: '/properties?type=rent', label: 'Apartments for Rent' },
-    { path: '/properties?type=new', label: 'New Developments' },
-    { path: '/properties?type=virtual', label: 'Virtual Tour Properties (360°)' },
     { path: '/comparison', label: 'Compare Properties' },
-    { path: '/properties?featured=true', label: 'Featured Properties' }
   ];
 
-  investDropdownItems = [
-    { path: '/investment', label: 'Investment Opportunities' },
-    { path: '/calculator', label: 'ROI Calculator' },
-    { path: '/investment#plans', label: 'Investment Plans' },
-    { path: '/analytics', label: 'Market Insights' }
-  ];
+  // investDropdownItems = [
+  //   { path: '/investment', label: 'Investment Opportunities' },
+  //   { path: '/calculator', label: 'ROI Calculator' },
+  //   { path: '/investment#plans', label: 'Investment Plans' },
+  //   { path: '/analytics', label: 'Market Insights' }
+  // ];
 
   renovationDropdownItems = [
-    { path: '/renovation/intro', label: 'Start Simulation' },
-    { path: '/renovation/intro', label: 'Upload Apartment Media' },
-    { path: '/renovation/intro', label: 'View Recommendations' }
-  ];
-
-  sellDropdownItems = [
-    { path: '/add-property', label: 'Sell Your Property' },
-    { path: '/sell/rental', label: 'Rent Property' }
+    { path: '/renovation/intro', label: 'Start Simulation' }
   ];
 
   constructor(

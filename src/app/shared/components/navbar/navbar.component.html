@@ -9,15 +9,7 @@
       <!-- Desktop Menu -->
       <div class="hidden lg:flex items-center gap-6">
         <div class="relative" (mouseenter)="setDropdown('sell')" (mouseleave)="setDropdown(null)">
-          <button class="nav-btn">
-            Sell
-            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'sell'"></lucide-angular>
-          </button>
-          <div *ngIf="activeDropdown === 'sell'" class="dropdown">
-            <a *ngFor="let item of sellDropdownItems" [routerLink]="item.path" class="dropdown-item">
-              {{ item.label }}
-            </a>
-          </div>
+          <a routerLink="/add-property" class="nav-link">Sell</a>
         </div>
         <!-- Buy -->
         <div class="relative" (mouseenter)="setDropdown('buy')" (mouseleave)="setDropdown(null)">
@@ -28,19 +20,6 @@
           <div *ngIf="activeDropdown === 'buy'" class="dropdown-card">
             <a *ngFor="let item of buyDropdownItems" [routerLink]="item.path" class="dropdown-item"
               (click)="setDropdown(null)">
-              {{ item.label }}
-            </a>
-          </div>
-        </div>
-
-        <!-- Invest -->
-        <div class="relative" (mouseenter)="setDropdown('invest')" (mouseleave)="setDropdown(null)">
-          <button class="nav-btn">
-            Invest
-            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'invest'"></lucide-angular>
-          </button>
-          <div *ngIf="activeDropdown === 'invest'" class="dropdown">
-            <a *ngFor="let item of investDropdownItems" [routerLink]="item.path" class="dropdown-item">
               {{ item.label }}
             </a>
           </div>
