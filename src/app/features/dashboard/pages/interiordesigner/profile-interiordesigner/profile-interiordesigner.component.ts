@@ -11,6 +11,7 @@ import { ToastModule } from 'primeng/toast';
 import { forkJoin, of } from 'rxjs';
 import { catchError, filter, map, switchMap } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-profile-interiordesigner',
@@ -42,8 +43,8 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
         // If we're on the profile page and coming from edit page, reload data
-        if (event.url === '/dashboard/interiordesigner/profile' ||
-          event.urlAfterRedirects === '/dashboard/interiordesigner/profile') {
+        if (event.url === '/dashboard/designer/profile' ||
+          event.urlAfterRedirects === '/dashboard/designer/profile') {
           this.fetchProfile();
         }
       });
@@ -94,43 +95,34 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: ({ profile, proposals, designs }) => {
-        // Calculate stats from real data
         const totalProposals = (proposals || []).length;
-        // Re-filter now that statuses might be updated
-        const acceptedProposals = (proposals || []).filter((p: any) => p.status === 'Accepted' || p.status === 'Completed').length;
+        const acceptedProposals = (proposals || []).filter((p: any) => p.status === 'Accepted' || p.status === 'Completed' || p.status === '1').length;
         const completedDesigns = (designs || []).length;
+        const activeProjects = (proposals || []).filter((p: any) => p.status === 'Accepted').length;
 
-        // Active projects: accepted proposals that don't have a submitted design yet
-        // However, if your business logic says 'Active' is 'Accepted', user might just want 'Accepted' count.
-        // Let's stick to "Active" usually means "In Progress" for the designer.
+        // الحصول على بيانات المصمم الإضافية من الكائن المتداخل (Nested Object)
+        const designerData = profile.interiorDesigner || {};
 
-        const activeProposalsList = (proposals || []).filter((p: any) =>
-          p.status === 'Accepted'
-        );
-
-        // Filter out those that already have a design linked? 
-        // For simplicity and to match the user's "Active Projects" page which lists Accepted proposals:
-        const activeProjects = activeProposalsList.length;
-
-        // Update profile object
         this.profile = {
-          name: profile?.name || profile?.Name || '',
-          email: profile?.email || profile?.Email || '',
-          phoneNumber: profile?.phoneNumber || profile?.PhoneNumber || '',
-          profilePicURL: profile?.profilePicURL || profile?.ProfilePicURL || profile?.avatarUrl || profile?.AvatarUrl || '',
-          title: profile?.title || profile?.Title || 'Interior Designer',
-          location: profile?.location || profile?.Location || '',
-          bio: profile?.bio || profile?.Bio || '',
-          specializations: profile?.specialization ? [profile.specialization] :
-            (profile?.Specialization ? [profile.Specialization] :
-              (Array.isArray(profile?.specializations) ? profile.specializations :
-                (Array.isArray(profile?.Specializations) ? profile.Specializations : []))),
-          certifications: Array.isArray(profile?.certifications) ? profile.certifications :
-            (Array.isArray(profile?.Certifications) ? profile.Certifications : []),
-          website: profile?.website || profile?.Website || profile?.portfolioUrl || profile?.PortfolioUrl || '',
-          hourlyRate: profile?.hourlyRate ?? profile?.HourlyRate ?? null,
-          projectMinimum: profile?.projectMinimum ?? profile?.ProjectMinimum ?? null,
-          yearsOfExperience: profile?.yearsOfExperience ?? profile?.YearsOfExperience ?? null,
+          name: profile.name || '',
+          email: profile.email || '',
+          phoneNumber: profile.phoneNumber || '',
+          profilePicURL: this.getProfileImageUrl(profile.profilePicURL),
+          title: profile.title || 'Interior Designer',
+          location: profile.location || '',
+          bio: profile.bio || '',
+          // استخدام البيانات من الكائن المتداخل للـ Designer
+
+          yearsOfExperience: designerData.experienceYears || designerData.yearsOfExperience || null,
+
+          // معالجة التخصص (Specialization)
+          specializations: designerData.specialization ? [designerData.specialization] :
+            (Array.isArray(designerData.specializations) ? designerData.specializations : []),
+
+          certifications: Array.isArray(profile.certifications) ? profile.certifications : [],
+          website: designerData.portfolioURL || '',
+          hourlyRate: profile.hourlyRate || null,
+          projectMinimum: profile.projectMinimum || null,
           stats: [
             { label: 'Total Proposals', value: totalProposals },
             { label: 'Accepted Proposals', value: acceptedProposals },
@@ -151,6 +143,16 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+  }
+
+  getProfileImageUrl(url: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('data:image')) return url;
+    if (url.startsWith('http')) return url;
+
+    // Construct absolute URL for server images
+    const base = environment.apiBaseUrl.replace(/\/api\/?$/, '');
+    return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
   }
 
   trackByIndex(index: number, item: any): any {

@@ -1,15 +1,120 @@
-<div *ngIf="isLoading">Loading...</div>
-<div *ngIf="hasError">Failed to load profile.</div>
+<app-navbar></app-navbar>
 
-<div *ngIf="profile && !isLoading">
-  <h2>{{ profile.name }}</h2>
-  <img *ngIf="profile.profilePictureUrl" [src]="profile.profilePictureUrl" alt="Profile Picture">
-  <p *ngIf="profile.phoneNumber">Phone: {{ profile.phoneNumber }}</p>
+<div class="min-h-screen bg-gray-50 pt-20"> <!-- pt-20 to account for fixed navbar -->
 
-  <h3>Properties</h3>
-  <div *ngFor="let prop of properties">
-    <h4>{{ prop.title }}</h4>
-    <p>{{ prop.description }}</p>
-    <p>{{ prop.price | currency:'EGP':'symbol':'1.0-0' }}</p>
+  <div *ngIf="isLoading" class="flex items-center justify-center h-[60vh] text-gray-400">
+    <div class="animate-pulse">Loading profile...</div>
   </div>
-</div>
+
+  <div *ngIf="hasError" class="flex items-center justify-center h-[60vh] flex-col gap-4">
+    <p class="text-red-500 font-medium">Profile not found or an error occurred.</p>
+    <a routerLink="/properties"
+      class="px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors">Back to Properties</a>
+  </div>
+
+  <div *ngIf="!isLoading && profile" class="animate-in fade-in duration-500">
+
+    <!-- Profile Header / Hero -->
+    <div class="bg-gradient-to-b from-white to-gray-50 border-b border-gray-200">
+      <div class="container mx-auto px-4 md:px-6 py-12">
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+
+          <!-- Avatar -->
+          <div class="w-32 h-32 md:w-40 md:h-40 rounded-full p-1 bg-white ring-1 ring-gray-200 shadow-xl flex-shrink-0">
+            <img [src]="getProfileImageUrl(profile.profilePictureUrl || profile.profilePicURL)" [alt]="profile.name"
+              class="w-full h-full rounded-full object-cover bg-gray-100">
+          </div>
+
+          <!-- Info -->
+          <div class="flex-1 text-center md:text-left space-y-4">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ profile.name }}</h1>
+              <p class="text-gray-500 font-medium flex items-center justify-center md:justify-start gap-2">
+                <span *ngIf="profile.title">{{ profile.title }}</span>
+                <span *ngIf="profile.title && profile.location">•</span>
+                <span *ngIf="profile.location" class="flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                  {{ profile.location }}
+                </span>
+              </p>
+            </div>
+
+            <p *ngIf="profile.bio" class="text-gray-600 max-w-2xl mx-auto md:mx-0 leading-relaxed">
+              {{ profile.bio }}
+            </p>
+
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-6 pt-2">
+              <div class="text-center px-4 py-2 bg-white rounded-xl border border-gray-100 shadow-sm">
+                <span class="block text-2xl font-bold text-gray-900">{{ properties.length }}</span>
+                <span class="text-xs text-gray-500 uppercase tracking-wider font-bold">Properties</span>
+              </div>
+            </div>
+
+            <!-- Contact (Example) -->
+            <div *ngIf="profile.email || profile.phoneNumber"
+              class="flex flex-wrap justify-center md:justify-start gap-3 pt-2">
+              <a *ngIf="profile.phoneNumber" [href]="'tel:' + profile.phoneNumber"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-medium text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z">
+                  </path>
+                </svg>
+                Call Agent
+              </a>
+              <a *ngIf="profile.email" [href]="'mailto:' + profile.email"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                  </path>
+                </svg>
+                Email
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Properties Grid -->
+    <div class="container mx-auto px-4 md:px-6 py-12">
+      <h2 class="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+        <span class="w-1 h-8 bg-blue-600 rounded-full"></span>
+        Current Listings
+      </h2>
+
+      <div *ngIf="properties.length > 0; else noProperties"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <app-property-card *ngFor="let prop of properties" [propertyID]="prop.propertyID" [title]="prop.title"
+          [location]="prop.district" [type]="'Property'" [purpose]="'sale'"
+          [image]="(prop.thumbnailUrl || (prop.mediaUrls && prop.mediaUrls.length > 0 ? prop.mediaUrls[0] : '/assets/placeholder.jpg')) || ''"
+          [propertyData]="prop">
+        </app-property-card>
+      </div>
+
+      <ng-template #noProperties>
+        <div class="text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200">
+          <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+              </path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900">No Active Listings</h3>
+          <p class="text-gray-500">This user currently has no properties listed.</p>
+        </div>
+      </ng-template>
+
+    </div>
+
+  </div>
+
+  <app-footer></app-footer>
