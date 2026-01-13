@@ -1,10 +1,13 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { MessageService } from 'primeng/api';
+import { playBeep } from '../utils/beep-sound';
+import { ChatService } from './chat.service';
 
 export interface NotificationDto {
     notificationID: number;
@@ -22,7 +25,6 @@ export interface NotificationDto {
 export class NotificationService {
     private apiUrl = `${environment.apiBaseUrl}/Notification`;
     private hubConnection!: signalR.HubConnection;
-    private notificationSound: HTMLAudioElement = new Audio();
 
     // Observable for notifications list
     public notifications$ = new BehaviorSubject<NotificationDto[]>([]);
@@ -30,42 +32,26 @@ export class NotificationService {
     // Observable for unread count
     public unreadCount$ = new BehaviorSubject<number>(0);
 
+    // Subject to notify components to refresh their data
+    public refresh$ = new Subject<void>();
+
     constructor(
         private http: HttpClient,
         private messageService: MessageService,
-        private zone: NgZone
+        private zone: NgZone,
+        private chatService: ChatService,
+        private router: Router
     ) {
-        // Classic Nokia SMS notification tone - simple and familiar
-        this.notificationSound.src = 'https://www.soundjay.com/phone/sounds/sms-alert-1.mp3';
-        this.notificationSound.volume = 1.0;
-        this.notificationSound.load();
-
-        // Browser Autoplay Policy: Audio must be "unlocked" by a user gesture
-        this.unlockAudioContext();
+        // Audio handled by playBeep() utility function
     }
 
-    /**
-     * Common trick to unlock audio on mobile/modern browsers
-     */
-    private unlockAudioContext(): void {
-        const unlock = () => {
-            this.notificationSound.play().then(() => {
-                this.notificationSound.pause();
-                this.notificationSound.currentTime = 0;
-                document.removeEventListener('click', unlock);
-                console.log('🔊 Audio context unlocked by user interaction');
-            }).catch(e => {
-                // If it fails, we wait for next click
-            });
-        };
-        document.addEventListener('click', unlock);
-    }
+
 
     /**
      * Initialize SignalR connection with JWT token
      */
     public startConnection(token: string): void {
-        const hubUrl = `${environment.assetsBaseUrl}/notificationhub`;
+        const hubUrl = `${environment.assetsBaseUrl}/notificationHub`;
 
         // If connection already exists, check its state
         if (this.hubConnection) {
@@ -125,17 +111,60 @@ export class NotificationService {
     private setupListeners(): void {
         // Remove existing listeners to avoid duplicates if re-setup
         this.hubConnection.off('ReceiveNotification');
+        this.hubConnection.off('ReceiveChatNotification');
+
+        this.hubConnection.on('ReceiveChatNotification', (data: any) => {
+            console.log('💬 SignalR ReceiveChatNotification trigger:', data);
+
+            this.zone.run(() => {
+                // 1. Update the Chat Icon Badge directly from payload
+                if (data.unreadCount !== undefined) {
+                    this.chatService.updateUnreadCount(data.unreadCount);
+                }
+
+                // 2. Play sound
+                this.playNotificationSound();
+
+                // 3. Show a specialized chat toast (ONLY if not currently in that specific chat room)
+                const currentUrl = this.router.url;
+                const workspaceUrl = `/dashboard/workspace/${data.relatedId}`;
+
+                if (currentUrl !== workspaceUrl) {
+                    this.messageService.add({
+                        severity: 'info',
+                        summary: data.title || 'New Message',
+                        detail: data.message || 'You have a new message',
+                        life: 5000,
+                        icon: 'pi pi-comments',
+                        data: { relatedId: data.relatedId, type: 'Chat' }
+                    });
+                }
+
+                // 4. Trigger refresh for any subscribers (like the messages list)
+                this.refresh$.next();
+            });
+        });
 
         this.hubConnection.on('ReceiveNotification', (arg1: any, arg2?: string) => {
-            // CRITICAL: Play sound FIRST with zero delay
-            this.playNotificationSound();
-
             console.log('📬 SignalR ReceiveNotification trigger:', { arg1, arg2 });
+
+            // Play sound based on backend playSound property
+            const isObject = typeof arg1 === 'object' && arg1 !== null;
+            const playSoundRequested = isObject && arg1.playSound === true;
+
+            // If it's a simple string notification, we still play sound by default
+            const shouldPlaySound = playSoundRequested || !isObject;
+
+            if (shouldPlaySound) {
+                this.playNotificationSound();
+            }
 
             let title = 'New Notification';
             let message = '';
             let type = 'Info';
             let data = arg1;
+
+            let relatedId = null;
 
             // Handle multiple argument formats from backend
             if (typeof arg1 === 'string' && typeof arg2 === 'string') {
@@ -147,23 +176,28 @@ export class NotificationService {
                 title = arg1.title || title;
                 message = arg1.message || '';
                 type = arg1.type || 'Info';
+                relatedId = arg1.relatedId || arg1.RelatedId;
             }
 
-            // 1. Show toast notification
-            this.zone.run(() => {
-                this.messageService.add({
-                    severity: type.toLowerCase() === 'success' ? 'success' : (type.toLowerCase() === 'error' ? 'error' : 'info'),
-                    summary: title,
-                    detail: message,
-                    life: 6000
+            // 1. Show toast notification (EXCEPT for Chat type which is handled separately)
+            if (type.toLowerCase() !== 'chat') {
+                this.zone.run(() => {
+                    this.messageService.add({
+                        severity: type.toLowerCase() === 'success' ? 'success' : (type.toLowerCase() === 'error' ? 'error' : 'info'),
+                        summary: title,
+                        detail: message,
+                        life: 6000,
+                        data: { relatedId, type } // Pass ID and Type for click handling
+                    });
                 });
-            });
+            }
 
             // 2. Refresh count and list from server to ensure data integrity
             this.loadNotifications().subscribe({
                 next: (notifs) => {
                     this.zone.run(() => {
                         console.log('✅ Notifications refreshed after real-time update');
+                        this.refresh$.next(); // Trigger reload in observers
                     });
                 },
                 error: (err) => {
@@ -199,12 +233,14 @@ export class NotificationService {
 
     /**
      * Load all notifications from API
+     * Note: Backend automatically marks all as read when fetching
      */
     public loadNotifications(): Observable<NotificationDto[]> {
         return this.http.get<NotificationDto[]>(this.apiUrl).pipe(
             tap(notifications => {
                 this.zone.run(() => {
                     this.notifications$.next(notifications);
+                    // Backend auto-marks as read, so count should be 0 after fetching
                     const unreadCount = notifications.filter(n => !n.isRead).length;
                     this.unreadCount$.next(unreadCount);
                 });
@@ -246,18 +282,11 @@ export class NotificationService {
     }
 
     /**
-     * Play notification sound with zero delay
+     * Play notification sound
      */
     private playNotificationSound(): void {
-        try {
-            this.notificationSound.volume = 1.0; // Boost to maximum
-            this.notificationSound.currentTime = 0;
-            this.notificationSound.play().catch(err => {
-                console.warn('🔇 Audio play prevented (User interaction required):', err);
-            });
-        } catch (e) {
-            console.error('🔊 Error playing sound:', e);
-        }
+        console.log('🔔 NOTIFICATION RECEIVED - Playing beep...');
+        playBeep();
     }
 
     /**

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { filter, Subject, takeUntil } from 'rxjs';
@@ -9,11 +9,16 @@ import {
   X,
   Globe,
   Heart,
-  Bell
+  Bell,
+  MessageSquare
 } from 'lucide-angular';
 import { ButtonModule } from 'primeng/button';
+import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
+import { ChatService } from '../../../core/services/chat.service';
 import { NotificationService, NotificationDto } from '../../../core/services/notification.service';
+import { DesignRequestService } from '../../../core/services/design-request.service';
+import { DesignerProposalService } from '../../../core/services/designer-proposal.service';
 
 @Component({
   selector: 'app-navbar',
@@ -42,6 +47,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
   readonly Globe = Globe;
   readonly Heart = Heart;
   readonly Bell = Bell;
+  readonly MessageSquare = MessageSquare;
+
+  // Message State
+  unreadMessageCount = 0;
+  toggleMessagesDropdown = false;
+  conversations: any[] = [];
+  loadingMessages = false;
 
   // Notification State
   toggleNotificationsDropdown = false;
@@ -85,7 +97,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private notificationService: NotificationService
+    private chatService: ChatService,
+    private notificationService: NotificationService,
+    private designRequestService: DesignRequestService,
+    private proposalService: DesignerProposalService,
+    private messageService: MessageService,
+    private zone: NgZone
   ) {
     this.router.events
       .pipe(
@@ -110,10 +127,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
           this.currentUserEmail = user.email || null;
           this.isLoggedIn = true;
 
-          // Initialize SignalR connection with token
+          // Initialize SignalR connections with token
           const token = localStorage.getItem('token');
           if (token) {
             this.notificationService.startConnection(token);
+            this.chatService.startConnection(token); // Start ChatHub globally
+            this.chatService.getTotalUnreadCount().subscribe(); // Fetch initial total unread count
           }
         } else {
           this.profilePicUrl = null;
@@ -131,11 +150,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.isLoggedIn = status;
       });
 
-    // Subscribe to notifications
+    // Subscribe to notifications (Filter out 'Chat' type from bell list)
     this.notificationService.notifications$
       .pipe(takeUntil(this.destroy$))
       .subscribe(notifications => {
-        this.notifications = notifications;
+        this.notifications = notifications.filter(n => n.notificationType?.toLowerCase() !== 'chat' && n.notificationType !== 'Chat');
       });
 
     // Subscribe to unread count
@@ -143,6 +162,29 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(count => {
         this.unreadCount = count;
+      });
+
+    // Subscribe to unread messages count
+    this.chatService.unreadCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(count => {
+        // This count is updated by loadConversations (API) OR individual message updates
+        this.unreadMessageCount = count;
+      });
+
+    // Refresh conversation list when a new message arrives real-time
+    this.chatService.messageReceived$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Conversation metadata might have changed (last message, unread count per item)
+        this.loadConversations();
+      });
+
+    // Also refresh on notifications (since chat notifications also come through there)
+    this.notificationService.refresh$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadConversations();
       });
   }
 
@@ -197,45 +239,144 @@ export class NavbarComponent implements OnInit, OnDestroy {
   toggleNotifications(): void {
     this.toggleNotificationsDropdown = !this.toggleNotificationsDropdown;
     if (this.toggleNotificationsDropdown) {
-      this.toggleUserDropdown = false; // Close user dropdown
+      this.toggleUserDropdown = false;
+      this.toggleMessagesDropdown = false;
+      // Load notifications (backend auto-marks as read)
+      this.notificationService.loadNotifications().subscribe();
     }
   }
 
   markAllAsRead(): void {
-    this.notificationService.markAllAsRead().subscribe({
-      next: () => {
-        console.log('All notifications marked as read');
-      },
-      error: (err) => {
-        console.error('Error marking all as read:', err);
-      }
-    });
+    // Backend now auto-marks as read when fetching
+    // This method is kept for backwards compatibility but does nothing
+    console.log('Notifications are auto-marked as read by backend');
   }
 
   onNotificationClick(notification: NotificationDto): void {
-    if (!notification.isRead) {
-      this.notificationService.markAsRead(notification.notificationID).subscribe({
-        next: () => {
-          console.log('Notification marked as read');
-        },
-        error: (err) => {
-          console.error('Error marking notification as read:', err);
-        }
-      });
-    }
-
+    // Backend auto-marks as read, no need for manual call
     // Close dropdown
     this.toggleNotificationsDropdown = false;
 
     // Navigate based on notification content
-    // Extract ID from message like "You have received a new proposal for your design request 11"
+    const msg = notification.message.toLowerCase();
     const idMatch = notification.message.match(/\d+/);
-    if (idMatch && this.currentUserRole === 'PropertyOwner') {
-      const requestId = idMatch[0];
-      this.router.navigate(['/dashboard/propertyowner/design-requests', requestId]);
-    } else if (this.currentUserRole === 'InteriorDesigner') {
-      // If designer, maybe go to My Proposals or the specific project
-      this.router.navigate(['/dashboard/designer/my-proposals']);
+
+    if (idMatch) {
+      const id = idMatch[0];
+
+      if (this.currentUserRole === 'PropertyOwner') {
+        // If project delivered, go to workspace and trigger review modal
+        if (msg.includes('delivered') || msg.includes('completed')) {
+          this.router.navigate(['/dashboard/workspace', id], { queryParams: { openReview: 'true' } });
+        } else {
+          // Default: Go to request details for new proposals etc.
+          this.router.navigate(['/dashboard/propertyowner/design-requests', id]);
+        }
+      } else if (this.currentUserRole === 'InteriorDesigner') {
+        // Designer redirection logic
+        if (msg.includes('review') || msg.includes('star')) {
+          this.router.navigate(['/dashboard/designer/reviews']);
+        } else if (msg.includes('accepted') || msg.includes('workspace') || msg.includes('chat')) {
+          this.router.navigate(['/dashboard/workspace', id]);
+        } else {
+          this.router.navigate(['/dashboard/designer/my-proposals']);
+        }
+      }
+    } else {
+      // If no ID but message is about review, go to reviews page
+      if (this.currentUserRole === 'InteriorDesigner' && (msg.includes('review') || msg.includes('star'))) {
+        this.router.navigate(['/dashboard/designer/reviews']);
+      } else {
+        this.goToDashboard();
+      }
     }
+  }
+
+  toggleMessages(): void {
+    this.toggleMessagesDropdown = !this.toggleMessagesDropdown;
+    if (this.toggleMessagesDropdown) {
+      this.toggleNotificationsDropdown = false; // Close other dropdown
+      this.toggleUserDropdown = false;
+      this.loadConversations();
+    }
+  }
+
+  loadConversations(): void {
+    if (!this.isLoggedIn) return;
+    this.loadingMessages = true;
+    if (this.currentUserRole === 'PropertyOwner') {
+      this.designRequestService.getMyDesignRequests().subscribe({
+        next: (requests) => {
+          this.conversations = requests
+            .filter(r => r.status !== 'Pending' && r.status !== 'New')
+            .map(r => ({
+              id: r.id,
+              propertyId: r.propertyID,
+              title: r.preferredStyle ? `${r.preferredStyle} Design` : `Project #${r.id}`,
+              subtitle: (r as any).lastMessage || `Status: ${r.status}`,
+              image: null,
+              time: new Date(r.createdAt || new Date()),
+              type: 'request',
+              unreadCount: (r as any).unreadCount || 0
+            }))
+            .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+
+          this.calculateTotalUnread();
+          this.loadingMessages = false;
+        },
+        error: () => this.loadingMessages = false
+      });
+    } else if (this.currentUserRole === 'InteriorDesigner') {
+      this.proposalService.getMyProposals().subscribe({
+        next: (proposals) => {
+          this.conversations = proposals
+            .filter(p => p.status === 1 || p.status === 3)
+            .map(p => {
+              const requestId = p.designRequestID || (p as any).designRequestId || (p as any).requestId || (p as any).id;
+              return {
+                id: requestId,
+                propertyId: (p as any).propertyID || (p as any).propertyId || requestId, // Fallback to requestId if propertyId missing
+                title: `Project #${requestId}`,
+                subtitle: (p as any).lastMessage || p.proposalDescription || 'Active Project',
+                image: p.sampleDesignURL,
+                time: new Date(),
+                type: 'proposal',
+                unreadCount: (p as any).unreadCount || 0
+              };
+            });
+
+          this.calculateTotalUnread();
+          this.loadingMessages = false;
+        },
+        error: () => this.loadingMessages = false
+      });
+    } else {
+      this.loadingMessages = false;
+    }
+  }
+
+  private calculateTotalUnread(): void {
+    const total = this.conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
+    this.unreadMessageCount = total;
+  }
+
+  onMessageClick(item: any): void {
+    this.toggleMessagesDropdown = false;
+    if (!item.id) {
+      console.error('Invalid Project ID');
+      return;
+    }
+
+    // 1. Optimistically update local state immediately
+    item.unreadCount = 0;
+    this.calculateTotalUnread();
+
+    // 2. Navigate to workspace (backend will auto-mark as read)
+    this.router.navigate(['/dashboard/workspace', item.id]);
+  }
+
+  goToMessages(): void {
+    this.toggleMessagesDropdown = false;
+    this.router.navigate(['/dashboard/messages']);
   }
 }

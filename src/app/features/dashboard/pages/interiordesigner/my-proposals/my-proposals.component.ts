@@ -10,6 +10,8 @@ import { ToastModule } from 'primeng/toast';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-my-proposals',
@@ -22,6 +24,7 @@ import { TooltipModule } from 'primeng/tooltip';
     ProgressSpinnerModule,
     TagModule,
     TooltipModule,
+    DialogModule,
     RouterModule
   ],
   templateUrl: './my-proposals.component.html',
@@ -33,8 +36,12 @@ export class MyProposalsComponent implements OnInit {
 
   constructor(
     private proposalService: DesignerProposalService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private router: Router
   ) { }
+
+  selectedProposal: DesignerProposal | null = null;
+  displayDetails = false;
 
   ngOnInit() {
     this.loadProposals();
@@ -63,17 +70,30 @@ export class MyProposalsComponent implements OnInit {
   }
 
   getStatusSeverity(status?: string | number): string {
-    const statusStr = String(status || '').toLowerCase();
-    if (statusStr === '1' || statusStr === 'accepted') return 'success';
-    if (statusStr === '2' || statusStr === 'rejected') return 'danger';
-    if (statusStr === '0' || statusStr === 'pending') return 'warning';
+    const s = Number(status);
+    if (s === 1 || s === 3) return 'success';
+    if (s === 2) return 'danger';
+    if (s === 0) return 'warning';
     return 'info';
   }
 
   getStatusLabel(status?: string | number): string {
-    if (status === 0 || status === '0' || status === 'Pending') return 'Pending';
-    if (status === 1 || status === '1' || status === 'Accepted') return 'Accepted';
-    if (status === 2 || status === '2' || status === 'Rejected') return 'Rejected';
-    return String(status || 'Unknown');
+    const s = Number(status);
+    switch (s) {
+      case 0: return 'Pending';
+      case 1: return 'Accepted';
+      case 2: return 'Rejected';
+      case 3: return 'Delivered';
+      default: return 'Pending';
+    }
+  }
+
+  viewDetails(proposal: DesignerProposal) {
+    this.selectedProposal = proposal;
+    this.displayDetails = true;
+  }
+
+  goToWorkspace(requestId: number) {
+    this.router.navigate(['/dashboard/workspace', requestId]);
   }
 }

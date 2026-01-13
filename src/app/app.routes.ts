@@ -34,6 +34,7 @@ const routes: Routes = [
   },
   { path: 'chat', component: ChatComponent },
   { path: 'propertyowner/:userId', component: PropertyOwnerPublicProfileComponent },
+  { path: 'designer/:userId', loadComponent: () => import('./features/dashboard/pages/propertyowner/designer-public-profile/designer-public-profile.component').then(m => m.DesignerPublicProfileComponent) },
   // {
   //   path: 'propertyowner',
   //   canActivate: [roleGuard(['PropertyOwner'])],

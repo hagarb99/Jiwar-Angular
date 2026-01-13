@@ -37,6 +37,17 @@ export interface EditProfileRequest {
     yearsOfExperience?: number;
 }
 
+export interface CompleteProfileInteriorDesigner {
+    bio: string;
+    portfolioUrl?: string;
+    yearsOfExperience?: number;
+    specialization?: string;
+    specializations: string; // Comma-separated string for backend
+    certifications: string;   // Comma-separated string for backend
+    title: string;
+    location: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProfileService extends ApiBaseService {
     private readonly apiUrl = `${this.apiBaseUrl}/account`;
@@ -45,38 +56,35 @@ export class ProfileService extends ApiBaseService {
         super(httpClient);
     }
 
+    /**
+     * Get profile data. 
+     * Note: Backend may return an object containing an 'interiorDesigner' property.
+     */
     getProfile(): Observable<any> {
-        // Calling the account service endpoint or the relevant endpoint for profile data
         return this.httpClient.get<any>(`${this.apiUrl}/profile`);
     }
 
+    /**
+     * Standard profile edit (PUT)
+     */
     editProfile(request: EditProfileRequest): Observable<any> {
-        // Clean request but keep arrays even if empty
         const cleanRequest: any = {};
-        
         Object.keys(request).forEach(key => {
             const value = (request as any)[key];
-            // Keep arrays even if empty, but remove undefined/null/empty strings for other fields
             if (Array.isArray(value)) {
-                cleanRequest[key] = value; // Always include arrays
+                cleanRequest[key] = value;
             } else if (value !== undefined && value !== null && value !== '') {
                 cleanRequest[key] = value;
             }
         });
-        
-        console.log('Sending profile update request:', cleanRequest);
         return this.httpClient.put(`${this.apiUrl}/edit-profile`, cleanRequest);
     }
 
+    /**
+     * Specific endpoint for completing interior designer profile (POST)
+     * Requirement: specializations and certifications are comma-separated strings
+     */
     completeProfile(request: CompleteProfileInteriorDesigner): Observable<any> {
-        return this.httpClient.post(`${this.apiUrl}/complete-profile/property-owner`, request);
+        return this.httpClient.post(`${this.apiUrl}/complete-profile/interior-designer`, request);
     }
-}
-
-export interface CompleteProfileInteriorDesigner {
-    specializations: string[];
-    certifications: string[];
-    title: string;
-    location: string;
-    bio: string;
 }

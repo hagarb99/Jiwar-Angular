@@ -1,0 +1,68 @@
+<div class="container mx-auto px-4 py-8 max-w-5xl">
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Messages</h1>
+            <p class="text-gray-500 mt-1">Manage your project conversations</p>
+        </div>
+        <!-- Search bar could go here -->
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center py-20">
+        <i class="pi pi-spin pi-spinner text-4xl text-indigo-500 mb-4"></i>
+        <p class="text-gray-500">Loading conversations...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && conversations.length === 0"
+        class="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
+        <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-comments text-3xl text-gray-400"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">No Messages Yet</h3>
+        <p class="text-gray-500 mb-6">When you start a project, your conversations will appear here.</p>
+        <button pButton label="Go to Dashboard" icon="pi pi-home" routerLink="/dashboard/designer/dashboard"
+            class="p-button-outlined"></button>
+    </div>
+
+    <!-- Conversations List -->
+    <div *ngIf="!loading && conversations.length > 0" class="space-y-4">
+        <div *ngFor="let item of conversations" (click)="openChat(item.id)"
+            class="message-card bg-white p-5 rounded-xl border border-gray-100 flex items-center gap-5">
+
+            <!-- Avatar -->
+            <div
+                class="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100">
+                <img *ngIf="item.image" [src]="item.image" class="w-full h-full object-cover rounded-full">
+                <i *ngIf="!item.image" class="pi pi-user text-xl text-indigo-500"></i>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-1">
+                    <h3 class="text-lg font-semibold text-gray-900 truncate pr-4">{{ item.title }}</h3>
+                    <span class="text-xs text-gray-400 whitespace-nowrap">{{ item.time | date:'shortTime' }}</span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <p class="text-base text-gray-600 truncate pr-8">{{ item.subtitle }}</p>
+                    <!-- Unread Badge (Optional logic) -->
+                    <span *ngIf="item.unread > 0"
+                        class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
+                        {{ item.unread }}
+                    </span>
+                </div>
+
+                <div class="mt-2 flex items-center gap-2 text-xs text-gray-400">
+                    <i class="pi pi-clock text-[10px]"></i>
+                    <span>{{ item.time | date:'MMM d, y' }}</span>
+                </div>
+            </div>
+
+            <!-- Chevron -->
+            <div class="text-gray-300">
+                <i class="pi pi-chevron-right"></i>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,82 @@
+<div class="min-h-screen bg-gray-50/50 p-6">
+    <p-toast></p-toast>
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Client Reviews</h1>
+            <p class="text-gray-500 mt-2">See what clients are saying about your work</p>
+        </div>
+
+        <div *ngIf="loading" class="flex flex-col items-center justify-center py-20">
+            <p-progressSpinner></p-progressSpinner>
+            <p class="text-gray-400 mt-4">Loading reviews...</p>
+        </div>
+
+        <div *ngIf="!loading">
+            <!-- Summary Card -->
+            <div
+                class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row items-center gap-8">
+                <div class="text-center md:border-r md:pr-12 border-gray-100">
+                    <div class="text-5xl font-black text-gray-900 mb-2">{{ averageRating | number:'1.1-1' }}</div>
+                    <div class="flex text-amber-400 justify-center mb-2">
+                        <i *ngFor="let i of [1,2,3,4,5]" class="pi"
+                            [ngClass]="i <= averageRating ? 'pi-star-fill' : 'pi-star'"></i>
+                    </div>
+                    <div class="text-sm text-gray-400 uppercase tracking-widest font-bold">Average Rating</div>
+                </div>
+
+                <div class="flex-1 grid grid-cols-2 gap-4 w-full">
+                    <div class="bg-gray-50 p-4 rounded-2xl text-center">
+                        <div class="text-2xl font-bold text-gray-900">{{ totalReviews }}</div>
+                        <div class="text-xs text-gray-400 uppercase font-black">Total Reviews</div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-2xl text-center">
+                        <div class="text-2xl font-bold text-green-600">100%</div>
+                        <div class="text-xs text-green-500 uppercase font-black">Satisfaction</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews List -->
+            <div *ngIf="reviews && reviews.length > 0" class="space-y-4">
+                <div *ngFor="let review of reviews"
+                    class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-indigo-100 transition-colors">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
+                                <img [src]="'https://api.dicebear.com/7.x/initials/svg?seed=' + review.propertyOwnerName"
+                                    alt="avatar">
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">{{ review.propertyOwnerName }}</h4>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-gray-400">{{ review.createdAt | date:'mediumDate'
+                                        }}</span>
+                                    <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                    <span class="text-xs text-indigo-500 font-medium">Verified Project</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-0.5 text-amber-400">
+                            <i *ngFor="let i of [1,2,3,4,5]" class="pi text-sm"
+                                [ngClass]="i <= review.rating ? 'pi-star-fill' : 'pi-star'"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed italic">"{{ review.comment }}"</p>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!reviews || reviews.length === 0"
+                class="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
+                <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="pi pi-star text-3xl text-gray-200"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">No reviews yet</h3>
+                <p class="text-gray-400 max-w-xs mx-auto">Complete your projects to start receiving feedback from your
+                    clients!</p>
+            </div>
+        </div>
+    </div>
+</div>

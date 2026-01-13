@@ -57,22 +57,25 @@ export class EditProfileComponent implements OnInit {
   fetchProfile(): void {
     this.loading = true;
     this.profileService.getProfile().subscribe({
-      next: (data) => {
+      next: (profileRaw) => {
+        // Handle wrapper from backend structure update
+        const data = profileRaw?.interiorDesigner || profileRaw;
+
         // Map backend data to our interface with proper defaults
         this.profile = {
-          name: data?.name || '',
-          email: data?.email || '',
-          phoneNumber: data?.phoneNumber || '',
-          profilePicURL: data?.profilePicURL || '',
-          title: data?.title || '',
-          location: data?.location || '',
-          bio: data?.bio || '',
-          specializations: Array.isArray(data?.specializations) ? data.specializations : [],
-          certifications: Array.isArray(data?.certifications) ? data.certifications : [],
-          website: data?.website || '',
-          hourlyRate: data?.hourlyRate ?? null,
-          projectMinimum: data?.projectMinimum ?? null,
-          yearsOfExperience: data?.yearsOfExperience ?? null,
+          name: data?.name || data?.Name || '',
+          email: data?.email || data?.Email || '',
+          phoneNumber: data?.phoneNumber || data?.PhoneNumber || '',
+          profilePicURL: data?.profilePicURL || data?.ProfilePicURL || '',
+          title: data?.title || data?.Title || '',
+          location: data?.location || data?.Location || '',
+          bio: data?.bio || data?.Bio || '',
+          specializations: Array.isArray(data?.specializations) ? data.specializations : (Array.isArray(data?.Specializations) ? data.Specializations : []),
+          certifications: Array.isArray(data?.certifications) ? data.certifications : (Array.isArray(data?.Certifications) ? data.Certifications : []),
+          website: data?.website || data?.Website || '',
+          hourlyRate: data?.hourlyRate ?? data?.HourlyRate ?? null,
+          projectMinimum: data?.projectMinimum ?? data?.ProjectMinimum ?? null,
+          yearsOfExperience: data?.yearsOfExperience ?? data?.YearsOfExperience ?? null,
           stats: data?.stats || []
         };
         this.specializations = [...this.profile.specializations];
@@ -83,10 +86,10 @@ export class EditProfileComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading profile:', err);
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: err.error?.message || 'Could not load profile. Please try again later.' 
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: err.error?.message || 'Could not load profile. Please try again later.'
         });
         this.loading = false;
       }
@@ -168,10 +171,10 @@ export class EditProfileComponent implements OnInit {
       Object.keys(this.editForm.controls).forEach(key => {
         this.editForm.get(key)?.markAsTouched();
       });
-      this.messageService.add({ 
-        severity: 'warn', 
-        summary: 'Validation Error', 
-        detail: 'Please fill all required fields correctly' 
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Validation Error',
+        detail: 'Please fill all required fields correctly'
       });
       return;
     }
@@ -182,13 +185,13 @@ export class EditProfileComponent implements OnInit {
     // Prepare edit request with proper data cleaning
     const filteredSpecs = this.specializations.filter(s => s.trim() !== '');
     const filteredCerts = this.certifications.filter(c => c.trim() !== '');
-    
+
     console.log('Specializations before send:', this.specializations);
     console.log('Filtered specializations:', filteredSpecs);
     console.log('Certifications before send:', this.certifications);
     console.log('Filtered certifications:', filteredCerts);
     console.log('Bio before send:', formValue.bio?.trim());
-    
+
     const editRequest: any = {
       name: formValue.name?.trim() || '',
       email: formValue.email?.trim() || '',
@@ -197,10 +200,10 @@ export class EditProfileComponent implements OnInit {
       title: formValue.title?.trim() || '',
       location: formValue.location?.trim() || '',
       bio: formValue.bio?.trim() || '',
-      specializations: filteredSpecs,
-      certifications: filteredCerts
+      specializations: filteredSpecs.join(', '), // Send as comma-separated string per new backend requirement
+      certifications: filteredCerts.join(', ')   // Send as comma-separated string per new backend requirement
     };
-    
+
     console.log('Edit request to send:', editRequest);
 
     // Add optional fields only if they have values
@@ -223,7 +226,7 @@ export class EditProfileComponent implements OnInit {
         try {
           const userJson = localStorage.getItem('currentUser');
           const currentUser = userJson ? JSON.parse(userJson) : {};
-          
+
           // Update with the data we just sent (immediate update)
           this.authService.setUserData({
             id: currentUser.id,
@@ -257,12 +260,12 @@ export class EditProfileComponent implements OnInit {
           console.error('Error updating user data:', err);
         }
 
-        this.messageService.add({ 
-          severity: 'success', 
-          summary: 'Success', 
-          detail: 'Profile updated successfully!' 
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Profile updated successfully!'
         });
-        
+
         setTimeout(() => {
           this.router.navigate(['/dashboard/interiordesigner/profile']);
         }, 1500);
@@ -270,10 +273,10 @@ export class EditProfileComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error updating profile:', err);
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: err.error?.message || 'Failed to update profile. Please try again.' 
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: err.error?.message || 'Failed to update profile. Please try again.'
         });
         this.saving = false;
       }
