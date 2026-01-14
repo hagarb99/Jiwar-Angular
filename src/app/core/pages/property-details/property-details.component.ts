@@ -34,7 +34,8 @@ import {
   TrendingUp,
   LineChart,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MessageSquare
 } from 'lucide-angular';
 import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
 import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour } from '../../services/property.service';
@@ -116,6 +117,7 @@ export class PropertyDetailsComponent implements OnInit {
   LineChart = LineChart;
   ChevronLeft = ChevronLeft;
   ChevronRight = ChevronRight;
+  MessageSquare = MessageSquare;
 
   property: Property | null = null;
   recommendedProperties: Property[] = [];
@@ -265,6 +267,9 @@ export class PropertyDetailsComponent implements OnInit {
 
   // Navigation State
   activeSection = 'overview';
+  chatMessage: string = '';
+  chatMessages: any[] = [];
+  isChatModalOpen: boolean = false;
 
   scrollToSection(sectionId: string): void {
     this.activeSection = sectionId;
@@ -753,5 +758,34 @@ export class PropertyDetailsComponent implements OnInit {
     const apiBase = environment.apiBaseUrl.replace(/\/api$/, '');
     const cleanPath = url.startsWith('/') ? url.substring(1) : url;
     return `${apiBase}/${cleanPath}`;
+  }
+
+  sendMessage() {
+    if (!this.chatMessage.trim()) return;
+
+    this.chatMessages.push({
+      message: this.chatMessage,
+      isSelf: true,
+      sentDate: new Date()
+    });
+
+    this.chatMessage = '';
+
+    // Mock response
+    setTimeout(() => {
+      this.chatMessages.push({
+        message: "Thank you for your interest! How can I help you with this property?",
+        isSelf: false,
+        sentDate: new Date()
+      });
+    }, 1000);
+  }
+
+  toggleChat() {
+    this.isChatModalOpen = !this.isChatModalOpen;
+  }
+
+  closeChatModal() {
+    this.isChatModalOpen = false;
   }
 }
