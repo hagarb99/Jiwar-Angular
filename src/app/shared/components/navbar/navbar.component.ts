@@ -14,7 +14,9 @@ import {
 import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService, NotificationDto } from '../../../core/services/notification.service';
+import { TranslationService, Language } from '../../../core/services/translation.service';
 import { environment } from '../../../../environments/environment';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-navbar',
@@ -23,7 +25,8 @@ import { environment } from '../../../../environments/environment';
     CommonModule,
     RouterModule,
     ButtonModule,
-    LucideAngularModule
+    LucideAngularModule,
+    TranslatePipe
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
@@ -52,7 +55,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   // State
   mobileMenuOpen = false;
   activeDropdown: 'buy' | 'invest' | 'sell' | 'renovation' | null = null;
-  language: 'EN' | 'AR' = 'EN';
+  currentLanguage: Language = 'en';
   currentPath = '';
   isLoggedIn = false;
 
@@ -61,7 +64,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     { path: '/properties?type=rent', label: 'Apartments for Rent' },
     { path: '/properties?type=new', label: 'New Developments' },
     { path: '/properties?type=virtual', label: 'Virtual Tour Properties (360°)' },
-    { path: '/comparison', label: 'Compare Properties' },
+    { path: '/compare', label: 'Compare Properties' },
     { path: '/properties?featured=true', label: 'Featured Properties' }
   ];
 
@@ -86,7 +89,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private translationService: TranslationService
   ) {
     this.router.events
       .pipe(
@@ -110,18 +114,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
           this.currentUserName = user.name || null;
           this.currentUserEmail = user.email || null;
           this.isLoggedIn = true;
-
-          // Initialize SignalR connection with token
-          const token = localStorage.getItem('token');
-          if (token) {
-            this.notificationService.startConnection(token);
-          }
         } else {
           this.profilePicUrl = null;
           this.currentUserName = null;
           this.currentUserEmail = null;
           this.isLoggedIn = false;
-          this.notificationService.stopConnection();
         }
       });
 
@@ -145,6 +142,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .subscribe(count => {
         this.unreadCount = count;
       });
+
+    // Subscribe to language changes
+    this.translationService.language$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(lang => {
+        this.currentLanguage = lang;
+      });
   }
 
   ngOnDestroy(): void {
@@ -156,8 +160,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.activeDropdown = name;
   }
 
-  toggleLanguage(): void {
-    this.language = this.language === 'EN' ? 'AR' : 'EN';
+  setLanguage(lang: Language): void {
+    this.translationService.setLanguage(lang);
   }
 
   toggleMobileMenu(): void {

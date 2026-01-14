@@ -26,6 +26,7 @@ export class NotificationService implements OnDestroy {
     private hubConnection!: signalR.HubConnection;
     private connectionPromise: Promise<void> | null = null;
     private isDestroyed = false;
+    private currentToken: string | null = null;
     private notificationSound: HTMLAudioElement = new Audio();
 
     // Observable for notifications list
@@ -110,13 +111,26 @@ export class NotificationService implements OnDestroy {
             return Promise.reject(new Error('Service destroyed'));
         }
 
+        // Return existing connection if already connected with same token
+        if (this.hubConnection &&
+            this.hubConnection.state === signalR.HubConnectionState.Connected &&
+            this.currentToken === token) {
+            console.log('🔄 SignalR already connected with same token. Skipping start.');
+            return Promise.resolve();
+        }
+
         // Return existing connection promise if connection is in progress
         if (this.connectionPromise) {
+            console.log('⏳ SignalR connection already in progress...');
             return this.connectionPromise;
         }
 
-        // Clean up existing connection
+        // Store token
+        this.currentToken = token;
+
+        // Clean up existing connection if necessary (e.g. token changed)
         if (this.hubConnection) {
+            console.log('🧹 Cleaning up old SignalR connection...');
             this.stopConnection();
         }
 
@@ -172,7 +186,8 @@ export class NotificationService implements OnDestroy {
 
         this.hubConnection.onreconnected((connectionId) => {
             console.log('🔄 SignalR Reconnected');
-            this.loadNotifications().subscribe();
+            // Avoid calling loadNotifications() on every reconnect to prevent loops
+            // The initial load plus real-time updates should be enough if connection was brief
         });
 
         this.hubConnection.onclose((error) => {

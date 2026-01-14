@@ -746,7 +746,9 @@ export class PropertyDetailsComponent implements OnInit {
   }
 
   onImageError(event: Event): void {
-    (event.target as HTMLImageElement).src = '/assets/placeholder.jpg';
+    const img = event.target as HTMLImageElement;
+    img.onerror = null; // Prevent infinite loop
+    img.src = '/logo2.png'; // Fallback to an existing asset
   }
 
   private fixUrl(url: string): string {
