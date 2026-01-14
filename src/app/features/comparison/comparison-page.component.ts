@@ -1,179 +1,128 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ComparisonService, PropertyComparisonDTO, AiComparisonResultDTO, PropertyComparisonUserType, AiPropertyScoreBreakdownDTO } from '../../core/services/comparison.service';
-import { Property, PropertyType } from '../../core/services/property.service';
-import { environment } from '../../../environments/environment';
-import { LucideAngularModule, X, Scale, MapPin, Maximize2, Bed, Bath, Info, Sparkles, TrendingUp, Brain, Check, Home } from 'lucide-angular';
-import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import {
+    LucideAngularModule,
+    X,
+    Brain,
+    Trophy,
+    Star,
+    MapPin,
+    Maximize,
+    Bed,
+    Bath,
+    TrendingUp,
+    DollarSign,
+    Award,
+    Sparkles,
+    CheckCircle
+} from 'lucide-angular';
+import { ComparisonService } from '../../core/services/comparison.service';
+import { AiComparisonResultDTO } from '../../core/models/ai-comparison-result.dto';
+import { PropertyComparisonUserType } from '../../core/models/property-comparison-user-type.enum';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
+import { FooterComponent } from '../../shared/components/footer/footer.component';
 
 @Component({
-    selector: 'app-comparison-page',
+    selector: 'app-comparison',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule, RouterModule],
+    imports: [
+        CommonModule,
+        FormsModule,
+        LucideAngularModule,
+        NavbarComponent,
+        FooterComponent
+    ],
     templateUrl: './comparison-page.component.html',
     styleUrls: ['./comparison-page.component.css']
 })
 export class ComparisonPageComponent implements OnInit {
-    private comparisonService = inject(ComparisonService);
 
-    properties: PropertyComparisonDTO[] = [];
+    properties: any[] = [];
     comparisonIds: number[] = [];
-    myProperties: Property[] = [];
-    showAddModal = false;
 
-    // AI Analysis
+    // Icons for standard features
+    readonly X = X;
+    readonly Brain = Brain;
+    readonly Trophy = Trophy;
+    readonly Star = Star;
+    readonly MapPin = MapPin;
+    readonly Maximize = Maximize;
+    readonly Bed = Bed;
+    readonly Bath = Bath;
+
+    // Icons for AI analysis
+    readonly TrendingUp = TrendingUp;
+    readonly DollarSign = DollarSign;
+    readonly Award = Award;
+    readonly Sparkles = Sparkles;
+    readonly CheckCircle = CheckCircle;
+
     aiResult: AiComparisonResultDTO | null = null;
     isLoadingAi = false;
-    selectedUserType: PropertyComparisonUserType = PropertyComparisonUserType.Family;
-    UserTypeEnum = PropertyComparisonUserType; // For template access
 
-    // Icons
-    X = X;
-    Scale = Scale;
-    MapPin = MapPin;
-    Maximize2 = Maximize2;
-    Bed = Bed;
-    Bath = Bath;
-    Info = Info;
-    Sparkles = Sparkles;
-    TrendingUp = TrendingUp;
-    Brain = Brain;
-    Check = Check;
-    Home = Home;
+    selectedUserType: PropertyComparisonUserType = PropertyComparisonUserType.Investor;
+
+    constructor(private comparisonService: ComparisonService) { }
 
     ngOnInit(): void {
         this.comparisonService.comparisonList$.subscribe(list => {
+            const previousIds = this.comparisonIds.join(',');
+
             this.properties = list;
             this.comparisonIds = list.map(p => p.propertyID);
-            // potential clear AI result if properties change?
-            if (this.aiResult) {
-                // optional: this.aiResult = null; 
+
+            if (previousIds !== this.comparisonIds.join(',')) {
                 this.aiResult = null;
             }
         });
     }
 
-    removeProperty(id: number): void {
-        this.comparisonService.removeFromCompare(id);
-    }
-
-    openAddModal(): void {
-        this.showAddModal = true;
-        this.comparisonService.getMyProperties().subscribe({
-            next: (data) => {
-                this.myProperties = data;
-            },
-            error: (err) => console.error('Error loading my properties', err)
-        });
-    }
-
-    closeAddModal(): void {
-        this.showAddModal = false;
-    }
-
-    addToCompare(id: number): void {
-        if (this.comparisonService.addToCompare(id)) {
-            this.closeAddModal();
-        } else {
-            // Maybe show specific error message if full
-            alert('Cannot add property. Comparisons are limited to 5 items or it is already added.');
-        }
-    }
-
     analyze(): void {
-        if (this.comparisonIds.length < 2) return;
+        if (this.comparisonIds.length < 2 || this.isLoadingAi) return;
 
         this.isLoadingAi = true;
-        this.comparisonService.analyzeWithAi(this.selectedUserType).subscribe({
-            next: (result) => {
-                if (!result) {
-                    console.error('AI service returned empty response.');
+        this.aiResult = null;
+
+        this.comparisonService
+            .analyzeWithAi(this.selectedUserType)
+            .subscribe({
+                next: result => {
+                    this.aiResult = result;
                     this.isLoadingAi = false;
-                    return;
+                },
+                error: (err: any) => {
+                    console.error('AI Analysis failed', err);
+                    this.isLoadingAi = false;
                 }
-                this.aiResult = result;
-                this.isLoadingAi = false;
-            },
-            error: (err) => {
-                console.error('AI Analysis failed', err);
-                this.isLoadingAi = false;
-            }
-        });
+            });
     }
 
-    setUserType(type: PropertyComparisonUserType): void {
-        this.selectedUserType = type;
+    getPropertyById(id: number) {
+        return this.properties.find(p => p.propertyID === id);
     }
 
-    getBestValue(category: 'price' | 'area' | 'rooms'): number | null {
-        if (this.properties.length < 2) return null;
-
-        if (category === 'price') {
-            return Math.min(...this.properties.map(p => p.price));
-        }
-        if (category === 'area') {
-            // Filter out nulls/undefined
-            const areas = this.properties.map(p => p.area_sqm).filter((a): a is number => a != null);
-            return areas.length > 0 ? Math.max(...areas) : null;
-        }
-        if (category === 'rooms') {
-            const rooms = this.properties.map(p => p.numBedrooms).filter((r): r is number => r != null);
-            return rooms.length > 0 ? Math.max(...rooms) : null;
-        }
-        return null;
+    formatCategory(key: string): string {
+        return key
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/^./, str => str.toUpperCase());
     }
 
-    isBest(property: PropertyComparisonDTO, category: 'price' | 'area' | 'rooms'): boolean {
-        const bestValue = this.getBestValue(category);
-        if (bestValue === null) return false;
-
-        if (category === 'price') return property.price === bestValue;
-        if (category === 'area') return (property.area_sqm || 0) === bestValue;
-        if (category === 'rooms') return (property.numBedrooms || 0) === bestValue;
-
-        return false;
+    removeProperty(id: number): void {
+        this.comparisonService.removeFromComparison(id);
     }
 
     formatPrice(price: number): string {
-        return new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(price);
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            maximumFractionDigits: 0
+        }).format(price);
     }
 
-    resolveImageUrl(url: string | undefined | null): string {
-        if (!url) return '/assets/placeholder.jpg';
-        if (url.startsWith('http')) return url;
-
-        // Remove trailing slash from base if present
-        const baseUrl = environment.assetsBaseUrl.replace(/\/$/, '');
-        // Ensure path starts with slash
-        const path = url.startsWith('/') ? url : `/${url}`;
-
-        return `${baseUrl}${path}`;
-    }
-
-    getPropertyTitle(propertyId: number): string {
-        const property = this.properties.find(p => p.propertyID === propertyId);
-        return property ? property.title : 'Unknown Property';
-    }
-
-    getScoreColor(score: number): string {
-        if (score >= 80) return 'bg-green-500';
-        if (score >= 60) return 'bg-yellow-500';
-        return 'bg-red-500';
-    }
-
-    getPropertyTypeName(type: string | number | undefined): string {
-        if (type === undefined) return 'Property';
-        const typeNum = typeof type === 'string' ? parseInt(type) : type;
-        switch (typeNum) {
-            case PropertyType.Apartment: return 'Apartment';
-            case PropertyType.Villa: return 'Villa';
-            case PropertyType.Studio: return 'Studio';
-            case PropertyType.Office: return 'Office';
-            case PropertyType.EmptyLand: return 'Empty Land';
-            case PropertyType.Duplex: return 'Duplex';
-            case PropertyType.Shop: return 'Shop';
-            case PropertyType.Garage: return 'Garage';
-            default: return 'Property';
-        }
+    onImageError(event: Event): void {
+        const img = event.target as HTMLImageElement;
+        img.onerror = null; // Prevent infinite loop
+        img.src = '/assets/placeholder.jpg';
     }
 }

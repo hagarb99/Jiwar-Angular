@@ -1,11 +1,11 @@
-
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { PropertyCardComponent } from '../../../shared/components/property-card/property-card.component';
-import { PropertyOwnerPublicProfile } from '../../services/PropertyOwnerService';
+
+//import { PropertyOwnerPublicProfile } from '../../services/PropertyOwnerService';
 import {
   LucideAngularModule,
   MapPin,
@@ -28,15 +28,16 @@ import {
   Shield,
   Activity,
   Star,
-  CheckCircle,
   Wallet,
-  PieChart,
   TrendingUp,
-  LineChart,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MessageSquare,
+  LineChart
 } from 'lucide-angular';
 import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
+import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour } from '../../services/property.service';
 import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour, BookingCreateDTO } from '../../services/property.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
@@ -64,6 +65,9 @@ import { ToastModule } from 'primeng/toast';
     NavbarComponent,
     FooterComponent,
     PropertyCardComponent,
+    ToastModule,
+    BaseChartDirective,
+
     ToastModule,
     PanoramaViewerComponent
   ],
@@ -102,13 +106,12 @@ export class PropertyDetailsComponent implements OnInit {
   Shield = Shield;
   Activity = Activity;
   Star = Star;
-  CheckCircle = CheckCircle;
   Wallet = Wallet;
-  PieChart = PieChart;
   TrendingUp = TrendingUp;
-  LineChart = LineChart;
   ChevronLeft = ChevronLeft;
   ChevronRight = ChevronRight;
+  LineChart = LineChart;
+  MessageSquare = MessageSquare;
 
   property: Property | null = null;
   recommendedProperties: Property[] = [];
@@ -135,7 +138,7 @@ export class PropertyDetailsComponent implements OnInit {
   influenceFactors: string[] = [];
 
   // Chart Properties
-  public lineChartData: ChartConfiguration<'line'>['data'] = {
+  public lineChart: ChartConfiguration<'line'>['data'] = {
     labels: [],
     datasets: [
       {
@@ -254,11 +257,13 @@ export class PropertyDetailsComponent implements OnInit {
     { icon: Shield, label: '24/7 Security' },
     { icon: Activity, label: 'Gym & Fitness' },
     { icon: Star, label: 'Premium Finish' },
-    { icon: CheckCircle, label: 'Smart Home' }
   ];
 
   // Navigation State
   activeSection = 'overview';
+  chatMessage: string = '';
+  chatMessages: { title?: string; message: string; sentDate: Date; isMine: boolean }[] = [];
+  isChatModalOpen: boolean = false;
 
   scrollToSection(sectionId: string): void {
     this.activeSection = sectionId;
@@ -509,11 +514,11 @@ export class PropertyDetailsComponent implements OnInit {
 
         // Update Chart Data
         // We need to create a new object reference to trigger change detection in ng2-charts
-        this.lineChartData = {
+        this.lineChart = {
           labels: filteredHistory.map(h => h.year.toString()),
           datasets: [
             {
-              ...this.lineChartData.datasets[0],
+              ...this.lineChart.datasets[0],
               data: filteredHistory.map(h => h.price)
             }
           ]
@@ -747,7 +752,9 @@ export class PropertyDetailsComponent implements OnInit {
   }
 
   onImageError(event: Event): void {
-    (event.target as HTMLImageElement).src = '/assets/placeholder.jpg';
+    const img = event.target as HTMLImageElement;
+    img.onerror = null; // Prevent infinite loop
+    img.src = '/logo2.png'; // Fallback to an existing asset
   }
 
   private fixUrl(url: string): string {
@@ -756,5 +763,45 @@ export class PropertyDetailsComponent implements OnInit {
     const apiBase = environment.apiBaseUrl.replace(/\/api$/, '');
     const cleanPath = url.startsWith('/') ? url.substring(1) : url;
     return `${apiBase}/${cleanPath}`;
+  }
+  // Chat Functionality
+  toggleChat(): void {
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.isChatModalOpen = !this.isChatModalOpen;
+  }
+
+  closeChatModal(): void {
+    this.isChatModalOpen = false;
+  }
+
+  sendMessage(): void {
+    if (!this.chatMessage.trim()) return;
+
+    // Optimistic update
+    const newMessage = {
+      title: 'Me',
+      message: this.chatMessage,
+      sentDate: new Date(),
+      isMine: true
+    };
+
+    this.chatMessages.push(newMessage);
+    this.chatMessage = '';
+
+    // TODO: Connect to actual ChatService
+    console.log('Message sent:', newMessage);
+
+    // Simulate auto-reply for demo
+    setTimeout(() => {
+      this.chatMessages.push({
+        title: 'Property Owner',
+        message: 'Thank you for your interest! I will get back to you shortly.',
+        sentDate: new Date(),
+        isMine: false
+      });
+    }, 1500);
   }
 }

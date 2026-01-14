@@ -8,10 +8,10 @@ import { LucideAngularModule, Send, ArrowLeft } from 'lucide-angular';
 import { Subscription, filter } from 'rxjs';
 
 @Component({
-    selector: 'app-property-customer-chat',
-    standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, RouterModule],
-    template: `
+  selector: 'app-property-customer-chat',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, RouterModule],
+  template: `
     <div class="flex flex-col h-[calc(100vh-120px)] bg-gray-50 max-w-5xl mx-auto rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-6">
       
       <!-- Header -->
@@ -71,132 +71,135 @@ import { Subscription, filter } from 'rxjs';
 
     </div>
   `,
-    styles: []
+  styles: []
 })
 export class PropertyCustomerChatComponent implements OnInit, OnDestroy, AfterViewChecked {
-    private route = inject(ActivatedRoute);
-    private router = inject(Router);
-    private chatService = inject(CustomerChatService);
-    private authService = inject(AuthService);
-    private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private chatService = inject(CustomerChatService);
+  private authService = inject(AuthService);
+  private fb = inject(FormBuilder);
 
-    propertyId!: number;
-    customerId!: string;
-    messages: CustomerChatMessage[] = [];
+  propertyId!: number;
+  customerId!: string;
+  messages: CustomerChatMessage[] = [];
 
-    subscription!: Subscription;
-    scrollTop = 0;
-    sending = false;
+  subscription!: Subscription;
+  scrollTop = 0;
+  sending = false;
 
-    @ViewChild('chatContainer') chatContainer!: ElementRef;
+  @ViewChild('chatContainer') chatContainer!: ElementRef;
 
-    // Icons
-    Send = Send;
-    ArrowLeft = ArrowLeft;
+  // Icons
+  Send = Send;
+  ArrowLeft = ArrowLeft;
 
-    chatForm = this.fb.group({
-        message: ['', [Validators.required, Validators.minLength(1)]]
+  chatForm = this.fb.group({
+    message: ['', [Validators.required, Validators.minLength(1)]]
+  });
+
+  ngOnInit() {
+    this.route.paramMap.subscribe(params => {
+      this.propertyId = Number(params.get('propertyId'));
+      this.customerId = params.get('customerId') || '';
+
+      if (this.propertyId && this.customerId) {
+        this.loadHistory();
+        this.setupRealtime();
+      }
     });
 
-    ngOnInit() {
-        this.route.paramMap.subscribe(params => {
-            this.propertyId = Number(params.get('propertyId'));
-            this.customerId = params.get('customerId') || '';
+    // Ensure connection is active
+    this.chatService.startConnection();
+  }
 
-            if (this.propertyId && this.customerId) {
-                this.loadHistory();
-                this.setupRealtime();
-            }
-        });
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
 
-        // Ensure connection is active
-        this.chatService.startConnection();
-    }
-
-    ngAfterViewChecked() {
+  loadHistory() {
+    this.chatService.getChatHistory(this.propertyId, this.customerId).subscribe({
+      next: (msgs) => {
+        const myId = this.authService.getUserId();
+        this.messages = msgs.map(m => ({
+          ...m,
+          isSelf: m.senderId === myId
+        }));
         this.scrollToBottom();
-    }
 
-    loadHistory() {
-        this.chatService.getChatHistory(this.propertyId, this.customerId).subscribe({
-            next: (msgs) => {
-                const myId = this.authService.getUserId();
-                this.messages = msgs.map(m => ({
-                    ...m,
-                    isSelf: m.senderId === myId
-                }));
-                this.scrollToBottom();
-            }
+        // ✅ Mark as read when opening chat
+        this.chatService.markAsRead(this.propertyId, this.customerId).subscribe();
+      }
+    });
+  }
+
+  setupRealtime() {
+    this.subscription = this.chatService.messageReceived$.subscribe(msg => {
+      // Filter: Must match current property AND active customer context
+      if (msg.propertyId == this.propertyId && (msg.senderId === this.customerId || msg.senderId === this.authService.getUserId())) {
+
+        // Anti-duplication (Safety)
+        if (msg.senderId === this.authService.getUserId()) return;
+
+        this.messages.push({
+          ...msg,
+          isSelf: false
         });
-    }
+        this.scrollToBottom();
+      }
+    });
+  }
 
-    setupRealtime() {
-        this.subscription = this.chatService.messageReceived$.subscribe(msg => {
-            // Filter: Must match current property AND active customer context
-            if (msg.propertyId == this.propertyId && (msg.senderId === this.customerId || msg.senderId === this.authService.getUserId())) {
+  sendMessage() {
+    if (this.chatForm.invalid) return;
 
-                // Anti-duplication (Safety)
-                if (msg.senderId === this.authService.getUserId()) return;
+    const text = this.chatForm.get('message')?.value?.trim();
+    if (!text) return;
 
-                this.messages.push({
-                    ...msg,
-                    isSelf: false
-                });
-                this.scrollToBottom();
-            }
-        });
-    }
+    this.sending = true;
 
-    sendMessage() {
-        if (this.chatForm.invalid) return;
+    // 1️⃣ Optimistic Update
+    const myId = this.authService.getUserId() || '';
+    const optimisticMsg: CustomerChatMessage = {
+      senderId: myId,
+      message: text,
+      sentDate: new Date().toISOString(),
+      propertyId: this.propertyId,
+      isSelf: true
+    };
+    this.messages.push(optimisticMsg);
 
-        const text = this.chatForm.get('message')?.value?.trim();
-        if (!text) return;
+    // Clear Form
+    this.chatForm.reset();
 
-        this.sending = true;
+    // 2️⃣ API Call
+    this.chatService.sendMessage(this.propertyId, text, this.customerId).subscribe({
+      next: () => {
+        this.sending = false;
+        console.log('✅ Message sent');
+      },
+      error: (err) => {
+        this.sending = false;
+        console.error('❌ Failed to send:', err);
+        // Rollback? Or show error
+        // For now simple log
+      }
+    });
+  }
 
-        // 1️⃣ Optimistic Update
-        const myId = this.authService.getUserId() || '';
-        const optimisticMsg: CustomerChatMessage = {
-            senderId: myId,
-            message: text,
-            sentDate: new Date().toISOString(),
-            propertyId: this.propertyId,
-            isSelf: true
-        };
-        this.messages.push(optimisticMsg);
+  scrollToBottom() {
+    try {
+      if (this.chatContainer) {
+        this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+      }
+    } catch (err) { }
+  }
 
-        // Clear Form
-        this.chatForm.reset();
+  goBack() {
+    this.router.navigate(['/dashboard/propertyowner/messages']);
+  }
 
-        // 2️⃣ API Call
-        this.chatService.sendMessage(this.propertyId, text, this.customerId).subscribe({
-            next: () => {
-                this.sending = false;
-                console.log('✅ Message sent');
-            },
-            error: (err) => {
-                this.sending = false;
-                console.error('❌ Failed to send:', err);
-                // Rollback? Or show error
-                // For now simple log
-            }
-        });
-    }
-
-    scrollToBottom() {
-        try {
-            if (this.chatContainer) {
-                this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
-            }
-        } catch (err) { }
-    }
-
-    goBack() {
-        this.router.navigate(['/dashboard/propertyowner/messages']);
-    }
-
-    ngOnDestroy() {
-        if (this.subscription) this.subscription.unsubscribe();
-    }
+  ngOnDestroy() {
+    if (this.subscription) this.subscription.unsubscribe();
+  }
 }

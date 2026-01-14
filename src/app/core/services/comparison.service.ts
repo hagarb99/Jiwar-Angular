@@ -3,115 +3,84 @@ import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Property, PropertyService } from './property.service';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap, map } from 'rxjs/operators';
+import { PropertyComparisonUserType } from '../models/property-comparison-user-type.enum';
+import {
+    AiComparisonResultDTO
+} from '../models/ai-comparison-result.dto';
+import { PropertyComparisonDTO, PropertyComparisonRequestDTO } from '../models/comparison.model';
 
-export interface PropertyComparisonDTO {
-    propertyID: number;
-    title: string;
-    city: string;
-    address: string;
-    price: number;
-    area_sqm?: number;
-    numBedrooms?: number;
-    numBathrooms?: number;
-    propertyType: string;
-    status: string;
-    thumbnailUrl: string;
-    ThumbnailUrl?: string;
-    features: string[];
-}
-
-export enum PropertyComparisonUserType {
-    Investor = 0,
-    Family = 1,
-    BudgetBuyer = 2
-}
-
-export interface PropertyComparisonRequestDTO {
-    propertyIds: number[];
-    userType: PropertyComparisonUserType;
-}
-
-export interface CategoryScoreDetailDTO {
-    score: number;
-    description: string;
-}
-
-export interface CategoryScoresDTO {
-    priceValue: CategoryScoreDetailDTO;
-    location: CategoryScoreDetailDTO;
-    spaceAndLayout: CategoryScoreDetailDTO;
-    features: CategoryScoreDetailDTO;
-    investmentPotential: CategoryScoreDetailDTO;
-}
-
-export interface AiPropertyScoreBreakdownDTO {
-    propertyId: number;
-    categoryScores: CategoryScoresDTO;
-    totalScore: number;
-    overallReason: string;
-}
-
-export interface AiComparisonResultDTO {
-    bestPropertyId: number;
-    summary: string;
-    scores: AiPropertyScoreBreakdownDTO[];
-}
 
 @Injectable({
     providedIn: 'root'
 })
 export class ComparisonService {
-    private apiUrl = environment.apiBaseUrl + '/property';
+    private comparisonIds: number[] = [];
     private comparisonListSubject = new BehaviorSubject<PropertyComparisonDTO[]>([]);
     comparisonList$ = this.comparisonListSubject.asObservable();
-    private comparisonIds: number[] = [];
-
-    private readonly STORAGE_KEY = 'jiwar_comparison_ids';
 
     constructor(
         private http: HttpClient,
         private propertyService: PropertyService
     ) {
-        this.loadFromStorage();
+        this.loadFromLocalStorage();
+    }
+
+    addToComparison(property: PropertyComparisonDTO): boolean {
+        if (this.comparisonIds.length >= 5) return false;
+
+        if (!this.comparisonIds.includes(property.propertyID)) {
+            this.comparisonIds.push(property.propertyID);
+            this.saveToLocalStorage();
+            this.refreshComparisonData();
+            return true;
+        }
+        return false;
     }
 
     addToCompare(id: number): boolean {
-        if (this.comparisonIds.length >= 5 || this.comparisonIds.includes(id)) {
-            return false;
-        }
+        if (this.comparisonIds.length >= 5) return false;
 
-        this.comparisonIds.push(id);
-        this.saveToStorage();
-        this.refreshComparisonData();
-        return true;
-    }
-
-    removeFromCompare(propertyId: number): void {
-        this.comparisonIds = this.comparisonIds.filter(id => id !== propertyId);
-        this.saveToStorage();
-
-        const currentList = this.comparisonListSubject.value
-            .filter(p => p.propertyID !== propertyId);
-
-        this.comparisonListSubject.next(currentList);
-
-        if (this.comparisonIds.length > 0) {
+        if (!this.comparisonIds.includes(id)) {
+            this.comparisonIds.push(id);
+            this.saveToLocalStorage();
             this.refreshComparisonData();
+            return true;
         }
+        return false;
     }
 
-    isInComparison(propertyId: number): boolean {
-        return this.comparisonIds.includes(propertyId);
+    removeFromComparison(id: number): void {
+        this.comparisonIds = this.comparisonIds.filter(cid => cid !== id);
+        this.saveToLocalStorage();
+        this.refreshComparisonData();
+    }
+
+    removeFromCompare(id: number): void {
+        this.removeFromComparison(id);
+    }
+
+    isInComparison(id: number): boolean {
+        return this.comparisonIds.includes(id);
     }
 
     clearComparison(): void {
         this.comparisonIds = [];
-        this.comparisonListSubject.next([]);
-        localStorage.removeItem(this.STORAGE_KEY);
+        this.saveToLocalStorage();
+        this.refreshComparisonData();
     }
 
-    refreshComparisonData(): void {
+    analyzeWithAi(userType: PropertyComparisonUserType): Observable<AiComparisonResultDTO> {
+        const url = `${environment.apiBaseUrl}/property/compare`;
+        const request: PropertyComparisonRequestDTO = {
+            propertyIds: this.comparisonIds,
+            userType: userType
+        };
+
+        return this.http.post<AiComparisonResultDTO>(url, request);
+    }
+
+    private refreshComparisonData(): void {
         if (this.comparisonIds.length === 0) {
             this.comparisonListSubject.next([]);
             return;
@@ -120,7 +89,7 @@ export class ComparisonService {
         const requests = this.comparisonIds.map(id =>
             this.propertyService.getPropertyById(id).pipe(
                 catchError(err => {
-                    console.error(`Failed to load property ${id}`, err);
+                    console.error(`Error fetching property ${id}`, err);
                     return of(null);
                 })
             )
@@ -133,11 +102,6 @@ export class ComparisonService {
                 );
 
                 const dtos: PropertyComparisonDTO[] = validProperties.map(p => {
-                    let thumb = p.thumbnailUrl || p.ThumbnailUrl;
-                    if (!thumb && p.mediaUrls && p.mediaUrls.length > 0) {
-                        thumb = p.mediaUrls[0];
-                    }
-
                     return {
                         propertyID: p.propertyID,
                         title: p.title,
@@ -149,47 +113,41 @@ export class ComparisonService {
                         numBathrooms: p.numBathrooms,
                         propertyType: p.propertyType?.toString() ?? 'Unknown',
                         status: 'Available',
-                        thumbnailUrl: thumb || '',
+                        thumbnailUrl: this.getThumbnailUrl(p),
                         features: []
                     };
                 });
 
                 this.comparisonListSubject.next(dtos);
-            },
-            error: err => {
-                console.error('Error fetching comparison data', err);
             }
         });
     }
 
-    analyzeWithAi(userType: PropertyComparisonUserType): Observable<AiComparisonResultDTO> {
-        const payload: PropertyComparisonRequestDTO = {
-            propertyIds: this.comparisonIds,
-            userType
-        };
+    public getThumbnailUrl(property: Property): string {
+        const fallbackImage = '/logo2.png';
+        let thumb = property.thumbnailUrl || property.ThumbnailUrl;
 
-        return this.http.post<AiComparisonResultDTO>(
-            `${this.apiUrl}/compare`,
-            payload
-        );
+        if (!thumb && property.mediaUrls && property.mediaUrls.length > 0) {
+            thumb = property.mediaUrls[0];
+        }
+
+        if (!thumb) return fallbackImage;
+        if (thumb.startsWith('http')) return thumb;
+
+        const apiBase = environment.apiBaseUrl;
+        const cleanBase = apiBase.endsWith('/api') ? apiBase.replace('/api', '') : apiBase;
+        const cleanPath = thumb.startsWith('/') ? thumb.substring(1) : thumb;
+        const finalBase = cleanBase.endsWith('/') ? cleanBase.slice(0, -1) : cleanBase;
+
+        return `${finalBase}/${cleanPath}`;
     }
 
-    getMyProperties(): Observable<Property[]> {
-        return this.http.get<Property[]>(`${this.apiUrl}/my`);
+    private saveToLocalStorage(): void {
+        localStorage.setItem('property_comparison_ids', JSON.stringify(this.comparisonIds));
     }
 
-    getAllProperties(page: number = 1, pageSize: number = 12): Observable<any> {
-        return this.http.get(
-            `${this.apiUrl}/all?page=${page}&pageSize=${pageSize}`
-        );
-    }
-
-    private saveToStorage(): void {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.comparisonIds));
-    }
-
-    private loadFromStorage(): void {
-        const saved = localStorage.getItem(this.STORAGE_KEY);
+    private loadFromLocalStorage(): void {
+        const saved = localStorage.getItem('property_comparison_ids');
         if (saved) {
             try {
                 this.comparisonIds = JSON.parse(saved);

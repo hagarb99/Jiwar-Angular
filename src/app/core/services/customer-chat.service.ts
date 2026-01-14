@@ -45,6 +45,10 @@ export class CustomerChatService {
     private inboxSubject = new BehaviorSubject<OwnerInboxItem[]>([]);
     public inbox$ = this.inboxSubject.asObservable();
 
+    // Unread Count State (Isolated)
+    private unreadCountSubject = new BehaviorSubject<number>(0);
+    public unreadCount$ = this.unreadCountSubject.asObservable();
+
     constructor() { }
 
     /**
@@ -86,8 +90,14 @@ export class CustomerChatService {
             // Notify Active Chat Component
             this.messageReceivedSubject.next(msg);
 
+            // Increment Unread Count ONLY if it's an incoming message (not from self)
+            const currentUserId = this.authService.getUserId();
+            if (msg.senderId !== currentUserId) {
+                const current = this.unreadCountSubject.value;
+                this.unreadCountSubject.next(current + 1);
+            }
+
             // Refresh Inbox if we are the owner
-            // Optimistic or Fetch? Let's fetch to be safe on unread counts.
             this.refreshInbox();
         });
     }
@@ -104,12 +114,24 @@ export class CustomerChatService {
      */
     public getOwnerInbox(): Observable<OwnerInboxItem[]> {
         return this.http.get<OwnerInboxItem[]>(`${this.apiUrl}/GetOwnerChatInbox`).pipe(
-            tap(data => this.inboxSubject.next(data))
+            tap(data => {
+                this.inboxSubject.next(data);
+                // Calculate total unread from inbox data
+                if (data) {
+                    const totalUnread = data.reduce((sum, item) => sum + (item.unreadCount || 0), 0);
+                    this.unreadCountSubject.next(totalUnread);
+                }
+            })
         );
     }
 
-    private refreshInbox() {
+    public refreshInbox() {
         this.getOwnerInbox().subscribe();
+    }
+
+    public resetUnreadCount() {
+        // Reset local count temporarily, backend should sync on fetch
+        this.refreshInbox();
     }
 
     /**
@@ -129,5 +151,16 @@ export class CustomerChatService {
             payload.receiverId = receiverId;
         }
         return this.http.post(`${this.apiUrl}/${propertyId}/chat/send`, payload);
+    }
+    /**
+     * 5️⃣ API: Mark Messages as Read
+     */
+    public markAsRead(propertyId: number, customerId: string): Observable<any> {
+        return this.http.post(`${this.apiUrl}/${propertyId}/chat/read/${customerId}`, {}).pipe(
+            tap(() => {
+                // Refresh inbox to update counts globally
+                this.refreshInbox();
+            })
+        );
     }
 }

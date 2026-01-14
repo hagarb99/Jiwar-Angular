@@ -1,5 +1,6 @@
-// customer-dashboard.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 interface Property {
   id: number;
@@ -39,12 +40,16 @@ interface Payment {
   date: string;
 }
 
+
 @Component({
   selector: 'app-customer-dashboard',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './customer-dashboard.component.html',
   styleUrls: ['./customer-dashboard.component.css']
 })
 export class CustomerDashboardComponent implements OnInit {
+  private router = inject(Router);
   activeBookingTab = 'upcoming';
 
   properties: Property[] = [
@@ -74,6 +79,14 @@ export class CustomerDashboardComponent implements OnInit {
     { id: 1, description: 'Booking Deposit - Luxury Penthouse', amount: '$2,500', date: 'Dec 10, 2024' },
     { id: 2, description: 'Design Service - Living Room', amount: '$1,200', date: 'Dec 5, 2024' },
   ];
+
+  get upcomingBookingsCount(): number {
+    return this.bookings.filter(b => b.status === 'upcoming').length;
+  }
+
+  get activeRequestsCount(): number {
+    return this.requests.filter(r => r.status !== 'completed').length;
+  }
 
   constructor() { }
 
@@ -107,8 +120,6 @@ export class CustomerDashboardComponent implements OnInit {
   }
 
   navigateTo(path: string): void {
-    // Use Angular Router for navigation
-    // this.router.navigate([path]);
-    window.location.href = path;
+    this.router.navigate([path]);
   }
 }
