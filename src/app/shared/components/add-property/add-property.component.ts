@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -17,6 +18,7 @@ import { MenuItem } from 'primeng/api';
 import { CardModule } from 'primeng/card';
 import { FileUploadModule } from 'primeng/fileupload';
 import { PropertyService } from '../../../core/services/property.service';
+import { PanoramaUploadComponent } from '../panorama-upload/panorama-upload.component';
 
 
 interface PropertyCreateDTO {
@@ -64,7 +66,7 @@ export enum ListingTypeEnum {
   styleUrls: ['./add-property.component.css'],
   providers: [MessageService]
 })
-export class AddPropertyComponent {
+export class AddPropertyComponent implements OnDestroy {
   activeStep: number = 0;
   steps: MenuItem[] = [
     { label: 'Basic Information' },
@@ -89,11 +91,16 @@ export class AddPropertyComponent {
   ];
 
 
+  private previewUrls: Map<File, SafeUrl> = new Map();
+  private objectUrls: Map<File, string> = new Map();
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private propertyService: PropertyService,
     private messageService: MessageService,
+    private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef,
     public router: Router
   ) {
     this.propertyForm = this.fb.group({
@@ -171,15 +178,49 @@ export class AddPropertyComponent {
   }
 
   removeFile(file: File) {
+    this.cleanupFile(file);
     this.uploadedFiles = this.uploadedFiles.filter(f => f !== file);
   }
 
-  getImagePreview(file: File): string {
-    return URL.createObjectURL(file);
+  getImagePreview(file: File): SafeUrl {
+    if (this.previewUrls.has(file)) {
+      return this.previewUrls.get(file)!;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const safeUrl = this.sanitizer.bypassSecurityTrustUrl(objectUrl);
+    this.objectUrls.set(file, objectUrl);
+    this.previewUrls.set(file, safeUrl);
+
+    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    // when a new file is added and the URL is generated during a check
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    });
+
+    return safeUrl;
+  }
+
+  private cleanupFile(file: File) {
+    const objectUrl = this.objectUrls.get(file);
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+      this.objectUrls.delete(file);
+    }
+    this.previewUrls.delete(file);
+  }
+
+  ngOnDestroy() {
+    this.objectUrls.forEach(url => URL.revokeObjectURL(url));
+    this.objectUrls.clear();
+    this.previewUrls.clear();
   }
   onFileRemove(event: any) {
+    this.cleanupFile(event.file);
     this.uploadedFiles = this.uploadedFiles.filter(f => f !== event.file);
   }
+
+
 
   onSubmit() {
     if (this.activeStep !== this.steps.length - 1) return;

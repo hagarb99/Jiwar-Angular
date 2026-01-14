@@ -11,6 +11,7 @@ import { InputTextarea } from 'primeng/inputtextarea';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { OwnerMyPropertiesComponent } from '../owner-my-properties/owner-my-properties.component';
 import { environment } from '../../../../../../environments/environment';
+import { PanoramaUploadComponent } from '../../../../../shared/components/panorama-upload/panorama-upload.component';
 
 @Component({
   selector: 'app-edit-property',
@@ -177,6 +178,8 @@ export class EditPropertyComponent implements OnInit {
   onImageError(event: any): void {
     event.target.src = '/logo2.png';
   }
+
+
 
   cancel(): void {
     this.router.navigate(['/dashboard/propertyowner/my-properties']);

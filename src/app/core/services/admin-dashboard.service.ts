@@ -5,11 +5,11 @@ import { ApiBaseService } from './api-base.service';
 
 export interface AdminUserDto {
     id: string;
-    name: string;
+    userName: string;
     email: string;
     phoneNumber?: string;
     role: string;
-    createdDate: Date;
+    registrationDate: Date;
     isActive: boolean;
 }
 
@@ -49,6 +49,10 @@ export class AdminDashboardService extends ApiBaseService {
 
     deleteUser(userId: string): Observable<string> {
         return this.httpClient.delete<string>(`${this.apiBaseUrl}/admin/dashboard/users/${userId}`);
+    }
+
+    toggleUserStatus(userId: string): Observable<any> {
+        return this.httpClient.post(`${this.apiBaseUrl}/admin/dashboard/users/${userId}/toggle-status`, {});
     }
 
     // PROPERTIES

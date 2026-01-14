@@ -48,6 +48,31 @@ export class OverviewComponent implements OnInit {
     ]
   };
   public barChartType: ChartType = 'bar';
+  public lineChartType: ChartType = 'line';
+
+  // Revenue Chart
+  public revenueChartData: ChartData<'line'> = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        label: 'Revenue Trends',
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        fill: true,
+        tension: 0.4
+      }
+    ]
+  };
+  public revenueChartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    plugins: {
+      legend: { display: true }
+    },
+    scales: {
+      y: { beginAtZero: true }
+    }
+  };
 
   constructor(private analyticsService: AdminAnalyticsService) { }
 
@@ -74,6 +99,16 @@ export class OverviewComponent implements OnInit {
           this.barChartData = {
             labels: periods,
             datasets: [{ ...this.barChartData.datasets[0], data: counts }]
+          };
+        }
+
+        // Map Revenue Trends
+        if (data.paymentMetrics.revenueByPeriod) {
+          const periods = Object.keys(data.paymentMetrics.revenueByPeriod);
+          const amounts = Object.values(data.paymentMetrics.revenueByPeriod);
+          this.revenueChartData = {
+            labels: periods,
+            datasets: [{ ...this.revenueChartData.datasets[0], data: amounts }]
           };
         }
       },

@@ -59,8 +59,8 @@ export class UsersListComponent implements OnInit {
   filterUsers(): void {
     this.filteredUsers = this.users.filter(user => {
       const matchesSearch = !this.searchTerm ||
-        user.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
+        (user.userName && user.userName.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
+        (user.email && user.email.toLowerCase().includes(this.searchTerm.toLowerCase()));
 
       const matchesRole = !this.selectedRole || this.selectedRole === 'All' ||
         user.role === this.selectedRole;
@@ -103,14 +103,30 @@ export class UsersListComponent implements OnInit {
     }
   }
 
+  toggleStatus(user: AdminUserDto): void {
+    const action = user.isActive ? 'deactivate' : 'activate';
+    if (confirm(`Are you sure you want to ${action} user "${user.userName}"?`)) {
+      this.adminService.toggleUserStatus(user.id).subscribe({
+        next: () => {
+          user.isActive = !user.isActive;
+          alert(`User ${action}d successfully`);
+        },
+        error: (err) => {
+          console.error(`Error ${action}ing user:`, err);
+          alert(`Failed to ${action} user`);
+        }
+      });
+    }
+  }
+
   exportToExcel(): void {
     const dataToExport = this.filteredUsers.map(u => ({
       ID: u.id,
-      Name: u.name,
+      Name: u.userName,
       Email: u.email,
       Phone: u.phoneNumber || 'N/A',
       Role: u.role,
-      'Joined Date': u.createdDate,
+      'Joined Date': u.registrationDate,
       Status: u.isActive ? 'Active' : 'Inactive'
     }));
 

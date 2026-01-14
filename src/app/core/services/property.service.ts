@@ -11,7 +11,7 @@ export interface PropertyOwner {
     name: string;
     profilePicURL?: string;
     phoneNumber?: string;
-  }
+}
 export interface Property {
     propertyID: number;
     id?: number; // fallback
@@ -35,7 +35,7 @@ export interface Property {
     thumbnailUrl?: string; // Still used by browse endpoint for card display
     ThumbnailUrl?: string; // Used by /my endpoint (PropertyListBDTO)
     propertyMedia?: PropertyMedia[]; // Still used by some endpoints
-    propertyOwner?: PropertyOwner; 
+    propertyOwner?: PropertyOwner;
 }
 
 export interface PropertyMedia {
@@ -148,7 +148,10 @@ export class PropertyService {
         if (dto.locationLat) formData.append('locationLat', dto.locationLat.toString());
         if (dto.locationLang) formData.append('locationLang', dto.locationLang.toString());
 
-        images.forEach(file => formData.append('Images', file));
+        images.forEach(file => {
+            const sanitizedFile = this.sanitizeFile(file);
+            formData.append('Images', sanitizedFile);
+        });
         return this.http.post(`${this.apiUrl}/add`, formData);
     }
 
@@ -186,7 +189,10 @@ export class PropertyService {
 
         // Add images if provided
         if (images && images.length > 0) {
-            images.forEach(file => formData.append('Images', file));
+            images.forEach(file => {
+                const sanitizedFile = this.sanitizeFile(file);
+                formData.append('Images', sanitizedFile);
+            });
         }
 
         return this.http.put(`${this.apiUrl}/update/${id}`, formData);
@@ -197,7 +203,13 @@ export class PropertyService {
     }
     createBooking(booking: BookingCreateDTO) {
         return this.http.post(`${environment.apiBaseUrl}/Booking`, booking);
-      }      
+    }
 
-
+    private sanitizeFile(file: File): File {
+        const extension = file.name.split('.').pop() || 'jpg';
+        const guid = (typeof crypto !== 'undefined' && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : Math.random().toString(36).substring(2, 11);
+        return new File([file], `${guid}.${extension}`, { type: file.type });
+    }
 }
