@@ -9,8 +9,7 @@
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <button routerLink="/dashboard/interiordesigner/profile" 
-          class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+        <button routerLink="/dashboard/designer/profile" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
           <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
@@ -20,12 +19,11 @@
           <p class="text-sm text-gray-500">Update your professional information</p>
         </div>
       </div>
-      <button 
-        (click)="onSubmit()" 
-        [disabled]="editForm.invalid || saving"
+      <button (click)="onSubmit()" [disabled]="editForm.invalid || saving"
         class="bg-amber-300 text-amber-900 px-6 py-2 rounded-xl font-bold text-sm hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
         </svg>
         <span *ngIf="!saving">Save Changes</span>
         <span *ngIf="saving">Saving...</span>
@@ -45,18 +43,14 @@
           Profile Photo
         </h3>
         <div class="flex items-center gap-6">
-          <div class="w-24 h-24 rounded-full bg-slate-900 text-white flex items-center justify-center text-3xl font-medium shadow-md overflow-hidden">
+          <div
+            class="w-24 h-24 rounded-full bg-slate-900 text-white flex items-center justify-center text-3xl font-medium shadow-md overflow-hidden">
             <img *ngIf="profilePicPreview" [src]="profilePicPreview" alt="Profile" class="w-full h-full object-cover">
             <span *ngIf="!profilePicPreview">{{ (editForm.get('name')?.value || 'U').charAt(0).toUpperCase() }}</span>
           </div>
           <div>
-            <p-fileUpload 
-              mode="basic" 
-              accept="image/*" 
-              [maxFileSize]="5000000"
-              (onSelect)="onFileSelect($event)"
-              chooseLabel="Upload New Photo"
-              styleClass="p-button-outlined">
+            <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="5000000" (onSelect)="onFileSelect($event)"
+              chooseLabel="Upload New Photo" styleClass="p-button-outlined">
             </p-fileUpload>
             <p class="text-xs text-gray-400 mt-2">Recommended: 400x400px, JPG or PNG. Max 5MB.</p>
           </div>
@@ -75,11 +69,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Full Name *</label>
-            <input 
-              pInputText 
-              type="text" 
-              formControlName="name"
-              class="w-full"
+            <input pInputText type="text" formControlName="name" class="w-full"
               [class.ng-invalid]="editForm.get('name')?.invalid && editForm.get('name')?.touched">
             <small *ngIf="editForm.get('name')?.invalid && editForm.get('name')?.touched" class="text-red-500">
               Name is required
@@ -87,26 +77,16 @@
           </div>
           <div class="space-y-2">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Professional Title *</label>
-            <input 
-              pInputText 
-              type="text" 
-              formControlName="title"
-              placeholder="e.g. Senior Interior Designer"
-              class="w-full"
-              [class.ng-invalid]="editForm.get('title')?.invalid && editForm.get('title')?.touched">
+            <input pInputText type="text" formControlName="title" placeholder="e.g. Senior Interior Designer"
+              class="w-full" [class.ng-invalid]="editForm.get('title')?.invalid && editForm.get('title')?.touched">
             <small *ngIf="editForm.get('title')?.invalid && editForm.get('title')?.touched" class="text-red-500">
               Title is required
             </small>
           </div>
           <div class="col-span-1 md:col-span-2 space-y-2">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Bio *</label>
-            <textarea 
-              pInputTextarea 
-              formControlName="bio" 
-              rows="4"
-              placeholder="Tell us about yourself..."
-              class="w-full"
-              [class.ng-invalid]="editForm.get('bio')?.invalid && editForm.get('bio')?.touched">
+            <textarea pInputTextarea formControlName="bio" rows="4" placeholder="Tell us about yourself..."
+              class="w-full" [class.ng-invalid]="editForm.get('bio')?.invalid && editForm.get('bio')?.touched">
             </textarea>
             <div class="flex justify-between">
               <small class="text-gray-500">Minimum 20 characters</small>
@@ -117,20 +97,12 @@
           </div>
           <div class="space-y-2">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Years of Experience</label>
-            <p-inputNumber 
-              formControlName="yearsOfExperience" 
-              [min]="0"
-              placeholder="0"
-              class="w-full">
+            <p-inputNumber formControlName="yearsOfExperience" [min]="0" placeholder="0" class="w-full">
             </p-inputNumber>
           </div>
           <div class="space-y-2">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Location *</label>
-            <input 
-              pInputText 
-              type="text" 
-              formControlName="location"
-              class="w-full"
+            <input pInputText type="text" formControlName="location" class="w-full"
               [class.ng-invalid]="editForm.get('location')?.invalid && editForm.get('location')?.touched">
             <small *ngIf="editForm.get('location')?.invalid && editForm.get('location')?.touched" class="text-red-500">
               Location is required
@@ -151,11 +123,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Email Address *</label>
-            <input 
-              pInputText 
-              type="email" 
-              formControlName="email"
-              class="w-full"
+            <input pInputText type="email" formControlName="email" class="w-full"
               [class.ng-invalid]="editForm.get('email')?.invalid && editForm.get('email')?.touched">
             <small *ngIf="editForm.get('email')?.invalid && editForm.get('email')?.touched" class="text-red-500">
               Valid email is required
@@ -163,24 +131,16 @@
           </div>
           <div class="space-y-2">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Phone Number *</label>
-            <input 
-              pInputText 
-              type="tel" 
-              formControlName="phoneNumber"
-              class="w-full"
+            <input pInputText type="tel" formControlName="phoneNumber" class="w-full"
               [class.ng-invalid]="editForm.get('phoneNumber')?.invalid && editForm.get('phoneNumber')?.touched">
-            <small *ngIf="editForm.get('phoneNumber')?.invalid && editForm.get('phoneNumber')?.touched" class="text-red-500">
+            <small *ngIf="editForm.get('phoneNumber')?.invalid && editForm.get('phoneNumber')?.touched"
+              class="text-red-500">
               Phone number is required
             </small>
           </div>
           <div class="col-span-1 md:col-span-2 space-y-2">
-            <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Website</label>
-            <input 
-              pInputText 
-              type="url" 
-              formControlName="website"
-              placeholder="www.yourwebsite.com"
-              class="w-full">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Portfolio URL / Website</label>
+            <input pInputText type="url" formControlName="website" placeholder="www.yourwebsite.com" class="w-full">
           </div>
         </div>
       </div>
@@ -197,23 +157,13 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Hourly Rate (USD)</label>
-            <p-inputNumber 
-              formControlName="hourlyRate" 
-              mode="currency" 
-              currency="USD" 
-              [min]="0"
-              placeholder="0"
+            <p-inputNumber formControlName="hourlyRate" mode="currency" currency="USD" [min]="0" placeholder="0"
               class="w-full">
             </p-inputNumber>
           </div>
           <div class="space-y-2">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wide">Minimum Project Budget (USD)</label>
-            <p-inputNumber 
-              formControlName="projectMinimum" 
-              mode="currency" 
-              currency="USD" 
-              [min]="0"
-              placeholder="0"
+            <p-inputNumber formControlName="projectMinimum" mode="currency" currency="USD" [min]="0" placeholder="0"
               class="w-full">
             </p-inputNumber>
           </div>
@@ -237,19 +187,9 @@
           </span>
         </div>
         <div class="flex gap-2">
-          <input 
-            pInputText 
-            type="text" 
-            [(ngModel)]="newSpecialization"
-            [ngModelOptions]="{standalone: true}"
-            placeholder="Add a specialization..."
-            (keyup.enter)="addSpecialization()"
-            class="flex-1">
-          <p-button 
-            label="Add" 
-            icon="pi pi-plus"
-            (onClick)="addSpecialization()"
-            [outlined]="true">
+          <input pInputText type="text" [(ngModel)]="newSpecialization" [ngModelOptions]="{standalone: true}"
+            placeholder="Add a specialization..." (keyup.enter)="addSpecialization()" class="flex-1">
+          <p-button label="Add" icon="pi pi-plus" (onClick)="addSpecialization()" [outlined]="true">
           </p-button>
         </div>
       </div>
@@ -274,35 +214,18 @@
           </span>
         </div>
         <div class="flex gap-2">
-          <input 
-            pInputText 
-            type="text" 
-            [(ngModel)]="newCertification"
-            [ngModelOptions]="{standalone: true}"
-            placeholder="Add a certification..."
-            (keyup.enter)="addCertification()"
-            class="flex-1">
-          <p-button 
-            label="Add" 
-            icon="pi pi-plus"
-            (onClick)="addCertification()"
-            [outlined]="true">
+          <input pInputText type="text" [(ngModel)]="newCertification" [ngModelOptions]="{standalone: true}"
+            placeholder="Add a certification..." (keyup.enter)="addCertification()" class="flex-1">
+          <p-button label="Add" icon="pi pi-plus" (onClick)="addCertification()" [outlined]="true">
           </p-button>
         </div>
       </div>
 
       <!-- Save Button (Bottom) -->
       <div class="flex justify-end gap-4 pt-4">
-        <p-button 
-          label="Cancel" 
-          [outlined]="true"
-          routerLink="/dashboard/interiordesigner/profile">
+        <p-button label="Cancel" [outlined]="true" routerLink="/dashboard/designer/profile">
         </p-button>
-        <p-button 
-          label="Save All Changes" 
-          icon="pi pi-save"
-          type="submit"
-          [loading]="saving"
+        <p-button label="Save All Changes" icon="pi pi-save" type="submit" [loading]="saving"
           [disabled]="editForm.invalid || saving">
         </p-button>
       </div>

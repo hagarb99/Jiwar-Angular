@@ -59,6 +59,18 @@ export const propertyOwnerRoutes: Routes = [
     redirectTo: 'my-requests',
     pathMatch: 'full'
   },
+  {
+    path: 'messages',
+    loadComponent: () => import('./messages/owner-inbox/owner-inbox.component').then(m => m.OwnerInboxComponent)
+  },
+  {
+    path: 'messages/property/:propertyId/customer/:customerId',
+    loadComponent: () => import('./messages/property-customer-chat/property-customer-chat.component').then(m => m.PropertyCustomerChatComponent)
+  },
+  // {
+  //   path: 'chat/:propertyId/:customerId',
+  //   loadComponent: () => import('./owner-chat/owner-chat.component').then(m => m.OwnerChatComponent)
+  // },
   // {
   //   path: 'properties',
   //   loadComponent: () =>

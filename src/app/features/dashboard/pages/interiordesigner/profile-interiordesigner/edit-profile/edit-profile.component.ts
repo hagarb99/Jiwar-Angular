@@ -11,6 +11,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { FileUploadModule } from 'primeng/fileupload';
+import { environment } from '../../../../../../../environments/environment';
+import { switchMap, of } from 'rxjs';
 
 @Component({
   selector: 'app-edit-profile',
@@ -41,6 +43,7 @@ export class EditProfileComponent implements OnInit {
   newSpecialization = '';
   newCertification = '';
   profilePicPreview: string | null = null;
+  selectedFile: File | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -57,30 +60,36 @@ export class EditProfileComponent implements OnInit {
   fetchProfile(): void {
     this.loading = true;
     this.profileService.getProfile().subscribe({
-      next: (profileRaw) => {
-        // Handle wrapper from backend structure update
-        const data = profileRaw?.interiorDesigner || profileRaw;
+      next: (data) => {
+        // Check if data is nested or direct
+        const designerData = data.interiorDesigner || {};
 
-        // Map backend data to our interface with proper defaults
         this.profile = {
-          name: data?.name || data?.Name || '',
-          email: data?.email || data?.Email || '',
-          phoneNumber: data?.phoneNumber || data?.PhoneNumber || '',
-          profilePicURL: data?.profilePicURL || data?.ProfilePicURL || '',
-          title: data?.title || data?.Title || '',
-          location: data?.location || data?.Location || '',
-          bio: data?.bio || data?.Bio || '',
-          specializations: Array.isArray(data?.specializations) ? data.specializations : (Array.isArray(data?.Specializations) ? data.Specializations : []),
-          certifications: Array.isArray(data?.certifications) ? data.certifications : (Array.isArray(data?.Certifications) ? data.Certifications : []),
-          website: data?.website || data?.Website || '',
-          hourlyRate: data?.hourlyRate ?? data?.HourlyRate ?? null,
-          projectMinimum: data?.projectMinimum ?? data?.ProjectMinimum ?? null,
-          yearsOfExperience: data?.yearsOfExperience ?? data?.YearsOfExperience ?? null,
+          name: data?.name || '',
+          email: data?.email || '',
+          phoneNumber: data?.phoneNumber || '',
+          profilePicURL: data?.profilePicURL || '',
+          title: data?.title || 'Interior Designer',
+          location: data?.location || '',
+          bio: data?.bio || '',
+          // Extract specific designer fields from nested object if available, otherwise root
+          specializations: designerData.specializations
+            ? (Array.isArray(designerData.specializations) ? designerData.specializations : [designerData.specializations])
+            : (Array.isArray(data?.specializations) ? data.specializations : []),
+          certifications: Array.isArray(data?.certifications) ? data.certifications : [],
+
+          website: designerData.portfolioURL || designerData.portfolioUrl || data?.website || '',
+          hourlyRate: data?.hourlyRate ?? null,
+          projectMinimum: data?.projectMinimum ?? null,
+          yearsOfExperience: designerData.experienceYears || designerData.yearsOfExperience || data?.yearsOfExperience || null,
           stats: data?.stats || []
         };
         this.specializations = [...this.profile.specializations];
         this.certifications = [...this.profile.certifications];
-        this.profilePicPreview = this.profile.profilePicURL || null;
+
+        // Handle image preview
+        this.profilePicPreview = this.getProfileImageUrl(this.profile.profilePicURL);
+
         this.initForm(this.profile);
         this.loading = false;
       },
@@ -110,6 +119,16 @@ export class EditProfileComponent implements OnInit {
       yearsOfExperience: [data.yearsOfExperience || null, [Validators.min(0)]],
       profilePicURL: [data.profilePicURL || '']
     });
+  }
+
+  getProfileImageUrl(url: string | null): string | null {
+    if (!url) return null;
+    if (url.startsWith('data:image')) return url;
+    if (url.startsWith('http')) return url;
+
+    // Construct absolute URL for server images
+    const base = environment.apiBaseUrl.replace(/\/api\/?$/, '');
+    return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
   }
 
   addSpecialization() {
@@ -155,8 +174,9 @@ export class EditProfileComponent implements OnInit {
   onFileSelect(event: any) {
     const file = event.files?.[0];
     if (file) {
-      // In a real app, you'd upload the file first and get the URL
-      // For now, we'll just show a preview
+      this.selectedFile = file;
+
+      // Preview
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.profilePicPreview = e.target.result;
@@ -166,7 +186,6 @@ export class EditProfileComponent implements OnInit {
   }
 
   onSubmit(): void {
-    // Mark all fields as touched to show validation errors
     if (this.editForm.invalid) {
       Object.keys(this.editForm.controls).forEach(key => {
         this.editForm.get(key)?.markAsTouched();
@@ -180,106 +199,86 @@ export class EditProfileComponent implements OnInit {
     }
 
     this.saving = true;
-    const formValue = this.editForm.value;
 
-    // Prepare edit request with proper data cleaning
-    const filteredSpecs = this.specializations.filter(s => s.trim() !== '');
-    const filteredCerts = this.certifications.filter(c => c.trim() !== '');
+    // 1. Prepare Payload (Merge existing + form data to prevent data loss)
+    const formRawValue = this.editForm.getRawValue();
 
-    console.log('Specializations before send:', this.specializations);
-    console.log('Filtered specializations:', filteredSpecs);
-    console.log('Certifications before send:', this.certifications);
-    console.log('Filtered certifications:', filteredCerts);
-    console.log('Bio before send:', formValue.bio?.trim());
-
-    const editRequest: any = {
-      name: formValue.name?.trim() || '',
-      email: formValue.email?.trim() || '',
-      phoneNumber: formValue.phoneNumber?.trim() || '',
-      profilePicURL: this.profilePicPreview || formValue.profilePicURL || '',
-      title: formValue.title?.trim() || '',
-      location: formValue.location?.trim() || '',
-      bio: formValue.bio?.trim() || '',
-      specializations: filteredSpecs.join(', '), // Send as comma-separated string per new backend requirement
-      certifications: filteredCerts.join(', ')   // Send as comma-separated string per new backend requirement
+    const payload: any = {
+      name: formRawValue.name,
+      title: formRawValue.title,
+      email: formRawValue.email,
+      phoneNumber: formRawValue.phoneNumber,
+      location: formRawValue.location,
+      bio: formRawValue.bio,
+      specializations: this.specializations.filter(s => s && s.trim()),
+      certifications: this.certifications.filter(c => c && c.trim()),
+      yearsOfExperience: formRawValue.yearsOfExperience,
+      hourlyRate: formRawValue.hourlyRate,
+      projectMinimum: formRawValue.projectMinimum,
+      website: formRawValue.website,
+      profilePicURL: formRawValue.profilePicURL
     };
 
-    console.log('Edit request to send:', editRequest);
-
-    // Add optional fields only if they have values
-    if (formValue.website?.trim()) {
-      editRequest.website = formValue.website.trim();
-    }
-    if (formValue.hourlyRate !== null && formValue.hourlyRate !== undefined) {
-      editRequest.hourlyRate = formValue.hourlyRate;
-    }
-    if (formValue.projectMinimum !== null && formValue.projectMinimum !== undefined) {
-      editRequest.projectMinimum = formValue.projectMinimum;
-    }
-    if (formValue.yearsOfExperience !== null && formValue.yearsOfExperience !== undefined) {
-      editRequest.yearsOfExperience = formValue.yearsOfExperience;
-    }
-
-    this.profileService.editProfile(editRequest).subscribe({
-      next: (response) => {
-        // Update auth service with new user data
-        try {
-          const userJson = localStorage.getItem('currentUser');
-          const currentUser = userJson ? JSON.parse(userJson) : {};
-
-          // Update with the data we just sent (immediate update)
-          this.authService.setUserData({
-            id: currentUser.id,
-            name: editRequest.name,
-            email: editRequest.email,
-            profilePicURL: editRequest.profilePicURL || currentUser.profilePicURL,
-            role: currentUser.role,
-            isProfileCompleted: currentUser.isProfileCompleted
+    // Helper for Step 2: Call Edit Profile API
+    const callEditProfile = (finalPayload: any) => {
+      this.profileService.editProfile(finalPayload).subscribe({
+        next: (response: any) => {
+          // Sync Global State
+          this.authService.updateUserFromProfile({
+            name: finalPayload.name,
+            email: finalPayload.email,
+            phoneNumber: finalPayload.phoneNumber,
+            profilePicURL: finalPayload.profilePicURL
           });
 
-          // Optionally fetch updated profile to ensure consistency
-          this.profileService.getProfile().subscribe({
-            next: (updatedProfile) => {
-              if (updatedProfile) {
-                this.authService.setUserData({
-                  id: currentUser.id,
-                  name: updatedProfile.name || editRequest.name,
-                  email: updatedProfile.email || editRequest.email,
-                  profilePicURL: updatedProfile.profilePicURL || editRequest.profilePicURL || currentUser.profilePicURL,
-                  role: currentUser.role,
-                  isProfileCompleted: currentUser.isProfileCompleted
-                });
-              }
-            },
-            error: (err) => {
-              // Silent fail - we already updated with editRequest data
-              console.warn('Could not fetch updated profile, using submitted data:', err);
-            }
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Profile updated successfully!'
           });
-        } catch (err) {
-          console.error('Error updating user data:', err);
+
+          // Navigate to Profile - CORRECTED PATH
+          setTimeout(() => {
+            this.router.navigate(['/dashboard/designer/profile']);
+          }, 1500);
+          this.saving = false;
+        },
+        error: (err: any) => {
+          console.error('Profile update error:', err);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: err.error?.message || 'Failed to update profile.'
+          });
+          this.saving = false;
         }
+      });
+    };
 
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Profile updated successfully!'
-        });
-
-        setTimeout(() => {
-          this.router.navigate(['/dashboard/interiordesigner/profile']);
-        }, 1500);
-        this.saving = false;
-      },
-      error: (err) => {
-        console.error('Error updating profile:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.error?.message || 'Failed to update profile. Please try again.'
-        });
-        this.saving = false;
-      }
-    });
+    // Step 1: Check for Image Upload
+    if (this.selectedFile) {
+      this.authService.uploadProfilePicture(this.selectedFile).subscribe({
+        next: (res: any) => {
+          if (res && res.profilePicURL) {
+            console.log('Image uploaded successfully:', res.profilePicURL);
+            payload.profilePicURL = res.profilePicURL;
+          }
+          callEditProfile(payload);
+        },
+        error: (err: any) => {
+          console.error('Image upload failed:', err);
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Image Upload Failed',
+            detail: 'Proceeding with profile update (image skipped).'
+          });
+          // Proceed anyway to save text data
+          callEditProfile(payload);
+        }
+      });
+    } else {
+      // No image selected, proceed directly
+      callEditProfile(payload);
+    }
   }
 }

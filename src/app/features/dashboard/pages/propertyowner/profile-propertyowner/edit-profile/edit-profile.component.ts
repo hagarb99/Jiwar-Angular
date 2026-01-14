@@ -66,6 +66,8 @@ export class EditProfilePropertyownerComponent implements OnInit {
             email: ['', [Validators.required, Validators.email]],
             phoneNumber: [''],
             bio: [''],
+            location: [''],
+            title: [''],
             profilePicURL: ['']
         });
     }
@@ -156,6 +158,8 @@ export class EditProfilePropertyownerComponent implements OnInit {
                     email: profile.email,
                     phoneNumber: profile.phoneNumber,
                     bio: profile.bio,
+                    location: profile.location,
+                    title: profile.title,
                     profilePicURL: profile.profilePicURL
                 });
 
@@ -201,7 +205,13 @@ export class EditProfilePropertyownerComponent implements OnInit {
             finalize(() => this.loading = false)
         ).subscribe({
             next: (updatedProfile) => {
-                this.authService.updateUserFromProfile(updatedProfile);
+                // Ensure we use the latest profilePicURL from the form to guarantee immediate UI update
+                const currentFormUrl = this.profileForm.get('profilePicURL')?.value;
+                const profileToUpdate = { ...updatedProfile };
+                if (currentFormUrl) {
+                    profileToUpdate.profilePicURL = currentFormUrl;
+                }
+                this.authService.updateUserFromProfile(profileToUpdate);
                 this.messageService.add({ severity: 'success', summary: 'Jiwar', detail: 'Profile updated successfully' });
                 this.router.navigate(['/dashboard/propertyowner/profile']);
             }
@@ -227,6 +237,8 @@ export class EditProfilePropertyownerComponent implements OnInit {
         if (hasFieldChanged('email', formValue.email)) payload.email = formValue.email;
         if (hasFieldChanged('phoneNumber', formValue.phoneNumber)) payload.phoneNumber = formValue.phoneNumber;
         if (hasFieldChanged('bio', formValue.bio)) payload.bio = formValue.bio;
+        if (hasFieldChanged('location', formValue.location)) payload.location = formValue.location;
+        if (hasFieldChanged('title', formValue.title)) payload.title = formValue.title;
         if (hasFieldChanged('profilePicURL', formValue.profilePicURL)) payload.profilePicURL = formValue.profilePicURL;
 
         return payload;

@@ -20,6 +20,7 @@ import { NotificationService, NotificationDto } from '../../../core/services/not
 import { environment } from '../../../../environments/environment';
 import { DesignRequestService } from '../../../core/services/design-request.service';
 import { DesignerProposalService } from '../../../core/services/designer-proposal.service';
+import { GlobalMessagesService, ChatNotification } from '../../../core/services/global-messages.service';
 
 @Component({
   selector: 'app-navbar',
@@ -50,11 +51,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
   readonly Bell = Bell;
   readonly MessageSquare = MessageSquare;
 
-  // Message State
-  unreadMessageCount = 0;
+  // 🟢 Global Message State
+  private globalMessagesService = inject(GlobalMessagesService);
+  unreadMessageCount$ = this.globalMessagesService.unreadCount$;
+  latestMessages$ = this.globalMessagesService.latestMessages$;
   toggleMessagesDropdown = false;
-  conversations: any[] = [];
+
+  // Kept for backward compatibility / reference if needed, but primary logic moves to GlobalMessagesService
   loadingMessages = false;
+  conversations: any[] = [];
 
   // Notification State
   toggleNotificationsDropdown = false;
@@ -67,24 +72,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
   language: 'EN' | 'AR' = 'EN';
   currentPath = '';
   isLoggedIn = false;
+  isDarkBgPage = false;
 
   buyDropdownItems = [
     { path: '/properties', label: 'Apartments for Sale' },
     { path: '/comparison', label: 'Compare Properties' },
   ];
 
-  // investDropdownItems = [
-  //   { path: '/investment', label: 'Investment Opportunities' },
-  //   { path: '/calculator', label: 'ROI Calculator' },
-  //   { path: '/investment#plans', label: 'Investment Plans' },
-  //   { path: '/analytics', label: 'Market Insights' }
-  // ];
-
   renovationDropdownItems = [
     { path: '/renovation/intro', label: 'Start Simulation' }
   ];
-
-  isDarkBgPage = false;
 
   constructor(
     private router: Router,
@@ -128,8 +125,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
           const token = localStorage.getItem('token');
           if (token) {
             this.notificationService.startConnection(token);
-            this.chatService.startConnection(token); // Start ChatHub globally
-            this.chatService.getTotalUnreadCount().subscribe(); // Fetch initial total unread count
+            // GlobalMessagesService auto-initializes in its constructor, 
+            // but we ensure it's loaded by injecting it.
+            this.globalMessagesService.loadInitialUnreadCount();
           }
         } else {
           this.profilePicUrl = null;
@@ -154,46 +152,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.notifications = notifications.filter(n => n.notificationType?.toLowerCase() !== 'chat' && n.notificationType !== 'Chat');
       });
 
-    // Subscribe to unread count
+    // Subscribe to general notification unread count
     this.notificationService.unreadCount$
       .pipe(takeUntil(this.destroy$))
       .subscribe(count => {
         this.unreadCount = count;
-      });
-
-    // Subscribe to unread messages count
-    this.chatService.unreadCount$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(count => {
-        // This count is updated by loadConversations (API) OR individual message updates
-        this.unreadMessageCount = count;
-      });
-
-    // Refresh conversation list when a new message arrives real-time
-    this.chatService.messageReceived$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        // Conversation metadata might have changed (last message, unread count per item)
-        this.loadConversations();
-      });
-
-    // Also refresh on notifications (since chat notifications also come through there)
-    this.notificationService.refresh$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.loadConversations();
-        // Force refresh total unread count
-        this.chatService.getTotalUnreadCount().subscribe();
-      });
-
-    // Explicitly listen to ReceiveChatNotification if available via SignalR service generic listener
-    // Note: The specific listener is inside ChatService, which broadcasts to unreadCount$
-    // We just ensure we update when that stream changes, which we already do.
-    // We add a periodic refresh just in case, or on notification arrival.
-    this.notificationService.refresh$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.chatService.getTotalUnreadCount().subscribe();
       });
   }
 
@@ -241,7 +204,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.router.navigate(['/dashboard/admin']);
     }
     if (this.currentUserRole === 'Customer') {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/dashboard/customer/dashboard']);
     }
   }
 
@@ -256,8 +219,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   markAllAsRead(): void {
-    // Backend now auto-marks as read when fetching
-    // This method is kept for backwards compatibility but does nothing
     console.log('Notifications are auto-marked as read by backend');
   }
 
@@ -269,28 +230,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
       });
     }
 
-    // Backend auto-marks as read, no need for manual call
-    // Close dropdown
     this.toggleNotificationsDropdown = false;
-
-    // Parse notification content
     const message = notification.message.toLowerCase();
     const requestMatch = notification.message.match(/design request (\d+)/i) || notification.message.match(/request (\d+)/i);
     const bookingMatch = notification.message.match(/booking.*(\d+)/i);
-    // Navigate based on notification content
-    const msg = notification.message.toLowerCase();
-    const idMatch = notification.message.match(/\d+/);
+    const idMatch = notification.message.match(/\d+/); // Fallback
 
-    // Prefer specific matches, fallback to generic number find
     const requestId = requestMatch ? requestMatch[1] : (idMatch ? idMatch[0] : null);
     const bookingId = bookingMatch ? bookingMatch[1] : null;
-
-    console.log('🔗 Navigation logic triggered:', {
-      role: this.currentUserRole,
-      type: notification.notificationType,
-      requestId,
-      bookingId
-    });
 
     if (this.currentUserRole === 'PropertyOwner') {
       if (bookingId || notification.notificationType?.toLowerCase().includes('booking') || message.includes('booking')) {
@@ -305,7 +252,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
       if (message.includes('accepted') || message.includes('approved')) {
         this.router.navigate(['/dashboard/designer/active-projects']);
       } else if (requestId) {
-        // If it looks like a new specific request/proposal
         this.router.navigate(['/dashboard/designer/my-proposals']);
       } else {
         this.router.navigate(['/dashboard/designer/available-projects']);
@@ -315,7 +261,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       if (message.includes('booking')) {
         this.router.navigate(['/dashboard/customer/my-bookings']);
       } else {
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/dashboard/customer/dashboard']);
       }
     }
   }
@@ -330,95 +276,39 @@ export class NavbarComponent implements OnInit, OnDestroy {
   toggleMessages(): void {
     this.toggleMessagesDropdown = !this.toggleMessagesDropdown;
     if (this.toggleMessagesDropdown) {
-      this.toggleNotificationsDropdown = false; // Close other dropdown
+      this.toggleNotificationsDropdown = false;
       this.toggleUserDropdown = false;
-      this.loadConversations();
-
-      // OPTIMISTIC UPDATE: Clear the badge immediately as requested by the user
-      // This gives the "It's been seen" feedback
-      this.unreadMessageCount = 0;
-      this.chatService.updateUnreadCount(0);
+      this.globalMessagesService.loadInitialUnreadCount();
+      // this.loadConversations(); // Optional: if we wanted to fetch old conversations
     }
   }
 
-  loadConversations(): void {
-    if (!this.isLoggedIn) return;
-    this.loadingMessages = true;
-    if (this.currentUserRole === 'PropertyOwner') {
-      this.designRequestService.getMyDesignRequests().subscribe({
-        next: (requests) => {
-          this.conversations = requests
-            .filter(r => r.status !== 'Pending' && r.status !== 'New')
-            .map(r => ({
-              id: r.id,
-              propertyId: r.propertyID,
-              title: r.preferredStyle ? `${r.preferredStyle} Design` : `Project #${r.id}`,
-              subtitle: (r as any).lastMessage || `Status: ${r.status}`,
-              image: null,
-              time: r.createdAt ? new Date(r.createdAt) : new Date(),
-              type: 'request',
-              unreadCount: (r as any).unreadCount || 0
-            }))
-            .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-
-          this.calculateTotalUnread();
-          this.loadingMessages = false;
-        },
-        error: () => this.loadingMessages = false
-      });
-    } else if (this.currentUserRole === 'InteriorDesigner') {
-      this.proposalService.getMyProposals().subscribe({
-        next: (proposals) => {
-          this.conversations = proposals
-            .filter(p => p.status === 1 || p.status === 3)
-            .map(p => {
-              const requestId = p.designRequestID || (p as any).designRequestId || (p as any).requestId || (p as any).id;
-              // Use robust mapping for dynamic content
-              const lastMsg = (p as any).lastMessage;
-              const unread = (p as any).unreadCount || 0;
-
-              return {
-                id: requestId,
-                propertyId: (p as any).propertyID || (p as any).propertyId || requestId,
-                title: `Project #${requestId}`,
-                subtitle: lastMsg || p.proposalDescription || 'No messages yet',
-                image: p.sampleDesignURL,
-                time: new Date(),
-                type: 'proposal',
-                unreadCount: unread
-              };
-            });
-
-          this.calculateTotalUnread();
-          this.loadingMessages = false;
-        },
-        error: () => this.loadingMessages = false
-      });
-    } else {
-      this.loadingMessages = false;
-    }
-  }
-
-  private calculateTotalUnread(): void {
-    const total = this.conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
-    // Do NOT overwrite global badge here, as it might be 0 if the list API doesn't return counts.
-    // We rely on ChatService.unreadCount$ (driven by SignalR and specific API) for the global badge.
-    // this.unreadMessageCount = total; 
-  }
-
-  onMessageClick(item: any): void {
+  // Updated to handle ChatNotification from GlobalMessagesService
+  onMessageClick(notification: ChatNotification): void {
     this.toggleMessagesDropdown = false;
-    if (!item.id) {
-      console.error('Invalid Project ID');
-      return;
+
+    // Navigate to valid workspace
+    // Logic depends on 'type' or context
+    if (notification.type === 'Chat') {
+      // Assuming relatedId is RequestID for Designer Chat
+      // Or if checking roles
+      if (this.currentUserRole === 'InteriorDesigner' || this.currentUserRole === 'PropertyOwner') {
+        this.router.navigate(['/dashboard/workspace', notification.relatedId]);
+      }
+      // If it's a Property Chat (Customer <-> Owner)
+      // notification.relatedId might be propertyId or room name
+      // Logic needs to adapt if type differs
+    } else {
+      // Fallback navigation
+      this.router.navigate(['/dashboard/messages']);
     }
 
-    // 1. Optimistically update local state immediately
-    item.unreadCount = 0;
-    this.calculateTotalUnread();
+    // Mark Read Logic
+    this.globalMessagesService.markAsRead(notification.relatedId);
+  }
 
-    // 2. Navigate to workspace (backend will auto-mark as read)
-    this.router.navigate(['/dashboard/workspace', item.id]);
+  onViewAll(): void {
+    this.router.navigate(['/dashboard/messages']);
   }
 
   goToMessages(): void {
