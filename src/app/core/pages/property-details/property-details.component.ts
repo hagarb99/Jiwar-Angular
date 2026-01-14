@@ -37,7 +37,6 @@ import {
 } from 'lucide-angular';
 import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour } from '../../services/property.service';
 import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour, BookingCreateDTO } from '../../services/property.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
@@ -67,8 +66,6 @@ import { ToastModule } from 'primeng/toast';
     PropertyCardComponent,
     ToastModule,
     BaseChartDirective,
-
-    ToastModule,
     PanoramaViewerComponent
   ],
   templateUrl: './property-details.component.html',
