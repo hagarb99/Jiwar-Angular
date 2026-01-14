@@ -147,6 +147,27 @@ export class ChatService {
   }
 
   /**
+   * Join a room for a specific property (Owner View)
+   * Currently maps to joinChatRoom with propertyID. Update if backend supports customer isolation.
+   */
+  public joinPropertyChatRoom(propertyId: number, customerId: string): void {
+    this.joinChatRoom(propertyId);
+  }
+
+  /**
+   * Send a message from Property Owner to Customer
+   */
+  public sendPropertyChatMessage(propertyId: number, message: string, receiverId: string): Observable<any> {
+    const payload = {
+      message,
+      messageText: message,
+      receiverId
+    };
+    // Endpoint for property chat messages
+    return this.http.post(`${this.apiUrl}/Property/${propertyId}/chat/send`, payload);
+  }
+
+  /**
    * Send message via API (Preferred method as per backend spec)
    */
   /**  
