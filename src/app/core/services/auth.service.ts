@@ -285,6 +285,10 @@ export class AuthService extends ApiBaseService {
     return user?.id ?? null;
   }
 
+  getCurrentUserValue(): UserData | null {
+    return this.currentUserSubject.value;
+  }
+
   private loadUserFromStorage(): UserData | null {
     try {
       const userJson = localStorage.getItem('currentUser');

@@ -569,7 +569,7 @@
                                             <p class="text-xs text-gray-500">Last 5 years trend</p>
                                         </div>
                                         <div class="w-full h-80">
-                                            <canvas baseChart [data]="lineChart" [options]="lineChartOptions"
+                                            <canvas baseChart [data]="lineChartData" [options]="lineChartOptions"
                                                 [type]="lineChartType">
                                             </canvas>
                                         </div>
@@ -641,7 +641,7 @@
     <div *ngIf="isBookingModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center px-4">
         <!-- Backdrop -->
         <div class="w-full h-80">
-            <canvas baseChart [data]="lineChart" [options]="lineChartOptions" [type]="lineChartType">
+            <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" [type]="lineChartType">
             </canvas>
         </div>
 
