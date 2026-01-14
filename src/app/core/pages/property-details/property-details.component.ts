@@ -37,6 +37,7 @@ import {
   LineChart
 } from 'lucide-angular';
 import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
 import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour } from '../../services/property.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
@@ -116,6 +117,7 @@ export class PropertyDetailsComponent implements OnInit {
   ChevronLeft = ChevronLeft;
   ChevronRight = ChevronRight;
   LineChart = LineChart;
+  MessageSquare = MessageSquare;
 
   property: Property | null = null;
   recommendedProperties: Property[] = [];
@@ -265,7 +267,7 @@ export class PropertyDetailsComponent implements OnInit {
   // Navigation State
   activeSection = 'overview';
   chatMessage: string = '';
-  chatMessages: any[] = [];
+  chatMessages: { title?: string; message: string; sentDate: Date; isMine: boolean }[] = [];
   isChatModalOpen: boolean = false;
 
   scrollToSection(sectionId: string): void {
@@ -759,11 +761,6 @@ export class PropertyDetailsComponent implements OnInit {
     return `${apiBase}/${cleanPath}`;
   }
   // Chat Functionality
-  isChatModalOpen = false;
-  chatMessage = '';
-  chatMessages: { title?: string; message: string; sentDate: Date; isMine: boolean }[] = [];
-  MessageSquare = MessageSquare;
-
   toggleChat(): void {
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);

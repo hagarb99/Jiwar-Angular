@@ -29,9 +29,7 @@ export class Step5ResultsComponent implements OnInit, OnDestroy {
 
         this.api.generateRecommendations(simulationId).subscribe({
             next: () => {
-                setTimeout(() => {
-                    this.fetchResults(simulationId);
-                }, 2000); // استنى ثانيتين عشان الـ AI يخلص
+                this.fetchResults(simulationId);
             },
             error: err => {
                 console.error('AI generation failed', err);
