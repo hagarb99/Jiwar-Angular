@@ -142,5 +142,12 @@ export class HomeComponent implements OnInit {
     // Redirect to subscription page for full flow
     this.router.navigate(['/subscriptions']);
   }
+
+  scrollToSection(sectionId: string): void {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 }
 
