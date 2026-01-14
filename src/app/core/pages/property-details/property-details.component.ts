@@ -1,4 +1,3 @@
-
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -35,13 +34,10 @@ import {
   LineChart,
   ChevronLeft,
   ChevronRight,
-  MessageSquare,
+  MessageSquare
 } from 'lucide-angular';
-
-import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
 import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour } from '../../services/property.service';
-import { CustomerChatService, CustomerChatMessage } from '../../services/customer-chat.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { environment } from '../../../../environments/environment';
@@ -76,8 +72,7 @@ export interface BookingCreateDTO {
     NavbarComponent,
     FooterComponent,
     PropertyCardComponent,
-    ToastModule,
-    BaseChartDirective
+    ToastModule
   ],
   templateUrl: './property-details.component.html',
   styleUrls: ['./property-details.component.css']
@@ -92,7 +87,6 @@ export class PropertyDetailsComponent implements OnInit {
   private sanitizer = inject(DomSanitizer);
   private adminAnalyticsService = inject(AdminAnalyticsService);
   private messageService = inject(MessageService);
-  private chatService = inject(CustomerChatService);
 
   // Icons
   MapPin = MapPin;
@@ -121,7 +115,6 @@ export class PropertyDetailsComponent implements OnInit {
   TrendingUp = TrendingUp;
   LineChart = LineChart;
   ChevronLeft = ChevronLeft;
-
   ChevronRight = ChevronRight;
   MessageSquare = MessageSquare;
 
@@ -139,11 +132,7 @@ export class PropertyDetailsComponent implements OnInit {
   safeMapUrl: SafeResourceUrl | null = null;
   virtualTours: (VirtualTour & { safeUrl: SafeResourceUrl })[] = [];
   activeTourUrl: string = '';
-
   showTour: boolean = false;
-  isChatModalOpen = false;
-  chatMessage = '';
-  chatMessages: CustomerChatMessage[] = [];
 
   // Analytics Data
   priceHistory: { year: number, price: number, percentage: number }[] = [];
@@ -277,6 +266,9 @@ export class PropertyDetailsComponent implements OnInit {
 
   // Navigation State
   activeSection = 'overview';
+  chatMessage: string = '';
+  chatMessages: any[] = [];
+  isChatModalOpen: boolean = false;
 
   scrollToSection(sectionId: string): void {
     this.activeSection = sectionId;
@@ -767,89 +759,32 @@ export class PropertyDetailsComponent implements OnInit {
     return `${apiBase}/${cleanPath}`;
   }
 
-  get isCustomer(): boolean {
-    return this.authService.userRole === 'Customer';
-  }
-
-  // ✅ STRICT: Chat button visible ONLY for Customers
-  // PropertyOwner should NEVER see this button (even on other owners' properties)
-  get canOpenChat(): boolean {
-    // If not logged in, hide
-    if (!this.authService.isLoggedIn()) return false;
-
-    const role = this.authService.userRole;
-
-    // Only Customers can initiate chat
-    if (role !== 'Customer') return false;
-
-    // Additional safety: Don't show if somehow viewing own property (shouldn't happen for customer)
-    const currentUserId = this.authService.getUserId();
-    if (this.property?.propertyOwner?.userId === currentUserId) return false;
-
-    return true;
-  }
-
-  toggleChat(): void {
-    if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['/login']);
-      return;
-    }
-    this.isChatModalOpen = !this.isChatModalOpen;
-    if (this.isChatModalOpen) {
-      this.chatService.startConnection();
-      this.loadChatHistory();
-
-      // Listen for new messages
-      this.chatService.messageReceived$.subscribe(msg => {
-        if (msg.propertyId === this.propertyId) {
-          this.chatMessages.push({
-            ...msg,
-            isSelf: msg.senderId === this.authService.getUserId()
-          });
-        }
-      });
-    }
-  }
-
-  closeChatModal(): void {
-    this.isChatModalOpen = false;
-  }
-
-  loadChatHistory(): void {
-    const myId = this.authService.getUserId();
-    if (!myId || !this.propertyId) return;
-
-    this.chatService.getChatHistory(this.propertyId, myId).subscribe({
-      next: (msgs) => {
-        this.chatMessages = msgs.map(m => ({
-          ...m,
-          isSelf: m.senderId === myId
-        }));
-      },
-      error: (err) => console.error(err)
-    });
-  }
-
-  sendMessage(): void {
+  sendMessage() {
     if (!this.chatMessage.trim()) return;
-    const msg = this.chatMessage;
+
+    this.chatMessages.push({
+      message: this.chatMessage,
+      isSelf: true,
+      sentDate: new Date()
+    });
+
     this.chatMessage = '';
 
-    const myId = this.authService.getUserId() || '';
-    // Use propertyOwner from property object, casting to any if type definition is partial
-    const ownerId = (this.property as any)?.propertyOwner?.userId;
+    // Mock response
+    setTimeout(() => {
+      this.chatMessages.push({
+        message: "Thank you for your interest! How can I help you with this property?",
+        isSelf: false,
+        sentDate: new Date()
+      });
+    }, 1000);
+  }
 
-    // Optimistic Update
-    this.chatMessages.push({
-      senderId: myId,
-      message: msg,
-      sentDate: new Date().toISOString(),
-      propertyId: this.propertyId,
-      isSelf: true
-    });
+  toggleChat() {
+    this.isChatModalOpen = !this.isChatModalOpen;
+  }
 
-    this.chatService.sendMessage(this.propertyId, msg, ownerId).subscribe({
-      error: (err) => console.error('Failed to send message', err)
-    });
+  closeChatModal() {
+    this.isChatModalOpen = false;
   }
 }

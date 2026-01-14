@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { PropertyCardComponent } from '../../../shared/components/property-card/property-card.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { PricingCardComponent } from '../../../shared/components/pricing-card/pricing-card.component';
@@ -16,6 +16,7 @@ import { environment } from '../../../../environments/environment';
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     PropertyCardComponent,
     FooterComponent,
     PricingCardComponent,
@@ -140,6 +141,13 @@ export class HomeComponent implements OnInit {
   handleSubscribe(plan: SubscriptionPlan): void {
     // Redirect to subscription page for full flow
     this.router.navigate(['/subscriptions']);
+  }
+
+  scrollToSection(sectionId: string): void {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 }
 

@@ -223,12 +223,13 @@ export class ProjectWorkspaceComponent implements OnInit, OnDestroy {
                     this.contactPhoto = otherUserMsg?.senderPhoto || '';
                 }
 
-                // Join the chat room for this property
-                if (this.workspaceData.designRequest?.propertyID) {
-                    console.log(`🔌 [Workspace] Connecting to chat for PropertyID: ${this.workspaceData.designRequest.propertyID}`);
-                    this.chatService.joinChatRoom(this.workspaceData.designRequest.propertyID);
+                // Join the chat room for this Specific Design Request (Isolate Project Chat)
+                if (this.workspaceData.designRequest?.id) {
+                    console.log(`🔌 [Workspace] Connecting to chat for RequestID: ${this.workspaceData.designRequest.id}`);
+                    // We join a room based on Request ID to ensure isolation per project
+                    this.chatService.joinChatRoom(this.workspaceData.designRequest.id);
                 } else {
-                    console.error('❌ [Workspace] Missing PropertyID in workspace data!', rawData);
+                    console.error('❌ [Workspace] Missing DesignRequest ID in workspace data!', rawData);
                 }
 
                 // Auto-open review modal if:
@@ -287,18 +288,24 @@ export class ProjectWorkspaceComponent implements OnInit, OnDestroy {
             }
 
             // Listen for single new messages (Real-time)
-            this.messageSubscription = this.chatService.messageReceived$.subscribe(m => {
+            this.messageSubscription = this.chatService.messageReceived$.subscribe((m: any) => {
                 // 🛑 PREVENT DUPLICATION: Ignore messages sent by me (already added optimistically)
                 if (m.senderId === this.currentUser.id) {
                     return;
                 }
 
+                const currentRequestId = this.workspaceData?.designRequest.id;
+                const incomingRequestId = m.designRequestId;
                 const propertyId = this.workspaceData?.designRequest.propertyID;
                 const incomingPropId = m.propertyId;
 
-                // Only add if it belongs to this property
-                // Use loose equality to handle string/number differences
-                if (!propertyId || (incomingPropId as any) == (propertyId as any)) {
+                // 🛡️ ISOLATION LOGIC:
+                // 1. If message has RequestID, it MUST match current RequestID
+                // 2. If message ONLY has PropertyID (legacy), we accept it if Property matches (backward compatibility)
+                const isMatch = (incomingRequestId && incomingRequestId == currentRequestId) ||
+                    (!incomingRequestId && incomingPropId && incomingPropId == propertyId);
+
+                if (isMatch) {
                     const newMessage: ChatMessage = {
                         senderId: m.senderId,
                         senderName: m.senderName || (m.senderId === this.currentUser.id ? 'Me' : 'User'),
