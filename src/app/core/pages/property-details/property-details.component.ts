@@ -5,7 +5,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { PropertyCardComponent } from '../../../shared/components/property-card/property-card.component';
-import { PropertyOwnerPublicProfile } from '../../services/PropertyOwnerService';
+
+//import { PropertyOwnerPublicProfile } from '../../services/PropertyOwnerService';
 import {
   LucideAngularModule,
   MapPin,
@@ -28,13 +29,12 @@ import {
   Shield,
   Activity,
   Star,
-  CheckCircle,
   Wallet,
-  PieChart,
   TrendingUp,
-  LineChart,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MessageSquare,
+  LineChart
 } from 'lucide-angular';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
@@ -74,7 +74,8 @@ export interface BookingCreateDTO {
     FooterComponent,
     PropertyCardComponent,
     ToastModule,
-    BaseChartDirective
+    BaseChartDirective,
+
   ],
   templateUrl: './property-details.component.html',
   styleUrls: ['./property-details.component.css']
@@ -111,13 +112,11 @@ export class PropertyDetailsComponent implements OnInit {
   Shield = Shield;
   Activity = Activity;
   Star = Star;
-  CheckCircle = CheckCircle;
   Wallet = Wallet;
-  PieChart = PieChart;
   TrendingUp = TrendingUp;
-  LineChart = LineChart;
   ChevronLeft = ChevronLeft;
   ChevronRight = ChevronRight;
+  LineChart = LineChart;
 
   property: Property | null = null;
   recommendedProperties: Property[] = [];
@@ -143,7 +142,7 @@ export class PropertyDetailsComponent implements OnInit {
   influenceFactors: string[] = [];
 
   // Chart Properties
-  public lineChartData: ChartConfiguration<'line'>['data'] = {
+  public lineChart: ChartConfiguration<'line'>['data'] = {
     labels: [],
     datasets: [
       {
@@ -262,7 +261,6 @@ export class PropertyDetailsComponent implements OnInit {
     { icon: Shield, label: '24/7 Security' },
     { icon: Activity, label: 'Gym & Fitness' },
     { icon: Star, label: 'Premium Finish' },
-    { icon: CheckCircle, label: 'Smart Home' }
   ];
 
   // Navigation State
@@ -512,11 +510,11 @@ export class PropertyDetailsComponent implements OnInit {
 
         // Update Chart Data
         // We need to create a new object reference to trigger change detection in ng2-charts
-        this.lineChartData = {
+        this.lineChart = {
           labels: filteredHistory.map(h => h.year.toString()),
           datasets: [
             {
-              ...this.lineChartData.datasets[0],
+              ...this.lineChart.datasets[0],
               data: filteredHistory.map(h => h.price)
             }
           ]
@@ -757,5 +755,50 @@ export class PropertyDetailsComponent implements OnInit {
     const apiBase = environment.apiBaseUrl.replace(/\/api$/, '');
     const cleanPath = url.startsWith('/') ? url.substring(1) : url;
     return `${apiBase}/${cleanPath}`;
+  }
+  // Chat Functionality
+  isChatModalOpen = false;
+  chatMessage = '';
+  chatMessages: { title?: string; message: string; sentDate: Date; isMine: boolean }[] = [];
+  MessageSquare = MessageSquare;
+
+  toggleChat(): void {
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.isChatModalOpen = !this.isChatModalOpen;
+  }
+
+  closeChatModal(): void {
+    this.isChatModalOpen = false;
+  }
+
+  sendMessage(): void {
+    if (!this.chatMessage.trim()) return;
+
+    // Optimistic update
+    const newMessage = {
+      title: 'Me',
+      message: this.chatMessage,
+      sentDate: new Date(),
+      isMine: true
+    };
+
+    this.chatMessages.push(newMessage);
+    this.chatMessage = '';
+
+    // TODO: Connect to actual ChatService
+    console.log('Message sent:', newMessage);
+
+    // Simulate auto-reply for demo
+    setTimeout(() => {
+      this.chatMessages.push({
+        title: 'Property Owner',
+        message: 'Thank you for your interest! I will get back to you shortly.',
+        sentDate: new Date(),
+        isMine: false
+      });
+    }, 1500);
   }
 }

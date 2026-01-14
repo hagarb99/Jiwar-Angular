@@ -31,8 +31,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
     CommonModule,
     RouterModule,
     ButtonModule,
-    LucideAngularModule,
-    TranslatePipe
+    LucideAngularModule
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
@@ -168,26 +167,26 @@ export class NavbarComponent implements OnInit, OnDestroy {
       });
 
     // Subscribe to unread messages count
-    this.chatService.unreadCount$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(count => {
-        // This count is updated by loadConversations (API) OR individual message updates
-        this.unreadMessageCount = count;
-      });
+    // Legacy updates removed - using GlobalMessagesService
+    // this.chatService.unreadCount$
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe(count => {
+    //     this.unreadMessageCount = count;
+    //   });
 
     // Refresh conversation list when a new message arrives real-time
-    this.chatService.messageReceived$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        // Conversation metadata might have changed (last message, unread count per item)
-        this.loadConversations();
-      });
+    // Legacy updates removed
+    // this.chatService.messageReceived$
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe(() => {
+    //     this.loadConversations();
+    //   });
 
     // Also refresh on notifications (since chat notifications also come through there)
     this.notificationService.refresh$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        this.loadConversations();
+        // this.loadConversations();
         // Force refresh total unread count
         this.chatService.getTotalUnreadCount().subscribe();
       });
@@ -209,6 +208,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.currentLanguage = lang;
       });
   }
+
+  toggleLanguage(): void {
+    const newLang = this.currentLanguage === 'en' ? 'ar' : 'en';
+    this.setLanguage(newLang);
+  }
+
+  // loadConversations removed as it is replaced by GlobalMessagesService streams
+  loadConversations(): void {
+    // No-op or removed. 
+    // If needed for legacy reasons, we can implement it, but for now we rely on latestMessages$
+  }
+
 
   ngOnDestroy(): void {
     this.destroy$.next();
