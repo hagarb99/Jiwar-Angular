@@ -15,6 +15,7 @@ export interface ChatMessage {
   messageType?: number; // 0=Text, 1=Image, 2=PDF/File
   sentDate: string;
   propertyId: number;
+  designRequestId?: number;
 }
 
 @Injectable({
@@ -90,7 +91,8 @@ export class ChatService {
         messageText: data.messageText || data.MessageText || data.message || data.Message,
         messageType: data.messageType ?? data.MessageType ?? 0,
         sentDate: data.sentDate || data.SentDate || new Date().toISOString(),
-        propertyId: data.propertyId || data.PropertyId
+        propertyId: data.propertyId || data.PropertyId,
+        designRequestId: data.designRequestId || data.DesignRequestId // Map new field
       };
 
       const currentMessages = this.messagesSubject.getValue();

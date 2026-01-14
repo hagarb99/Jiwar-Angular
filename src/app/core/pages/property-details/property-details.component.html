@@ -403,59 +403,6 @@
                                 </div>
                             </div>
                         </section>
-
-                        <!-- Payment Plan Flow -->
-                        <!-- <section class="scroll-mt-40 space-y-8">
-                            <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                                <span class="flex h-8 w-1 bg-[#D4AF37] rounded-full"></span>
-                                Payment Plan
-                            </h2>
-                            <div class="bg-gray-900 rounded-3xl p-8 text-white relative overflow-hidden">
-                                <div
-                                    class="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37]/20 rounded-full -mr-16 -mt-16 blur-3xl">
-                                </div>
-
-                                <div
-                                    class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-gray-700">
-                                    <div class="flex flex-col items-center gap-4 p-4">
-                                        <div
-                                            class="w-14 h-14 rounded-2xl bg-[#D4AF37] flex items-center justify-center text-white shadow-lg shadow-yellow-500/20">
-                                            <lucide-angular [img]="PieChart" class="w-7 h-7"></lucide-angular>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-400 text-sm uppercase tracking-wider font-bold">Down
-                                                Payment</p>
-                                            <p class="text-3xl font-bold mt-1">10%</p>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex flex-col items-center gap-4 p-4">
-                                        <div
-                                            class="w-14 h-14 rounded-2xl bg-[#D4AF37] flex items-center justify-center text-white shadow-lg shadow-yellow-500/20">
-                                            <lucide-angular [img]="Calendar" class="w-7 h-7"></lucide-angular>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-400 text-sm uppercase tracking-wider font-bold">
-                                                Installments</p>
-                                            <p class="text-3xl font-bold mt-1">7 Years</p>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex flex-col items-center gap-4 p-4">
-                                        <div
-                                            class="w-14 h-14 rounded-2xl bg-[#D4AF37] flex items-center justify-center text-white shadow-lg shadow-yellow-500/20">
-                                            <lucide-angular [img]="Wallet" class="w-7 h-7"></lucide-angular>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-400 text-sm uppercase tracking-wider font-bold">Delivery
-                                            </p>
-                                            <p class="text-3xl font-bold mt-1">2027</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </section> -->
-
                         <!-- Features & Amenities Section -->
                         <section id="features" class="scroll-mt-40 space-y-8">
                             <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
@@ -551,7 +498,7 @@
                                             </svg>
                                         </button>
 
-                                        <button (click)="toggleChat()"
+                                        <button (click)="toggleChat()" *ngIf="canOpenChat"
                                             class="w-full bg-[#D4AF37] hover:bg-[#C5A028] text-white font-bold py-4 px-6 rounded-xl shadow-xl shadow-yellow-500/20 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3">
                                             <lucide-angular [img]="MessageSquare" class="w-5 h-5"></lucide-angular>
                                             <span>Chat with Owner</span>
@@ -619,10 +566,13 @@
                                             <h4 class="text-lg font-bold text-gray-900">Price Analytics</h4>
                                             <p class="text-xs text-gray-500">Last 5 years trend</p>
                                         </div>
-                                        <div
-                                            class="w-10 h-10 rounded-2xl bg-yellow-50 flex items-center justify-center text-[#D4AF37]">
-                                            <lucide-angular [img]="LineChart" class="w-5 h-5"></lucide-angular>
+                                        <div class="w-full h-80">
+                                            <canvas baseChart [data]="lineChart" [options]="lineChartOptions"
+                                                [type]="lineChartType">
+                                            </canvas>
                                         </div>
+
+
                                     </div>
 
                                     <!-- Chart Representation -->
@@ -688,8 +638,11 @@
     <!-- Booking Modal -->
     <div *ngIf="isBookingModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center px-4">
         <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" (click)="closeBookingModal()">
+        <div class="w-full h-80">
+            <canvas baseChart [data]="lineChart" [options]="lineChartOptions" [type]="lineChartType">
+            </canvas>
         </div>
+
 
         <!-- Modal Content -->
         <div
@@ -802,12 +755,12 @@
             <!-- Messages Area -->
             <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/30">
                 <div *ngFor="let msg of chatMessages" class="flex"
-                    [ngClass]="msg.isSelf ? 'justify-end' : 'justify-start'">
+                    [ngClass]="msg.isMine ? 'justify-end' : 'justify-start'">
                     <div class="max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm"
-                        [ngClass]="msg.isSelf ? 'bg-[#D4AF37] text-white rounded-br-none' : 'bg-white border border-gray-100 text-gray-700 rounded-bl-none'">
+                        [ngClass]="msg.isMine ? 'bg-[#D4AF37] text-white rounded-br-none' : 'bg-white border border-gray-100 text-gray-700 rounded-bl-none'">
                         <p>{{ msg.message }}</p>
                         <span class="text-[10px] opacity-70 mt-1 block"
-                            [ngClass]="msg.isSelf ? 'text-white/80' : 'text-gray-400'">
+                            [ngClass]="msg.isMine ? 'text-white/80' : 'text-gray-400'">
                             {{ msg.sentDate | date:'shortTime' }}
                         </span>
                     </div>

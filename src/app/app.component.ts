@@ -2,8 +2,10 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { NotificationService } from './core/services/notification.service';
+import { TranslationService } from './core/services/translation.service';
 import { SpinnerComponent } from "./shared/components/spinner/spinner.component";
 import { ToastModule } from 'primeng/toast';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -16,23 +18,13 @@ export class AppComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private router = inject(Router);
+  private translationService = inject(TranslationService);
+
 
   ngOnInit() {
     console.log('AppComponent initialized');
 
-    const token = this.authService.getToken();
-    console.log('Token available on app init:', !!token);
-
-    if (token) {
-      console.log('Starting SignalR connection from AppComponent');
-      this.notificationService.startConnection(token).catch(err => {
-        console.error('Failed to start SignalR connection:', err);
-      });
-    } else {
-      console.log('No token available, SignalR connection not started');
-    }
-
-    // Subscribe to auth state changes to handle login/logout
+    // Subscribe to auth state changes to handle SignalR connection start/stop
     this.authService.currentUser$.subscribe(user => {
       console.log('Auth state changed:', user ? user.email : 'Logged out');
 
@@ -40,7 +32,7 @@ export class AppComponent implements OnInit, OnDestroy {
         const token = this.authService.getToken();
         if (token) {
           this.notificationService.startConnection(token).catch(err => {
-            console.error('Failed to restart SignalR after login:', err);
+            console.error('Failed to start SignalR connection:', err);
           });
         }
       } else {

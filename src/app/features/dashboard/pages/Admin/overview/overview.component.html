@@ -116,7 +116,9 @@
                                 <div class="flex items-center gap-2">
                                     <div class="w-24 h-2 bg-secondary/20 rounded-full overflow-hidden">
                                         <div class="h-full bg-primary"
-                                            [style.width.%]="(cat.count / (data.propertyMetrics.totalProperties || 1)) * 100">
+                                            [style.width.%]="(cat.count / (data.propertyMetrics?.totalProperties || 1)) * 100">
+                                            [style.width.%]="(cat.count / (data.propertyMetrics.totalProperties || 1)) *
+                                            100">
                                         </div>
                                     </div>
                                     <span class="font-medium text-foreground w-8 text-right">{{ cat.count }}</span>
