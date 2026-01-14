@@ -256,6 +256,26 @@ export class ProjectWorkspaceComponent implements OnInit, OnDestroy {
         });
     }
 
+    private extractErrorMessage(err: any): string {
+        if (!err) return 'Unknown error occurred';
+
+        // 1. Check for specific backend error structure (e.g., { error: "Message..." })
+        if (err.error && typeof err.error === 'object') {
+            if (err.error.message) return err.error.message;
+            if (err.error.error) return err.error.error; // Sometimes nested
+            if (err.error.title) return err.error.title; // .NET ProblemDetails
+        }
+
+        // 2. Check for string error message in body
+        if (typeof err.error === 'string') return err.error;
+
+        // 3. Check top-level message
+        if (err.message) return err.message;
+
+        // 4. Fallback
+        return 'Failed to send message (Server Error)';
+    }
+
     startChatConnection() {
         const token = localStorage.getItem('token');
         if (token) {
@@ -268,10 +288,15 @@ export class ProjectWorkspaceComponent implements OnInit, OnDestroy {
 
             // Listen for single new messages (Real-time)
             this.messageSubscription = this.chatService.messageReceived$.subscribe(m => {
+                // 🛑 PREVENT DUPLICATION: Ignore messages sent by me (already added optimistically)
+                if (m.senderId === this.currentUser.id) {
+                    return;
+                }
+
                 const propertyId = this.workspaceData?.designRequest.propertyID;
                 const incomingPropId = m.propertyId;
 
-                // Only add if it belongs to this property and isn't a duplicate of what we just sent
+                // Only add if it belongs to this property
                 // Use loose equality to handle string/number differences
                 if (!propertyId || (incomingPropId as any) == (propertyId as any)) {
                     const newMessage: ChatMessage = {
@@ -296,14 +321,14 @@ export class ProjectWorkspaceComponent implements OnInit, OnDestroy {
     sendMessage() {
         if (this.chatForm.invalid || !this.designRequestId) return;
 
-        const msg = this.chatForm.get('message')?.value;
-        if (!msg || !msg.trim()) return;
+        const msg = this.chatForm.get('message')?.value?.trim();
+        if (!msg) return;
 
         const requestId = this.designRequestId;
         const senderId = this.currentUser?.id;
 
-        // Optimistically add message to UI
-        const newMessage: ChatMessage = {
+        // Optimistic UI Update
+        const optimisticMessage: ChatMessage = {
             senderId: senderId,
             senderName: this.currentUser?.name || 'Me',
             senderPhoto: this.currentUser?.profilePicURL,
@@ -315,30 +340,36 @@ export class ProjectWorkspaceComponent implements OnInit, OnDestroy {
             isRead: false
         };
 
-        this.messages.push(newMessage);
+        this.messages.push(optimisticMessage);
         this.scrollToBottom();
+
+        // Clear input immediately
         this.chatForm.reset();
 
-        console.log(`📡 Sending message... RequestID: ${requestId}, SenderID: ${senderId}`);
+        console.log(`📡 Sending message (Optimistic)... RequestID: ${requestId}, SenderID: ${senderId}`);
 
         this.chatService.sendMessageViaApi(requestId, msg, senderId).subscribe({
             next: (response) => {
                 console.log('✅ Message sent successfully. Response:', response);
-                // Message already added
             },
             error: (err) => {
                 console.error('❌ Failed to send message:', err);
 
-                // Show user friendly error and robustly handle failure
-                let errorMsg = 'Could not send message. Please try again.';
-                if (err.status === 401) errorMsg = 'Unauthorized. Please login again.';
-                if (err.status === 400) errorMsg = err.error || err.message || 'Invalid message request.';
+                // A. Remove the optimistic message
+                this.messages = this.messages.filter(m => m !== optimisticMessage);
+
+                // B. Extract and Show Error
+                const errorMsg = this.extractErrorMessage(err);
 
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Send Failed',
-                    detail: errorMsg
+                    detail: errorMsg,
+                    life: 5000
                 });
+
+                // C. Restore text to input so user can try again
+                this.chatForm.patchValue({ message: msg });
             }
         });
     }
