@@ -43,6 +43,10 @@ export const DASHBOARD_ROUTES: Routes = [
         loadComponent: () => import('./pages/messages/messages.component').then(m => m.MessagesComponent)
       },
       {
+        path: 'chat',
+        loadChildren: () => import('./pages/chat/chat.routes').then(m => m.CHAT_ROUTES)
+      },
+      {
         path: 'customer',
         canActivate: [roleGuard(['Customer'])],
         loadChildren: () =>
