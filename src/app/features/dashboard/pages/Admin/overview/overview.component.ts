@@ -39,17 +39,6 @@ export class OverviewComponent implements OnInit {
   };
   public pieChartType: ChartType = 'pie';
 
-  // Revenue/Valuation Chart
-  public barChartOptions: ChartConfiguration['options'] = {
-    responsive: true,
-  };
-  public barChartData: ChartData<'bar'> = {
-    labels: [],
-    datasets: [
-      { data: [], label: 'Valuations', backgroundColor: '#3b82f6' }
-    ]
-  };
-  public barChartType: ChartType = 'bar';
   public lineChartType: ChartType = 'line';
 
   // Revenue Chart
@@ -114,15 +103,7 @@ export class OverviewComponent implements OnInit {
           };
         }
 
-        // Map Valuations Trends
-        if (data.valuationMetrics.valuationsPerPeriod) {
-          const periods = Object.keys(data.valuationMetrics.valuationsPerPeriod);
-          const counts = Object.values(data.valuationMetrics.valuationsPerPeriod);
-          this.barChartData = {
-            labels: periods,
-            datasets: [{ ...this.barChartData.datasets[0], data: counts }]
-          };
-        }
+
 
         // Map Revenue Trends
         if (data.paymentMetrics.revenueByPeriod) {

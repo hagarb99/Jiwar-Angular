@@ -156,7 +156,6 @@ export class PropertyService {
         formData.append('price', dto.price.toString());
         formData.append('address', dto.address);
         formData.append('city', dto.city);
-        formData.append('listingType', dto.listingType.toString());
         if (dto.district) formData.append('district', dto.district);
         if (dto.area) formData.append('area', dto.area.toString());
         if (dto.rooms) formData.append('rooms', dto.rooms.toString());
@@ -165,6 +164,8 @@ export class PropertyService {
         if (dto.tour360Url) formData.append('tour360Url', dto.tour360Url);
         if (dto.locationLat) formData.append('locationLat', dto.locationLat.toString());
         if (dto.locationLang) formData.append('locationLang', dto.locationLang.toString());
+        if (dto.propertyType !== undefined) formData.append('propertyType', dto.propertyType.toString());
+        if (dto.listingType !== undefined) formData.append('listingType', dto.listingType.toString());
 
         images.forEach(file => {
             const sanitizedFile = this.sanitizeFile(file);
@@ -194,14 +195,23 @@ export class PropertyService {
         formData.append('address', dto.address);
         formData.append('city', dto.city);
         if (dto.district) formData.append('district', dto.district);
-        if (dto.area_sqm !== null && dto.area_sqm !== undefined) {
-            formData.append('area_sqm', dto.area_sqm.toString());
+        if (dto.area !== null && dto.area !== undefined) {
+            formData.append('area', dto.area.toString());
         }
-        if (dto.numBedrooms !== null && dto.numBedrooms !== undefined) {
-            formData.append('numBedrooms', dto.numBedrooms.toString());
+        if (dto.rooms !== null && dto.rooms !== undefined) {
+            formData.append('rooms', dto.rooms.toString());
         }
-        if (dto.numBathrooms !== null && dto.numBathrooms !== undefined) {
-            formData.append('numBathrooms', dto.numBathrooms.toString());
+        if (dto.bathrooms !== null && dto.bathrooms !== undefined) {
+            formData.append('bathrooms', dto.bathrooms.toString());
+        }
+        if (dto.propertyType !== null && dto.propertyType !== undefined) {
+            formData.append('propertyType', dto.propertyType.toString());
+        }
+        if (dto.listingType !== null && dto.listingType !== undefined) {
+            formData.append('listingType', dto.listingType.toString());
+        }
+        if (dto.categoryId !== null && dto.categoryId !== undefined) {
+            formData.append('categoryId', dto.categoryId.toString());
         }
         if (dto.tour360Url) formData.append('tour360Url', dto.tour360Url);
 

@@ -27,7 +27,7 @@ export interface PropertyMetricsDTO {
 }
 
 export interface TopCategoryDTO {
-    categoryName: string;
+    propertyType: string;
     count: number;
 }
 
