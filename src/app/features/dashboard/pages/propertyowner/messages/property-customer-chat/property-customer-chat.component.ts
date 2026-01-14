@@ -2,10 +2,17 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject, AfterViewC
 import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { CustomerChatService, CustomerChatMessage } from '../../../../../../core/services/customer-chat.service';
+import { CustomerPropertyChatService } from '../../../../../../core/services/customer-property-chat.service';
 import { AuthService } from '../../../../../../core/services/auth.service';
 import { LucideAngularModule, Send, ArrowLeft } from 'lucide-angular';
-import { Subscription, filter } from 'rxjs';
+import { Subscription } from 'rxjs';
+
+export interface CustomerChatMessage {
+  senderId: string;
+  message: string;
+  sentDate: string;
+  isSelf: boolean;
+}
 
 @Component({
   selector: 'app-property-customer-chat',
@@ -76,7 +83,7 @@ import { Subscription, filter } from 'rxjs';
 export class PropertyCustomerChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private chatService = inject(CustomerChatService);
+  private chatService = inject(CustomerPropertyChatService);
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
@@ -104,49 +111,81 @@ export class PropertyCustomerChatComponent implements OnInit, OnDestroy, AfterVi
       this.customerId = params.get('customerId') || '';
 
       if (this.propertyId && this.customerId) {
-        this.loadHistory();
-        this.setupRealtime();
+        this.initializeChat();
       }
     });
-
-    // Ensure connection is active
-    this.chatService.startConnection();
   }
 
   ngAfterViewChecked() {
     this.scrollToBottom();
   }
 
-  loadHistory() {
-    this.chatService.getChatHistory(this.propertyId, this.customerId).subscribe({
+  initializeChat() {
+    // 1. Start Connection
+    this.chatService.startConnection();
+
+    // 2. Join Room (Delay slightly to ensure connection is ready, though service handles it)
+    setTimeout(() => {
+      this.chatService.joinChat(this.propertyId, this.customerId);
+    }, 500);
+
+    // 3. Load History
+    this.chatService.loadChatHistory(this.propertyId, this.customerId).subscribe({
       next: (msgs) => {
-        const myId = this.authService.getUserId();
         this.messages = msgs.map(m => ({
-          ...m,
-          isSelf: m.senderId === myId
+          senderId: m.senderId,
+          message: m.messageText,
+          sentDate: m.createdAt,
+          isSelf: m.isMine
         }));
         this.scrollToBottom();
-
-        // ✅ Mark as read when opening chat
-        this.chatService.markAsRead(this.propertyId, this.customerId).subscribe();
       }
     });
+
+    // 4. Setup Real-time (using the signal or subject)
+    this.setupRealtime();
   }
 
   setupRealtime() {
-    this.subscription = this.chatService.messageReceived$.subscribe(msg => {
-      // Filter: Must match current property AND active customer context
-      if (msg.propertyId == this.propertyId && (msg.senderId === this.customerId || msg.senderId === this.authService.getUserId())) {
+    this.subscription = this.chatService.newMessage$.subscribe(msg => {
+      // Avoid duplication if the message is already optimistic (check mostly by content/time if ID is missing in local opt)
+      // Since specific IDs might be tricky with optimistic, we just append if it's from OTHERS.
+      // If it's from US, we might have already added it. 
+      // Current Service sends back 'ReceiveMessage' even for self.
 
-        // Anti-duplication (Safety)
-        if (msg.senderId === this.authService.getUserId()) return;
+      // Since we clear form immediately on send, we primarily rely on the echoed message 
+      // OR optimistic update. 
+      // Let's rely on the service's logic: MessageDto comes in.
 
-        this.messages.push({
-          ...msg,
-          isSelf: false
-        });
-        this.scrollToBottom();
+      // If we used optimistic update, we might get a duplicate.
+      // Simple fix: If it's mine, don't re-add if we recently added one? 
+      // OR: Don't do optimistic update in UI, rely on the instant echo from signal if local.
+      // BUT: The user complained about need to refresh -> implies echo wasn't happening or was on wrong channel.
+
+      // With correct channel, echo should happen.
+      // Let's map it and push.
+
+      console.log('⚡ Realtime msg received:', msg);
+
+      const newMsg: CustomerChatMessage = {
+        senderId: msg.senderId,
+        message: msg.messageText,
+        sentDate: msg.createdAt,
+        isSelf: msg.isMine
+      };
+
+      // Check if we already have this exact message (simple dedup)
+      const lastMsg = this.messages[this.messages.length - 1];
+      if (lastMsg && lastMsg.isSelf && lastMsg.message === newMsg.message && newMsg.isSelf) {
+        // Likely the optimistic one we just added. 
+        // Update it (e.g. set ID) or ignore.
+        // For now, assume optimistic is 'pending' and this confirms it.
+        // If we want to be safe, just don't add if it matches exactly recent one.
+        return;
       }
+
+      this.messages.push(newMsg);
+      this.scrollToBottom();
     });
   }
 
@@ -164,16 +203,22 @@ export class PropertyCustomerChatComponent implements OnInit, OnDestroy, AfterVi
       senderId: myId,
       message: text,
       sentDate: new Date().toISOString(),
-      propertyId: this.propertyId,
       isSelf: true
     };
     this.messages.push(optimisticMsg);
+    this.scrollToBottom();
 
     // Clear Form
     this.chatForm.reset();
 
-    // 2️⃣ API Call
-    this.chatService.sendMessage(this.propertyId, text, this.customerId).subscribe({
+    // 2️⃣ API Call (using new service)
+    const dto = {
+      propertyId: this.propertyId,
+      messageText: text,
+      receiverId: this.customerId
+    };
+
+    this.chatService.sendMessage(dto).subscribe({
       next: () => {
         this.sending = false;
         console.log('✅ Message sent');
@@ -181,8 +226,8 @@ export class PropertyCustomerChatComponent implements OnInit, OnDestroy, AfterVi
       error: (err) => {
         this.sending = false;
         console.error('❌ Failed to send:', err);
-        // Rollback? Or show error
-        // For now simple log
+        // Remove the optimistic message on failure?
+        this.messages.pop();
       }
     });
   }
@@ -201,5 +246,9 @@ export class PropertyCustomerChatComponent implements OnInit, OnDestroy, AfterVi
 
   ngOnDestroy() {
     if (this.subscription) this.subscription.unsubscribe();
+    // Leave the chat room to clean up
+    if (this.propertyId && this.customerId) {
+      this.chatService.leaveChat(this.propertyId, this.customerId);
+    }
   }
 }

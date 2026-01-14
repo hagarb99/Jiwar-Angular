@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <footer class="bg-primary text-white py-12 border-t border-white/10">
       <div class="container mx-auto px-4">
@@ -18,16 +19,16 @@ import { CommonModule } from '@angular/common';
           <div>
             <h4 class="font-bold mb-4">Quick Links</h4>
             <ul class="space-y-2 text-white/60">
-              <li><a href="#" class="hover:text-accent transition-smooth">Properties</a></li>
-              <li><a href="#" class="hover:text-accent transition-smooth">Valuations</a></li>
-              <li><a href="#" class="hover:text-accent transition-smooth">Insights</a></li>
+              <li><a routerLink="/properties" class="hover:text-accent transition-smooth">Properties</a></li>
+              <li><a routerLink="/renovation/intro" class="hover:text-accent transition-smooth">Renovation</a></li>
+              <li><a routerLink="/subscriptions" class="hover:text-accent transition-smooth">Pricing</a></li>
+              <li><a routerLink="/about" class="hover:text-accent transition-smooth">About</a></li>
             </ul>
           </div>
           <div>
             <h4 class="font-bold mb-4">Contact</h4>
             <ul class="space-y-2 text-white/60">
-              <li>info&#64;smartrealestate.com</li>
-              <li>+1 (555) 000-0000</li>
+              <li>Jiwarwebsite&#64;gmail.com</li>
             </ul>
           </div>
         </div>

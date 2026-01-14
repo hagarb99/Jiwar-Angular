@@ -1,7 +1,9 @@
-import { Component, OnInit, OnDestroy, inject, NgZone, HostListener, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, NgZone, HostListener, ElementRef, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { filter, Subject, takeUntil, combineLatest, map, startWith } from 'rxjs';
+import { toObservable } from '@angular/core/rxjs-interop';
+
 import {
   LucideAngularModule,
   ChevronDown,
@@ -17,6 +19,7 @@ import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
 import { ChatService } from '../../../core/services/chat.service';
 import { CustomerChatService } from '../../../core/services/customer-chat.service';
+import { CustomerPropertyChatService } from '../../../core/services/customer-property-chat.service';
 import { NotificationService, NotificationDto } from '../../../core/services/notification.service';
 import { TranslationService, Language } from '../../../core/services/translation.service';
 import { environment } from '../../../../environments/environment';
@@ -57,19 +60,22 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   // 🟢 Global Message State
   private globalMessagesService = inject(GlobalMessagesService);
+  private customerPropertyChatService = inject(CustomerPropertyChatService);
 
   // Combine both sources based on User Role
   unreadMessageCount$ = combineLatest([
     inject(AuthService).currentUser$,
     this.globalMessagesService.unreadCount$.pipe(startWith(0)),
-    inject(CustomerChatService).unreadCount$.pipe(startWith(0))
+    inject(CustomerChatService).unreadCount$.pipe(startWith(0)),
+    toObservable(this.customerPropertyChatService.totalUnreadCount)
   ]).pipe(
-    map(([user, globalCount, customerCount]) => {
+    map(([user, globalCount, customerCount, propChatCount]) => {
       const role = user?.role;
 
       // Ensure counts are valid numbers (fallback to 0)
       const safeGlobalCount = typeof globalCount === 'number' ? globalCount : 0;
       const safeCustomerCount = typeof customerCount === 'number' ? customerCount : 0;
+      const safePropChatCount = typeof propChatCount === 'number' ? propChatCount : 0;
 
       // Interior Designer only sees Global/Workspace messages
       if (role === 'InteriorDesigner') {
@@ -78,12 +84,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
       // Customer only sees Property Chat messages (usually)
       if (role === 'Customer') {
-        return safeCustomerCount + safeGlobalCount;
+        // Use the new service count if available, or combine
+        return safeCustomerCount + safeGlobalCount + safePropChatCount;
       }
 
       // Property Owner sees BOTH (Workspace messages + Customer inquires)
       if (role === 'PropertyOwner') {
-        return safeGlobalCount + safeCustomerCount;
+        return safeGlobalCount + safeCustomerCount + safePropChatCount;
       }
 
       // Default/Admin/Not logged in
@@ -108,6 +115,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
   currentPath = '';
   isLoggedIn = false;
   isDarkBgPage = false;
+  isScrolled = false;
+
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    this.isScrolled = window.scrollY > 50;
+  }
 
   buyDropdownItems = [
     { path: '/properties', label: 'Apartments for Sale' },
@@ -335,6 +348,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
 
     this.toggleNotificationsDropdown = false;
+
+    // 🟢 Priority: Use explicit link if available (e.g. from Property Chat)
+    if (notification.link) {
+      this.router.navigateByUrl(notification.link);
+      return;
+    }
+
     const message = notification.message.toLowerCase();
     const requestMatch = notification.message.match(/design request (\d+)/i) || notification.message.match(/request (\d+)/i);
     const bookingMatch = notification.message.match(/booking.*(\d+)/i);
@@ -345,7 +365,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     if (this.currentUserRole === 'PropertyOwner') {
       if (bookingId || notification.notificationType?.toLowerCase().includes('booking') || message.includes('booking')) {
-        this.router.navigate(['/dashboard/propertyowner/owner-bookings']);
+        this.router.navigate(['/dashboard/propertyowner/my-Booking']);
       } else if (requestId) {
         this.router.navigate(['/dashboard/propertyowner/design-requests', requestId]);
       } else {

@@ -17,13 +17,14 @@
     </span>
   </div>
 
-  <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+  <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
     <a *ngFor="let item of getMenuItemsForRole(currentUser.role)" [routerLink]="item.path"
-      routerLinkActive="bg-slate-900 text-white" class="flex items-center px-4 py-2 rounded hover:bg-gray-100">
-      <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      routerLinkActive="active-link"
+      class="sidebar-link flex items-center px-4 py-3 rounded-xl transition-all duration-200 group">
+      <svg class="w-5 h-5 mr-3 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path [attr.d]="item.icon" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
-      {{ item.label }}
+      <span class="font-medium">{{ item.label }}</span>
     </a>
   </nav>
 

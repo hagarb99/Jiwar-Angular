@@ -5,6 +5,7 @@ import { Observable, tap, catchError, of, Subject } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
+import { NotificationService } from './notification.service';
 import { MessageService } from 'primeng/api';
 import {
     MessageDto,
@@ -32,6 +33,7 @@ export class CustomerPropertyChatService {
     private readonly authService = inject(AuthService);
     private readonly destroyRef = inject(DestroyRef);
     private readonly messageService = inject(MessageService);
+    private readonly notificationService = inject(NotificationService);
 
     // SignalR Hub
     private hubConnection: HubConnection | null = null;
@@ -189,6 +191,49 @@ export class CustomerPropertyChatService {
 
                 // Emit to external subscribers
                 this._newMessage$.next(message);
+
+                // If message is NOT mine (received from others)
+                if (!message.isMine) {
+                    // 1. Play Sound
+                    try {
+                        this.notificationService.playCustomSound();
+                    } catch (e) {
+                        console.warn('Sound play failed', e);
+                    }
+
+                    // 2. Add Notification to Navbar List
+                    const currentRole = this.authService.userRole;
+                    let link = '';
+                    const customerId = currentRole === 'PropertyOwner'
+                        ? message.senderId
+                        : this.authService.getUserId();
+
+                    // Ensure we have a valid propertyId before generating deep link
+                    // Check if propertyId exists and is valid number
+                    if (message.propertyId && !isNaN(Number(message.propertyId))) {
+                        if (currentRole === 'PropertyOwner') {
+                            link = `/dashboard/propertyowner/messages/property/${message.propertyId}/customer/${customerId}`;
+                        } else if (currentRole === 'Customer') {
+                            link = `/dashboard/customer/chat-room/${message.propertyId}/${customerId}`;
+                        }
+                    } else {
+                        // Fallback to generic inbox
+                        link = currentRole === 'PropertyOwner'
+                            ? '/dashboard/propertyowner/messages'
+                            : '/dashboard/messages';
+                    }
+
+                    this.notificationService.addLocalNotification({
+                        notificationID: Date.now(),
+                        title: `${message.senderName || 'New Message'}`,
+                        message: message.messageText,
+                        notificationType: 'PropertyChat',
+                        isRead: false,
+                        sentDate: new Date().toISOString(),
+                        timeAgo: 'Just now',
+                        link: link
+                    });
+                }
 
                 // If user is NOT in the specific chat room, show a toast notification
                 if (!this.isInChatRoom && !message.isMine) {
@@ -405,8 +450,19 @@ export class CustomerPropertyChatService {
         return this.http.post<MessageDto>(`${this.apiUrl}/send`, payload).pipe(
             tap(sentMessage => {
                 console.log('✅ [CustomerPropertyChat] Message sent successfully:', sentMessage);
-                // The backend will broadcast via SignalR, so the message will be added
-                // through the ReceiveMessage handler.
+
+                // Optimistic / Instant update for sender
+                // We add it locally to ensure UI updates immediately
+                this.ngZone.run(() => {
+                    this._messages.update(messages => {
+                        // Prevent duplicates if SignalR already delivered it
+                        if (messages.some(m => m.id === sentMessage.id)) return messages;
+
+                        // Ensure isMine is true since we sent it
+                        const msgWithFlag = { ...sentMessage, isMine: true };
+                        return [...messages, msgWithFlag];
+                    });
+                });
             }),
             catchError(err => {
                 console.error('❌ [CustomerPropertyChat] Send failed:', err);

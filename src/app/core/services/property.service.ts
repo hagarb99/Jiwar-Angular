@@ -45,6 +45,7 @@ export interface Property {
     ThumbnailUrl?: string; // Used by /my endpoint (PropertyListBDTO)
     propertyMedia?: PropertyMedia[]; // Still used by some endpoints
     propertyOwner?: PropertyOwner;
+    canChat?: boolean;
 }
 
 export interface PropertyMedia {

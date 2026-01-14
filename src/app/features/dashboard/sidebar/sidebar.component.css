@@ -1,0 +1,36 @@
+/* Sidebar Link Styling */
+.sidebar-link {
+    color: #64748b;
+    /* text-slate-500 */
+    background-color: transparent;
+    transition: all 0.2s ease;
+}
+
+/* Hover State (Only if not active) */
+.sidebar-link:not(.active-link):hover {
+    background-color: #f3f4f6;
+    /* Light gray */
+    color: #000000;
+    /* Black */
+}
+
+.sidebar-link:not(.active-link):hover svg {
+    stroke: #000000;
+}
+
+/* Active State */
+.sidebar-link.active-link {
+    background-color: #000000;
+    /* Black Background */
+    color: #ffffff;
+    /* White Text */
+    font-weight: 600;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure Icon Color is White in Active State */
+.sidebar-link.active-link svg {
+    stroke: #ffffff;
+    /* White Icon */
+    stroke-width: 2.5px;
+}

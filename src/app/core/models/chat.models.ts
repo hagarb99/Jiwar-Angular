@@ -10,6 +10,7 @@ export interface MessageDto {
     createdAt: string;
     isRead: boolean;
     isMine: boolean;
+    propertyId?: number;
 }
 
 /**

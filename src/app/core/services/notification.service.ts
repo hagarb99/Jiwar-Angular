@@ -182,6 +182,9 @@ export class NotificationService implements OnDestroy {
         return this.connectionPromise;
     }
 
+    // Subject for real-time booking updates
+    public bookingStatusChanged$ = new Subject<any>();
+
     /**
      * Setup SignalR event listeners
      */
@@ -207,6 +210,16 @@ export class NotificationService implements OnDestroy {
         // Remove existing listeners to avoid duplicates if re-setup
         this.hubConnection.off('ReceiveNotification');
         this.hubConnection.off('ReceiveChatNotification');
+        this.hubConnection.off('BookingStatusChanged');
+
+        // New Booking Status Listener
+        this.hubConnection.on('BookingStatusChanged', (data: any) => {
+            console.log('📅 SignalR BookingStatusChanged:', data);
+
+            // Broadcast the event to subscribers (like PropertyDetailsComponent)
+            this.bookingStatusChanged$.next(data);
+            // Optionally trigger a generic notification if needed, but the component handles the specific toast.
+        });
 
         this.hubConnection.on('ReceiveChatNotification', (data: any) => {
             console.log('💬 SignalR ReceiveChatNotification trigger:', data);
@@ -423,5 +436,32 @@ export class NotificationService implements OnDestroy {
      */
     public getUnreadCount(): number {
         return this.unreadCount$.value;
+    }
+
+    /**
+     * Play the specialized notification sound (assets/notification.mp3)
+     */
+    public playCustomSound(): void {
+        playBeep();
+    }
+
+    /**
+     * Add a local notification (e.g. from Chat Service)
+     * This bypasses SignalR and directly updates the local state
+     */
+    public addLocalNotification(notification: NotificationDto): void {
+        this.zone.run(() => {
+            const current = this.notifications$.value;
+            // Ensure unique ID if not provided
+            if (!notification.notificationID) {
+                notification.notificationID = Date.now();
+            }
+            const updated = [notification, ...current];
+
+            this.notifications$.next(updated);
+            this.unreadCount$.next(updated.filter(n => !n.isRead).length);
+
+            this.saveToStorage(updated);
+        });
     }
 }

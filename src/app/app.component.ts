@@ -50,6 +50,13 @@ export class AppComponent implements OnInit, OnDestroy {
     if (message.data?.type === 'Chat' && message.data?.relatedId) {
       console.log('🔔 Toast clicked: navigating to chat', message.data.relatedId);
       this.router.navigate(['/dashboard/workspace', message.data.relatedId]);
+    } else if (message.data?.type === 'Booking') {
+      const role = this.authService.userRole;
+      if (role === 'PropertyOwner') {
+        this.router.navigate(['/dashboard/propertyowner/my-Booking']);
+      } else if (role === 'Customer') {
+        this.router.navigate(['/dashboard/customer/MyBooking']);
+      }
     }
   }
 }

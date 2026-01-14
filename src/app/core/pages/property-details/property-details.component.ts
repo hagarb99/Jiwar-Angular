@@ -1,10 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { PropertyCardComponent } from '../../../shared/components/property-card/property-card.component';
 import { PropertyOwnerPublicProfile } from '../../services/PropertyOwnerService';
+import { Subscription } from 'rxjs';
 import {
   LucideAngularModule,
   MapPin,
@@ -38,7 +39,7 @@ import {
 } from 'lucide-angular';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
-import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour } from '../../services/property.service';
+import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour, BookingCreateDTO } from '../../services/property.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { PanoramaViewerComponent } from '../../../shared/components/panorama-viewer/panorama-viewer.component';
@@ -49,10 +50,8 @@ import { AdminAnalyticsService } from '../../services/admin-analytics.service';
 import { AdminAnalyticsDTO, TopDistrictDTO, TopCategoryDTO } from '../../models/admin-analytics.dto';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-
-
-
-
+import { NotificationService } from '../../services/notification.service';
+import { CustomerPropertyChatService } from '../../services/customer-property-chat.service';
 
 @Component({
   selector: 'app-property-details',
@@ -66,12 +65,13 @@ import { ToastModule } from 'primeng/toast';
     FooterComponent,
     PropertyCardComponent,
     ToastModule,
-    BaseChartDirective
+    BaseChartDirective,
+    PanoramaViewerComponent
   ],
   templateUrl: './property-details.component.html',
   styleUrls: ['./property-details.component.css']
 })
-export class PropertyDetailsComponent implements OnInit {
+export class PropertyDetailsComponent implements OnInit, OnDestroy {
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -81,6 +81,8 @@ export class PropertyDetailsComponent implements OnInit {
   private sanitizer = inject(DomSanitizer);
   private adminAnalyticsService = inject(AdminAnalyticsService);
   private messageService = inject(MessageService);
+  private notificationService = inject(NotificationService);
+  private customerPropertyChatService = inject(CustomerPropertyChatService);
 
   // Icons
   MapPin = MapPin;
@@ -200,6 +202,10 @@ export class PropertyDetailsComponent implements OnInit {
   public averagePrice = 0;
   public chartInsight = '';
 
+  // Real-time Booking & Chat
+  isBookingConfirmed = false;
+  private bookingStatusSubscription?: Subscription;
+
   // Helper Methods
   isTopDistrict(): boolean {
     if (!this.adminAnalytics || !this.property) return false;
@@ -261,9 +267,7 @@ export class PropertyDetailsComponent implements OnInit {
 
   // Navigation State
   activeSection = 'overview';
-  chatMessage: string = '';
-  chatMessages: any[] = [];
-  isChatModalOpen: boolean = false;
+
 
   scrollToSection(sectionId: string): void {
     this.activeSection = sectionId;
@@ -293,11 +297,11 @@ export class PropertyDetailsComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      const id = Number(params.get('id')); // Ensure 'id' matches your route config
+      const id = Number(params.get('id'));
       if (id) {
-        this.propertyId = id; // Set propertyId for other methods
+        this.propertyId = id;
         this.loadProperty(id);
-        this.checkWishlistStatus(); // Check wishlist status after propertyId is set
+        this.checkWishlistStatus();
         this.loadRecommendedProperties();
         this.loadMarketAnalytics();
       } else {
@@ -306,12 +310,10 @@ export class PropertyDetailsComponent implements OnInit {
       }
     });
 
-    // Subscribe to wishlist changes to keep UI in sync
     this.wishlistService.wishlistIds$.subscribe(() => {
       this.checkWishlistStatus();
     });
 
-    // Pre-fill user data if logged in
     this.authService.currentUser$.subscribe((user: any) => {
       if (user) {
         this.bookingData.name = user.name || '';
@@ -319,6 +321,31 @@ export class PropertyDetailsComponent implements OnInit {
         this.bookingData.phone = user.phoneNumber || '';
       }
     });
+
+    // Listen for Real-Time Booking Confirmation
+    this.bookingStatusSubscription = this.notificationService.bookingStatusChanged$
+      .subscribe((data: { PropertyId: number, Status: string, CanChat: boolean }) => {
+        if (this.property && Number(data.PropertyId) === this.property.propertyID) {
+          console.log('🔔 Booking Event Received for current property:', data);
+
+          if (data.Status === 'Confirmed') {
+            this.isBookingConfirmed = true;
+
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success!',
+              detail: 'Your booking is confirmed. You can now chat with the owner.',
+              life: 5000
+            });
+          }
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    if (this.bookingStatusSubscription) {
+      this.bookingStatusSubscription.unsubscribe();
+    }
   }
 
   loadMarketAnalytics(): void {
@@ -345,14 +372,9 @@ export class PropertyDetailsComponent implements OnInit {
       next: (data: Property) => {
         this.property = data;
         this.selectedImageIndex = 0;
-
-        // Load Analytics Data
         this.loadAnalytics(id);
-
-        // Load Virtual Tours
         this.loadVirtualTours(id);
 
-        // 360° Tour (Primary fallback if dedicated tours table is empty)
         if (data.tour360Url) {
           this.isPanoramaImage = this.checkIsPanoramaImage(data.tour360Url);
           if (this.isPanoramaImage) {
@@ -363,7 +385,6 @@ export class PropertyDetailsComponent implements OnInit {
             this.activeTourUrl = data.tour360Url;
           }
 
-          // Seed virtualTours if empty to ensure UI appears
           if (this.virtualTours.length === 0) {
             this.virtualTours = [{
               propertyID: id,
@@ -376,9 +397,7 @@ export class PropertyDetailsComponent implements OnInit {
           }
         }
 
-        // Google Maps
         let mapUrl = '';
-
         if (
           data.locationLat &&
           data.locationLang &&
@@ -389,13 +408,11 @@ export class PropertyDetailsComponent implements OnInit {
           const zoom = 16;
           mapUrl = `https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`;
         } else if (data.address || data.district || data.city) {
-          // Construct search query
           const locationParts = [data.address, data.district, data.city]
-            .filter(part => part) // remove empty/null
+            .filter(part => part)
             .join(', ');
 
           if (locationParts) {
-            // Use q=Address for search mode
             mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(locationParts)}&z=15&output=embed`;
           }
         }
@@ -407,8 +424,6 @@ export class PropertyDetailsComponent implements OnInit {
         }
 
         this.loading = false;
-
-        // Load additional data dependent on property
         this.checkWishlistStatus();
       },
       error: (err: any) => {
@@ -422,13 +437,11 @@ export class PropertyDetailsComponent implements OnInit {
   loadVirtualTours(id: number): void {
     this.propertyService.getVirtualTours(id).subscribe({
       next: (tours: VirtualTour[]) => {
-        // Only override if we got actual dynamic tours
         if (tours && tours.length > 0) {
           this.virtualTours = tours.map(t => ({
             ...t,
             safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(this.getTourEmbedUrl(t.tourURL))
           }));
-
           this.safeTourUrl = this.virtualTours[0].safeUrl;
           this.activeTourUrl = this.virtualTours[0].tourURL;
         }
@@ -452,7 +465,6 @@ export class PropertyDetailsComponent implements OnInit {
 
   private getTourEmbedUrl(url: string): string {
     if (!url) return '';
-    // Basic YouTube/Vimeo support if they are used as tours
     if (url.includes('youtube.com/watch?v=')) {
       return url.replace('watch?v=', 'embed/');
     }
@@ -466,7 +478,6 @@ export class PropertyDetailsComponent implements OnInit {
     this.propertyService.getPropertyAnalytics(id).subscribe({
       next: (data: PropertyAnalytics[]) => {
         if (data && data.length > 0) {
-          // Sort by date ascending
           const sorted = data.sort((a, b) => new Date(a.analysisDate).getTime() - new Date(b.analysisDate).getTime());
 
           this.priceHistory = sorted.map((a, index) => {
@@ -480,7 +491,6 @@ export class PropertyDetailsComponent implements OnInit {
             };
           });
 
-          // Set Fair Value Estimate and Influence Factors from real data
           const latest = sorted[sorted.length - 1];
           this.fairValueEstimate = latest.fairValue_Estimate;
           this.influenceFactors = this.parseInfluenceFactors(latest.price_Influence_Factors);
@@ -490,7 +500,6 @@ export class PropertyDetailsComponent implements OnInit {
             this.averageGrowth = growthValues.reduce((a, b) => a + b, 0) / growthValues.length;
           }
         } else {
-          // Simulated Data Fallback to ensure the chart is "drawn" as requested
           const basePrice = this.property?.price || 1200000;
           const currentYear = new Date().getFullYear();
           this.priceHistory = Array.from({ length: 10 }, (_, i) => {
@@ -508,12 +517,9 @@ export class PropertyDetailsComponent implements OnInit {
           this.influenceFactors = ['Location Strategy', 'Market Demand', 'Property Condition'];
         }
 
-        // Filter for last 10 years as requested
         const tenYearsAgo = new Date().getFullYear() - 10;
         const filteredHistory = this.priceHistory.filter(h => h.year >= tenYearsAgo);
 
-        // Update Chart Data
-        // We need to create a new object reference to trigger change detection in ng2-charts
         this.lineChartData = {
           labels: filteredHistory.map(h => h.year.toString()),
           datasets: [
@@ -524,7 +530,6 @@ export class PropertyDetailsComponent implements OnInit {
           ]
         };
 
-        // Calculate Additional Metrics
         if (filteredHistory.length > 1) {
           const firstPrice = filteredHistory[0].price;
           const lastPrice = filteredHistory[filteredHistory.length - 1].price;
@@ -532,7 +537,6 @@ export class PropertyDetailsComponent implements OnInit {
           this.highestPriceYear = filteredHistory.reduce((max, curr) => curr.price > max.price ? curr : max, filteredHistory[0]).year;
           this.averagePrice = filteredHistory.reduce((sum, curr) => sum + curr.price, 0) / filteredHistory.length;
 
-          // AI Insight
           if (this.totalGrowth > 20) {
             this.chartInsight = "This property shows a strong upward price trend, significantly outperforming market averages over the last decade.";
           } else if (this.totalGrowth > 5) {
@@ -544,7 +548,6 @@ export class PropertyDetailsComponent implements OnInit {
           }
         }
 
-        // Take last 5 if too many (OLD LOGIC - REMOVING or KEEPING for table if used elsewhere?)
         if (this.priceHistory.length > 10) {
           this.priceHistory = this.priceHistory.slice(-10);
         }
@@ -558,7 +561,7 @@ export class PropertyDetailsComponent implements OnInit {
   getMaxPriceInHistory(): number {
     if (this.priceHistory.length === 0) return 2500000;
     const max = Math.max(...this.priceHistory.map(h => h.price));
-    return max > 0 ? max * 1.1 : 2500000; // Add 10% headroom
+    return max > 0 ? max * 1.1 : 2500000;
   }
 
   loadRecommendedProperties() {
@@ -610,7 +613,6 @@ export class PropertyDetailsComponent implements OnInit {
 
     if (this.propertyId) {
       const wasFavorite = this.isFavorite;
-      // Optimistic UI update
       this.isFavorite = !this.isFavorite;
       console.log('Toggling favorite for ID:', this.propertyId);
 
@@ -620,7 +622,6 @@ export class PropertyDetailsComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error toggling wishlist:', err);
-          // Revert on error
           this.isFavorite = wasFavorite;
         }
       });
@@ -638,24 +639,21 @@ export class PropertyDetailsComponent implements OnInit {
   submitBooking(): void {
     if (!this.propertyId) return;
 
-    // Validate required fields
     if (!this.bookingData.name || !this.bookingData.email || !this.bookingData.phone || !this.bookingData.date) {
       alert('Please fill all required fields.');
       return;
     }
 
-    // Prepare payload
     const bookingPayload: BookingCreateDTO = {
       propertyID: this.propertyId,
       name: this.bookingData.name,
       email: this.bookingData.email,
       phone: this.bookingData.phone,
-      startDate: new Date(this.bookingData.date).toISOString(), // تحويل للتنسيق ISO
+      startDate: new Date(this.bookingData.date).toISOString(),
       message: this.bookingData.message || '',
-      offerID: null // backend يتوقع null بدل 0
+      offerID: null
     };
 
-    // Disable multiple submissions
     let isSubmitting = true;
 
     this.propertyService.createBooking(bookingPayload).subscribe({
@@ -667,7 +665,6 @@ export class PropertyDetailsComponent implements OnInit {
           life: 5000
         });
         this.closeBookingModal();
-        // Reset only message and date, keep user info
         this.bookingData.date = '';
         this.bookingData.message = '';
         isSubmitting = false;
@@ -690,8 +687,6 @@ export class PropertyDetailsComponent implements OnInit {
       }
     });
   }
-
-
 
   handleShare(): void {
     const shareData = {
@@ -763,37 +758,33 @@ export class PropertyDetailsComponent implements OnInit {
     return `${apiBase}/${cleanPath}`;
   }
 
-  sendMessage() {
-    if (!this.chatMessage.trim()) return;
-
-    this.chatMessages.push({
-      message: this.chatMessage,
-      isSelf: true,
-      sentDate: new Date()
-    });
-
-    this.chatMessage = '';
-
-    // Mock response
-    setTimeout(() => {
-      this.chatMessages.push({
-        message: "Thank you for your interest! How can I help you with this property?",
-        isSelf: false,
-        sentDate: new Date()
-      });
-    }, 1000);
-  }
-
   toggleChat() {
-    this.isChatModalOpen = !this.isChatModalOpen;
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (this.property) {
+      console.log('💬 Triggering JoinChat for property:', this.property.propertyID);
+      const currentUserId = this.authService.getUserId();
+      if (currentUserId) {
+        this.customerPropertyChatService.joinChat(
+          this.property.propertyID,
+          currentUserId
+        );
+        this.router.navigate(['/dashboard/chat']);
+      }
+    }
   }
 
-  closeChatModal() {
-    this.isChatModalOpen = false;
-  }
+
+
   get canOpenChat(): boolean {
     // يظهر الزر فقط لو المستخدم مسجل دخول، العقار موجود، والمستخدم ليس هو المالك
-    const currentUser = this.authService.getCurrentUserValue(); // أو أي طريقة تجلب المستخدم الحالي
-    return !!(this.authService.isLoggedIn() && this.property && currentUser?.id !== this.property.propertyOwner?.userId);
+    const currentUser = this.authService.getCurrentUserValue();
+    const isOwner = currentUser?.id === this.property?.propertyOwner?.userId;
+
+    // Condition: Logged in AND Not owner AND (Booking Confirm OR Generic Allowed)
+    return !!(this.authService.isLoggedIn() && this.property && !isOwner && (this.property.canChat || this.isBookingConfirmed));
   }
 }

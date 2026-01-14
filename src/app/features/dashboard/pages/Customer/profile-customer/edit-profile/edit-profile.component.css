@@ -1,0 +1,5 @@
+/* Basic styling usually handled by Tailwind */
+input.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched {
+    border-color: #ef4444;
+}

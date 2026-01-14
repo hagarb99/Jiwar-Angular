@@ -800,7 +800,17 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
 
+
+
   private initializeChat(): void {
+    if (!this.propertyId || isNaN(this.propertyId) || !this.customerId) {
+      console.warn('⚠️ [ChatRoom] Missing parameter propertyId or customerId');
+      this.loading.set(false);
+      // Optional: Redirect back
+      this.router.navigate(['/dashboard/chat']);
+      return;
+    }
+
     this.loading.set(true);
 
     // Validate customerId for SignalR Group Name consistency

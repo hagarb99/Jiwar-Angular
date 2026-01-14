@@ -50,6 +50,7 @@ export class HomeComponent implements OnInit {
     this.loadProperties();
   }
 
+
   loadProperties() {
     this.loading = true;
     this.propertyService.getFilteredProperties({}).subscribe({
