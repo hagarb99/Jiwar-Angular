@@ -8,7 +8,7 @@ export const propertyOwnerRoutes: Routes = [
     path: 'dashboard',
     redirectTo: 'property-dashboard',
     pathMatch: 'full'
-  }, 
+  },
   {
     path: 'profile/edit',
     loadComponent: () => import('./profile-propertyowner/edit-profile/edit-profile.component').then(m => m.EditProfilePropertyownerComponent)
@@ -22,17 +22,22 @@ export const propertyOwnerRoutes: Routes = [
     component: OwnerMyPropertiesComponent
   },
   {
-    path : 'my-Booking',
+    path: 'my-Booking',
     component: OwnerBookingsComponent
   },
   {
     path: 'edit-property/:id',
     loadComponent: () => import('./edit-property/edit-property.component').then(m => m.EditPropertyComponent)
   },
-  {  
+  {
     path: 'dashboard',
     loadComponent: () => import('./property-dashboard/property-dashboard.component').then(m => m.PropertyDashboardComponent)
   },
+  {
+    path: 'overview',
+    loadComponent: () => import('./owner-overview/owner-overview.component').then(m => m.OwnerOverviewComponent)
+  },
+
   {
     path: 'design-requests/create',
     loadComponent: () => import('./create-design-request/create-design-request.component').then(m => m.CreateDesignRequestComponent)
@@ -54,6 +59,18 @@ export const propertyOwnerRoutes: Routes = [
     redirectTo: 'my-requests',
     pathMatch: 'full'
   },
+  {
+    path: 'messages',
+    loadComponent: () => import('./messages/owner-inbox/owner-inbox.component').then(m => m.OwnerInboxComponent)
+  },
+  {
+    path: 'messages/property/:propertyId/customer/:customerId',
+    loadComponent: () => import('./messages/property-customer-chat/property-customer-chat.component').then(m => m.PropertyCustomerChatComponent)
+  },
+  // {
+  //   path: 'chat/:propertyId/:customerId',
+  //   loadComponent: () => import('./owner-chat/owner-chat.component').then(m => m.OwnerChatComponent)
+  // },
   // {
   //   path: 'properties',
   //   loadComponent: () =>

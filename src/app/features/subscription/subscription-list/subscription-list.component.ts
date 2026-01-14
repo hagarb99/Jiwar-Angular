@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { SubscriptionPlan, CreateSubscriptionRequest } from '../../../core/models/subscription.model';
@@ -13,7 +14,7 @@ import { PaymentModalComponent } from '../../../shared/components/payment-modal/
 @Component({
     selector: 'app-subscription-list',
     standalone: true,
-    imports: [CommonModule, ToastModule, PricingCardComponent, PaymentModalComponent],
+    imports: [CommonModule, FormsModule, ToastModule, PricingCardComponent, PaymentModalComponent],
     templateUrl: './subscription-list.component.html',
     styleUrls: ['./subscription-list.component.css'],
     providers: [MessageService]
@@ -32,6 +33,18 @@ export class SubscriptionListComponent implements OnInit {
     ];
     loading = false;
     processingId: number | null = null;
+
+    // Checkout
+    showCheckout = false;
+    selectedPlan: SubscriptionPlan | null = null;
+    selectedPaymentMethod: 'card' | 'wallet' = 'card';
+
+    billingDetails = {
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: ''
+    };
 
     // Payment Modal
     showPaymentModal = false;
@@ -56,11 +69,36 @@ export class SubscriptionListComponent implements OnInit {
             return;
         }
 
-        if (!plan.id) return;
+        this.selectedPlan = plan;
+        this.showCheckout = true;
+    }
 
-        this.processingId = plan.id;
+    closeCheckout(): void {
+        this.showCheckout = false;
+        this.selectedPlan = null;
+    }
 
-        this.paymentService.createSubscriptionPayment(plan.id).subscribe({
+    selectPaymentMethod(method: 'card' | 'wallet'): void {
+        this.selectedPaymentMethod = method;
+    }
+
+    proceedToPayment(): void {
+        if (!this.selectedPlan?.id) return;
+
+        // Basic Validation
+        if (!this.billingDetails.firstName || !this.billingDetails.lastName || !this.billingDetails.email || !this.billingDetails.phoneNumber) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Missing Details',
+                detail: 'Please fill in all billing information.'
+            });
+            return;
+        }
+
+        this.showCheckout = false;
+        this.processingId = this.selectedPlan.id;
+
+        this.paymentService.createSubscriptionPayment(this.selectedPlan.id, this.billingDetails).subscribe({
             next: (res: { iframeUrl: string }) => {
                 this.paymobUrl = res.iframeUrl;
                 this.showPaymentModal = true;

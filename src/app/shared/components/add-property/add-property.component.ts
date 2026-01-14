@@ -259,7 +259,7 @@ export class AddPropertyComponent implements OnDestroy {
     this.propertyService.addProperty(dto, this.uploadedFiles).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Property added successfully!' });
-        this.router.navigate(['/properties']);
+        this.router.navigate(['/dashboard/propertyowner/my-properties']);
         this.loading = false;
         this.uploadedFiles = [];
       },

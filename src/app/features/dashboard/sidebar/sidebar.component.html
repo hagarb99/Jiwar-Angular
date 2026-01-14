@@ -1,8 +1,12 @@
 <aside class="fixed left-0 top-20 w-64 bg-white border-r flex flex-col h-[calc(100vh-5rem)] z-40"
   *ngIf="currentUser$ | async as currentUser">
   <div class="p-6 text-center border-b">
-    <div class="w-16 h-16 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center text-xl">
-      {{ currentUser.name.charAt(0) || 'U' }}
+    <div
+      class="w-16 h-16 mx-auto rounded-full bg-slate-100 border-2 border-white shadow-lg overflow-hidden flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform duration-300">
+      <img *ngIf="currentUser.profilePicURL" [src]="getActionUrl(currentUser.profilePicURL)" alt="Profile"
+        class="w-full h-full object-cover">
+      <span *ngIf="!currentUser.profilePicURL" class="text-slate-600 font-bold text-2xl">{{ currentUser.name.charAt(0)
+        || 'U' }}</span>
     </div>
 
     <h3 class="mt-3 font-bold">{{ currentUser.name }}</h3>

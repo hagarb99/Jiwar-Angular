@@ -34,7 +34,6 @@ import { AuthService } from '../../../../../core/services/auth.service';
     ProgressSpinnerModule,
     TagModule
   ],
-  providers: [MessageService],
   templateUrl: './available-projects.component.html',
   styleUrl: './available-projects.component.css'
 })
@@ -123,11 +122,11 @@ export class AvailableProjectsComponent implements OnInit {
       estimatedDays: this.proposalForm.value.estimatedDays,
       sampleDesignURL: this.proposalForm.value.sampleDesignURL,
 
-      // Populate backend required fields
-      status: 'Pending',
+      // Populate backend required fields with numeric status
+      status: 0, // 0 = Pending
       designerName: this.authService.getUserName() || 'Unknown Designer',
       designerEmail: this.authService.getUserEmail() || undefined,
-      offerDetails: this.proposalForm.value.proposalDescription // Reuse description for details
+      offerDetails: this.proposalForm.value.proposalDescription
     };
 
     this.loading = true;

@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Property, PropertyService } from '../../../../../core/services/property.service';
 import { BookingService } from '../../../../../core/services/booking.service';
 import { environment } from '../../../../../../environments/environment';
-
+import { BookingStatus } from '../../../../../core/services/booking.service';
 @Component({
   selector: 'app-property-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './property-dashboard.component.html',
   styleUrls: ['./property-dashboard.component.css']
 })
@@ -90,8 +90,8 @@ export class PropertyDashboardComponent implements OnInit {
   private loadBookingStats(): void {
     this.bookingService.getOwnerBookings().subscribe({
       next: (bookings) => {
-        // Count active bookings (confirmed status)
-        const activeBookings = bookings.filter(b => b.status === 'Confirmed').length;
+        // Count active bookings (Confirmed status)
+        const activeBookings = bookings.filter(b => b.status === BookingStatus.Confirmed).length;
         this.overviewStats[1].value = activeBookings.toString(); // Active Bookings
       },
       error: (error) => {

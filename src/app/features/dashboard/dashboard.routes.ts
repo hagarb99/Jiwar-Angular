@@ -9,87 +9,50 @@ export const DASHBOARD_ROUTES: Routes = [
     children: [
       {
         path: 'profile',
-        loadComponent: () => import('./pages/profile-placeholder/profile-placeholder.component').then(m => m.ProfilePlaceholderComponent)
+        loadComponent: () =>
+          import('./pages/profile-placeholder/profile-placeholder.component')
+            .then(m => m.ProfilePlaceholderComponent)
       },
-
       {
         path: 'designer',
-        canActivate: [roleGuard(['InteriorDesigner'])],
+        canActivate: [() => roleGuard(['InteriorDesigner'])],
         loadChildren: () =>
           import('./pages/interiordesigner/interior-designer.routes')
             .then(m => m.interiorDesignerRoutes)
       },
-
       {
         path: 'propertyowner',
-        canActivate: [roleGuard(['PropertyOwner'])],
+        canActivate: [() => roleGuard(['PropertyOwner'])],
         loadChildren: () =>
           import('./pages/propertyowner/property-owner.routes')
             .then(m => m.propertyOwnerRoutes)
       },
-
       {
         path: 'admin',
-        canActivate: [roleGuard(['Admin'])],
+        canActivate: [() => roleGuard(['Admin'])],
         loadChildren: () =>
           import('./pages/Admin/admin.routes')
             .then(m => m.ADMIN_ROUTES)
       },
-
-      // Default child route
       {
-        path: '',
-        redirectTo: 'profile',
-        pathMatch: 'full'
+        path: 'workspace/:id',
+        loadComponent: () => import('./pages/project-workspace/project-workspace.component').then(m => m.ProjectWorkspaceComponent)
+      },
+      {
+        path: 'messages',
+        loadComponent: () => import('./pages/messages/messages.component').then(m => m.MessagesComponent)
       },
       {
         path: 'customer',
         canActivate: [roleGuard(['Customer'])],
         loadChildren: () =>
           import('./pages/Customer/customer.routes').then(m => m.CustomerRoutes)
+      },
+      {
+        path: '',
+        redirectTo: 'profile',
+        pathMatch: 'full'
       }
     ]
   }
 ];
-
-
-// export const DASHBOARD_ROUTES: Routes = [
-//   {
-//     path: '',
-//     component: DashboardLayoutComponent,
-//     children: [
-//       {
-//         path: 'interiordesigner',
-//       {
-//         path: 'profile',
-//         loadComponent: () => import('./pages/profile-placeholder/profile-placeholder.component').then(m => m.ProfilePlaceholderComponent)
-//       },
-
-//       {
-//         path: 'designer',
-//         canActivate: [roleGuard(['InteriorDesigner'])],
-//         loadChildren: () =>
-//           import('./pages/interiordesigner/interior-designer.routes')
-//             .then(m => m.interiorDesignerRoutes)
-//       },
-
-//       // ===== PROPERTY OWNER =====
-//       {
-//         path: 'propertyowner',
-//         canActivate: [roleGuard(['PropertyOwner'])],
-//         loadChildren: () =>
-//           import('./pages/propertyowner/property-owner.routes')
-//             .then(m => m.propertyOwnerRoutes)
-//       },
-
-//       // ===== ADMIN =====
-//       {
-//         path: 'admin',
-//         canActivate: [roleGuard(['Admin'])],
-//         loadChildren: () =>
-//           import('./pages/Admin/admin.routes')
-//             .then(m => m.ADMIN_ROUTES)
-//       }
-//     ]
-//   }
-// ];

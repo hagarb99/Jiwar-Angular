@@ -15,6 +15,7 @@ export interface DesignRequest {
 }
 
 export interface CreateDesignRequest {
+    userID: string;
     propertyID: number;
     preferredStyle: string;
     budget?: number;

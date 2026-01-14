@@ -38,39 +38,29 @@ export class DesignerProposalService extends ApiBaseService {
         );
     }
 
-    private mapStatus(val: any): string {
-        if (val === undefined || val === null) return 'Pending';
+    private mapStatus(val: any): number {
+        if (val === undefined || val === null) return 0;
 
-        // If it's a numeric string, convert it to a number first
         let statusVal = val;
         if (typeof val === 'string' && !isNaN(Number(val)) && val.trim() !== '') {
             statusVal = Number(val);
         }
 
+        if (typeof statusVal === 'number') return statusVal;
+
         if (typeof statusVal === 'string') {
             const lower = statusVal.toLowerCase().trim();
-            if (lower === 'accepted' || lower === 'approved' || lower === 'chosen' || lower === 'selected' || lower === 'inprogress' || lower === 'active') {
-                return 'Accepted';
+            if (lower === 'accepted' || lower === 'approved' || lower === 'chosen' || lower === 'selected' || lower === 'inprogress' || lower === 'active' || lower === 'chosen_for_project') {
+                return 1;
             }
             if (lower === 'rejected' || lower === 'declined' || lower === 'cancelled') {
-                return 'Rejected';
+                return 2;
             }
-            if (lower === 'pending' || lower === 'open' || lower === 'new') {
-                return 'Pending';
+            if (lower === 'completed' || lower === 'finished' || lower === 'done' || lower === 'delivered') {
+                return 3;
             }
-            if (lower === 'completed' || lower === 'finished' || lower === 'done') {
-                return 'Completed';
-            }
-            return statusVal;
         }
-
-        switch (statusVal) {
-            case 0: return 'Pending';
-            case 1: return 'Accepted';
-            case 2: return 'Rejected';
-            case 3: return 'Completed';
-            default: return 'Pending';
-        }
+        return 0; // Default to Pending
     }
 
     private normalizeProposal(p: any): DesignerProposal {
@@ -79,7 +69,8 @@ export class DesignerProposalService extends ApiBaseService {
 
         const normalized = {
             id: p.id || p.Id || p.proposalID || p.ProposalID || p.idProposal,
-            designRequestID: p.designRequestID || p.DesignRequestID || p.requestID || p.RequestID || p.requestId || p.idRequest,
+            designerId: p.designerId || p.DesignerId || p.designerID || p.DesignerID || p.userId || p.UserId,
+            designRequestID: p.designRequestID || p.DesignRequestID || p.designRequestId || p.DesignRequestId || p.requestId || p.RequestId || p.requestID || p.RequestID || p.idRequest || p.idDesignRequest || p.IdDesignRequest || p.designRequest?.id || p.DesignRequest?.Id,
             proposalDescription: p.proposalDescription || p.ProposalDescription || p.description || p.Description || p.offerDetails || p.notes,
             estimatedCost: p.estimatedCost ?? p.EstimatedCost ?? p.price ?? p.Price ?? p.cost ?? p.budget ?? 0,
             estimatedDays: p.estimatedDays ?? p.EstimatedDays ?? p.duration ?? p.Duration ?? p.days ?? 0,
@@ -94,17 +85,28 @@ export class DesignerProposalService extends ApiBaseService {
     }
 
 
-    chooseProposal(proposalId: number): Observable<any> {
-        return this.httpClient.post<any>(
+    chooseProposal(proposalId: number): Observable<DesignerProposal[]> {
+        return this.httpClient.post<any[]>(
             `${this.apiBaseUrl}/DesignerProposal/choose/${proposalId}`,
             {}
+        ).pipe(
+            map(data => Array.isArray(data) ? data.map(p => this.normalizeProposal(p)) : [])
         );
     }
 
-    rejectProposal(proposalId: number): Observable<any> {
-        return this.httpClient.post<any>(
+    rejectProposal(proposalId: number): Observable<DesignerProposal[]> {
+        return this.httpClient.post<any[]>(
             `${this.apiBaseUrl}/DesignerProposal/reject/${proposalId}`,
             {}
+        ).pipe(
+            map(data => Array.isArray(data) ? data.map(p => this.normalizeProposal(p)) : [])
+        );
+    }
+
+    deliverProject(proposalId: number, deliveryNotes: string = 'Completed'): Observable<any> {
+        return this.httpClient.post(
+            `${this.apiBaseUrl}/DesignerProposal/deliver/${proposalId}`,
+            { deliveryNotes }
         );
     }
 

@@ -186,17 +186,11 @@
                                     Overview
                                 </a>
 
-                                <a (click)="scrollToSection('location')"
-                                    class="cursor-pointer transition-all whitespace-nowrap pb-4 px-2"
-                                    [ngClass]="activeSection === 'location' ? 'text-gray-900 font-bold border-b-2 border-[#D4AF37]' : 'text-gray-500 font-medium border-b-2 border-transparent hover:text-gray-900 hover:border-gray-300'">
-                                    Location
-                                </a>
-
-                                <a *ngIf="activeTourUrl" (click)="scrollToSection('details')"
-                                    class="cursor-pointer transition-all whitespace-nowrap pb-4 px-2"
-                                    [ngClass]="activeSection === 'details' ? 'text-gray-900 font-bold border-b-2 border-[#D4AF37]' : 'text-gray-500 font-medium border-b-2 border-transparent hover:text-gray-900 hover:border-gray-300'">
-                                    360° Tour
-                                </a>
+                        <a (click)="scrollToSection('location')"
+                            class="cursor-pointer transition-all whitespace-nowrap pb-4 px-2"
+                            [ngClass]="activeSection === 'location' ? 'text-gray-900 font-bold border-b-2 border-[#D4AF37]' : 'text-gray-500 font-medium border-b-2 border-transparent hover:text-gray-900 hover:border-gray-300'">
+                            Location
+                        </a>
 
                                 <a (click)="scrollToSection('features')"
                                     class="cursor-pointer transition-all whitespace-nowrap pb-4 px-2"
@@ -364,29 +358,20 @@
 
 
 
-                        <!-- Details Section (Virtual Tour) -->
-                        <section id="details" class="scroll-mt-40 space-y-8" *ngIf="activeTourUrl">
-                            <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                                <span class="flex h-8 w-1 bg-[#D4AF37] rounded-full"></span>
-                                360° Virtual Tour
-                            </h2>
-
-                            <!-- Panorama Viewer for Images -->
-                            <div *ngIf="isPanoramaImage" class="rounded-3xl overflow-hidden shadow-2xl">
-                                <app-panorama-viewer [src]="activeTourUrl" height="500px"></app-panorama-viewer>
-                            </div>
-
-                            <!-- Iframe for Matterport/YouTube/etc -->
-                            <div *ngIf="!isPanoramaImage && safeTourUrl"
-                                class="aspect-video rounded-3xl overflow-hidden bg-gray-900 shadow-2xl relative group">
-                                <iframe [src]="safeTourUrl"
-                                    class="w-full h-full border-0 opacity-90 group-hover:opacity-100 transition-opacity"
-                                    allowfullscreen></iframe>
-                                <div
-                                    class="absolute inset-0 pointer-events-none border-[6px] border-white/10 rounded-3xl">
-                                </div>
-                            </div>
-                        </section>
+                <!-- Details Section (Virtual Tour) -->
+                <section id="details" class="scroll-mt-40 space-y-8" *ngIf="safeTourUrl">
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                        <span class="flex h-8 w-1 bg-[#D4AF37] rounded-full"></span>
+                        Virtual Tour
+                    </h2>
+                    <div class="aspect-video rounded-3xl overflow-hidden bg-gray-900 shadow-2xl relative group">
+                        <iframe [src]="safeTourUrl"
+                            class="w-full h-full border-0 opacity-90 group-hover:opacity-100 transition-opacity"
+                            allowfullscreen></iframe>
+                        <div class="absolute inset-0 pointer-events-none border-[6px] border-white/10 rounded-3xl">
+                        </div>
+                    </div>
+                </section>
 
                         <!-- Location Section -->
                         <section id="location" class="scroll-mt-40 space-y-8">
@@ -555,15 +540,15 @@
                                         </div>
                                     </div>
 
-                                    <div class="space-y-4">
-                                        <button (click)="handleBooking()"
-                                            class="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 px-6 rounded-xl shadow-xl shadow-gray-200 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3">
-                                            <span>Schedule Viewing</span>
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                                            </svg>
-                                        </button>
+                            <div class="space-y-4">
+                                <button (click)="handleBooking()"
+                                    class="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 px-6 rounded-xl shadow-xl shadow-gray-200 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3">
+                                    <span>Schedule Viewing</span>
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                                    </svg>
+                                </button>
 
                                         <div class="grid grid-cols-2 gap-3">
                                             <a href="tel:01129899035"
@@ -579,22 +564,22 @@
                                         </div>
                                     </div>
 
-                                    <div class="mt-8 pt-6 border-t border-gray-50 flex items-center gap-4">
-                                        <div
-                                            class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
-                                            <lucide-angular [img]="User" class="w-6 h-6"></lucide-angular>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-bold text-gray-900">{{ property.ownerName || 'Jiwar
-                                                Agent' }}</p>
-                                            <a [routerLink]="['/propertyowner', property.propertyOwner?.userId]">
-                                                View Owner Profile →
-                                            </a>
-                                            <p class="text-xs text-gray-500">Listed Agent</p>
-                                        </div>
-                                    </div>
+                            <div class="mt-8 pt-6 border-t border-gray-50 flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
+                                    <lucide-angular [img]="User" class="w-6 h-6"></lucide-angular>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900">{{ property.ownerName || 'Jiwar
+                                        Agent' }}</p>
+                                        <a [routerLink]="['/propertyowner', property.propertyOwner?.userId]">
+                                            View Owner Profile →
+                                          </a>
+                                    <p class="text-xs text-gray-500">Listed Agent</p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
                             <!-- Verified Badge -->
                             <div class="bg-blue-50/50 rounded-2xl p-5 border border-blue-100 flex items-start gap-4">
@@ -761,20 +746,19 @@
                         </div>
                     </div>
 
-                    <div class="pt-2">
-                        <button type="submit" [disabled]="!bookingForm.form.valid"
-                            class="w-full bg-[#D4AF37] hover:bg-[#C5A028] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl shadow-xl shadow-yellow-500/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2">
-                            <span>Confirm Booking</span>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7">
-                                </path>
-                            </svg>
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <div class="pt-2">
+                    <button type="submit" [disabled]="!bookingForm.form.valid"
+                        class="w-full bg-[#D4AF37] hover:bg-[#C5A028] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl shadow-xl shadow-yellow-500/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2">
+                        <span>Confirm Booking</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
     <app-footer></app-footer>

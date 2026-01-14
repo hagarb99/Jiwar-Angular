@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { BookingCreateDTO } from '../pages/property-details/property-details.component';
 
 // Define interfaces matching your backend models
 export interface PropertyOwner {
@@ -11,7 +10,7 @@ export interface PropertyOwner {
     name: string;
     profilePicURL?: string;
     phoneNumber?: string;
-}
+  }
 export interface Property {
     propertyID: number;
     id?: number; // fallback
@@ -61,6 +60,7 @@ export interface PropertyFilterDTO {
     numBedrooms?: number;
     numBathrooms?: number;
     propertyType?: PropertyType;
+    listingType?: number;
 }
 
 export interface PropertyAnalytics {
@@ -117,6 +117,9 @@ export class PropertyService {
         }
         if (filter.propertyType !== null && filter.propertyType !== undefined) {
             params = params.set('propertyType', filter.propertyType.toString());
+        }
+        if (filter.listingType !== null && filter.listingType !== undefined) {
+            params = params.set('listingType', filter.listingType.toString());
         }
 
         return this.http.get<any>(`${this.apiUrl}/browse`, { params });

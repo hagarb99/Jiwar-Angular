@@ -1,0 +1,241 @@
+=<!-- customer-dashboard.component.html -->
+<div class="dashboard-container space-y-8">
+    <!-- Header -->
+    <div>
+        <h1 class="text-2xl font-bold text-foreground">Welcome back, Ahmed!</h1>
+        <p class="text-muted-foreground">Manage your properties and bookings</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="icon-home"></i>
+            </div>
+            <p class="stat-label">My Properties</p>
+            <p class="stat-value">{{ properties.length }}</p>
+        </div>
+        <div class="stat-card stat-card-gold">
+            <div class="stat-icon">
+                <i class="icon-calendar"></i>
+            </div>
+            <p class="stat-label">Upcoming Bookings</p>
+            <p class="stat-value">{{ bookings.filter(b => b.status === 'upcoming').length }}</p>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="icon-heart"></i>
+            </div>
+            <p class="stat-label">Saved Properties</p>
+            <p class="stat-value">{{ savedProperties.length }}</p>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="icon-message"></i>
+            </div>
+            <p class="stat-label">Active Requests</p>
+            <p class="stat-value">{{ requests.filter(r => r.status !== 'completed').length }}</p>
+        </div>
+    </div>
+
+    <!-- Enhancement Actions -->
+    <div class="card card-gradient">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="icon-sparkles"></i>
+                Enhance Your Space
+            </h2>
+        </div>
+        <div class="card-content">
+            <p class="text-muted-foreground mb-6">
+                Get professional design help or AI-powered renovation suggestions for your apartment.
+            </p>
+            <div class="grid sm:grid-cols-3 gap-4">
+                <button class="btn btn-primary btn-lg"
+                    (click)="navigateTo('/dashboard/customer/designers-marketplace')">
+                    <i class="icon-users"></i>
+                    <span>Browse Designers</span>
+                </button>
+                <button class="btn btn-outline btn-lg" (click)="navigateTo('/dashboard/customer/submit-design-offer')">
+                    <i class="icon-file-text"></i>
+                    <span>Post Design Request</span>
+                </button>
+                <button class="btn btn-gold btn-lg" (click)="navigateTo('/dashboard/customer/ai-assistant')">
+                    <i class="icon-sparkles"></i>
+                    <span>Improve with AI</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Properties -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="icon-home"></i>
+                My Properties
+            </h2>
+        </div>
+        <div class="card-content space-y-4">
+            <div *ngFor="let property of properties" class="property-item">
+                <div class="property-icon">
+                    <i class="icon-home"></i>
+                </div>
+                <div class="property-info">
+                    <p class="property-title">{{ property.title }}</p>
+                    <p class="property-location">
+                        <i class="icon-map-pin"></i>
+                        {{ property.location }}
+                    </p>
+                </div>
+                <div class="property-badges">
+                    <span class="badge" [ngClass]="'badge-' + property.status">{{ property.status }}</span>
+                    <span class="badge badge-outline">{{ property.type }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Bookings -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="icon-calendar"></i>
+                My Bookings
+            </h2>
+        </div>
+        <div class="card-content">
+            <div class="tabs">
+                <button *ngFor="let tab of ['upcoming', 'completed', 'canceled']" class="tab-trigger"
+                    [class.active]="activeBookingTab === tab" (click)="setActiveBookingTab(tab)">
+                    {{ tab | titlecase }}
+                </button>
+            </div>
+            <div class="tab-content space-y-3">
+                <div *ngFor="let booking of getFilteredBookings()" class="booking-item">
+                    <div class="booking-info">
+                        <p class="booking-property">{{ booking.property }}</p>
+                        <p class="booking-datetime">{{ booking.date }} at {{ booking.time }}</p>
+                    </div>
+                    <div class="booking-actions">
+                        <span class="badge" [ngClass]="'badge-' + booking.status">
+                            <i class="icon-badge" [ngClass]="'icon-' + booking.status"></i>
+                            {{ booking.status }}
+                        </span>
+                        <button *ngIf="booking.status === 'upcoming'" class="btn btn-sm btn-outline">
+                            Reschedule
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Saved Properties -->
+    <div class="card">
+        <div class="card-header card-header-flex">
+            <h2 class="card-title">
+                <i class="icon-heart"></i>
+                Saved Properties
+            </h2>
+            <button class="btn btn-ghost btn-sm">
+                View All
+                <i class="icon-arrow-right"></i>
+            </button>
+        </div>
+        <div class="card-content">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div *ngFor="let property of savedProperties" class="property-card">
+                    <div class="property-image">
+                        <img [src]="property.image" [alt]="property.title">
+                        <button class="btn btn-icon btn-ghost">
+                            <i class="icon-heart"></i>
+                        </button>
+                    </div>
+                    <div class="property-details">
+                        <p class="property-title">{{ property.title }}</p>
+                        <p class="property-location">
+                            <i class="icon-map-pin"></i>
+                            {{ property.location }}
+                        </p>
+                        <p class="property-price">{{ property.price }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Requests -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="icon-message"></i>
+                My Requests
+            </h2>
+        </div>
+        <div class="card-content space-y-3">
+            <div *ngFor="let request of requests" class="request-item">
+                <div class="request-info">
+                    <p class="request-type">{{ request.type }}</p>
+                    <p class="request-property">Property: {{ request.property }}</p>
+                </div>
+                <span class="badge" [ngClass]="'badge-' + request.status">
+                    {{ request.status | titlecase }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payments -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="icon-credit-card"></i>
+                Payment History
+            </h2>
+        </div>
+        <div class="card-content space-y-3">
+            <div *ngFor="let payment of payments" class="payment-item">
+                <div class="payment-info">
+                    <p class="payment-description">{{ payment.description }}</p>
+                    <p class="payment-date">{{ payment.date }}</p>
+                </div>
+                <span class="payment-amount">{{ payment.amount }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Scenarios -->
+    <div class="card card-accent">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="icon-trending-up"></i>
+                Investment Scenarios
+            </h2>
+        </div>
+        <div class="card-content">
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="scenario-card">
+                    <span class="badge badge-success">Conservative</span>
+                    <p class="scenario-return">5-7%</p>
+                    <p class="scenario-label">Expected annual return</p>
+                </div>
+                <div class="scenario-card scenario-card-featured">
+                    <span class="badge badge-accent">Balanced</span>
+                    <p class="scenario-return">10-15%</p>
+                    <p class="scenario-label">Expected annual return</p>
+                </div>
+                <div class="scenario-card">
+                    <span class="badge badge-danger">Aggressive</span>
+                    <p class="scenario-return">20-30%</p>
+                    <p class="scenario-label">Expected annual return</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Sections -->
+    <!-- Include app-renovation-simulator and app-investment-insights components here -->
+    <app-renovation-simulator></app-renovation-simulator>
+    <app-investment-insights></app-investment-insights>
+</div>

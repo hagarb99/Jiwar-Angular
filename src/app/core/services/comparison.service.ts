@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Property } from './property.service';
+import { Property, PropertyService } from './property.service';
+import { catchError } from 'rxjs/operators';
 
 export interface PropertyComparisonDTO {
     propertyID: number;
@@ -16,7 +17,45 @@ export interface PropertyComparisonDTO {
     propertyType: string;
     status: string;
     thumbnailUrl: string;
+    ThumbnailUrl?: string;
     features: string[];
+}
+
+export enum PropertyComparisonUserType {
+    Investor = 0,
+    Family = 1,
+    BudgetBuyer = 2
+}
+
+export interface PropertyComparisonRequestDTO {
+    propertyIds: number[];
+    userType: PropertyComparisonUserType;
+}
+
+export interface CategoryScoreDetailDTO {
+    score: number;
+    description: string;
+}
+
+export interface CategoryScoresDTO {
+    priceValue: CategoryScoreDetailDTO;
+    location: CategoryScoreDetailDTO;
+    spaceAndLayout: CategoryScoreDetailDTO;
+    features: CategoryScoreDetailDTO;
+    investmentPotential: CategoryScoreDetailDTO;
+}
+
+export interface AiPropertyScoreBreakdownDTO {
+    propertyId: number;
+    categoryScores: CategoryScoresDTO;
+    totalScore: number;
+    overallReason: string;
+}
+
+export interface AiComparisonResultDTO {
+    bestPropertyId: number;
+    summary: string;
+    scores: AiPropertyScoreBreakdownDTO[];
 }
 
 @Injectable({
@@ -30,17 +69,16 @@ export class ComparisonService {
 
     private readonly STORAGE_KEY = 'jiwar_comparison_ids';
 
-    constructor(private http: HttpClient) {
+    constructor(
+        private http: HttpClient,
+        private propertyService: PropertyService
+    ) {
         this.loadFromStorage();
     }
 
     addToCompare(id: number): boolean {
-        if (this.comparisonIds.length >= 5) {
-            return false; // Limit to 5 properties (per backend constraint)
-        }
-
-        if (this.comparisonIds.includes(id)) {
-            return false; // Already in list
+        if (this.comparisonIds.length >= 5 || this.comparisonIds.includes(id)) {
+            return false;
         }
 
         this.comparisonIds.push(id);
@@ -53,11 +91,11 @@ export class ComparisonService {
         this.comparisonIds = this.comparisonIds.filter(id => id !== propertyId);
         this.saveToStorage();
 
-        // Optimistic update
-        const currentList = this.comparisonListSubject.value.filter(p => p.propertyID !== propertyId);
+        const currentList = this.comparisonListSubject.value
+            .filter(p => p.propertyID !== propertyId);
+
         this.comparisonListSubject.next(currentList);
 
-        // Refresh to ensure sync if needed, but optimistic is usually fine here
         if (this.comparisonIds.length > 0) {
             this.refreshComparisonData();
         }
@@ -79,25 +117,71 @@ export class ComparisonService {
             return;
         }
 
-        this.http.post<PropertyComparisonDTO[]>(`${this.apiUrl}/compare`, this.comparisonIds)
-            .subscribe({
-                next: (data) => {
-                    this.comparisonListSubject.next(data);
-                },
-                error: (err) => {
-                    console.error('Error fetching comparison data', err);
-                    // If error (e.g., some properties deleted), maybe clear custom handling?
-                }
-            });
+        const requests = this.comparisonIds.map(id =>
+            this.propertyService.getPropertyById(id).pipe(
+                catchError(err => {
+                    console.error(`Failed to load property ${id}`, err);
+                    return of(null);
+                })
+            )
+        );
+
+        forkJoin(requests).subscribe({
+            next: (results: (Property | null)[]) => {
+                const validProperties = results.filter(
+                    (p): p is Property => p !== null
+                );
+
+                const dtos: PropertyComparisonDTO[] = validProperties.map(p => {
+                    let thumb = p.thumbnailUrl || p.ThumbnailUrl;
+                    if (!thumb && p.mediaUrls && p.mediaUrls.length > 0) {
+                        thumb = p.mediaUrls[0];
+                    }
+
+                    return {
+                        propertyID: p.propertyID,
+                        title: p.title,
+                        city: p.city,
+                        address: p.address,
+                        price: p.price,
+                        area_sqm: p.area_sqm,
+                        numBedrooms: p.numBedrooms,
+                        numBathrooms: p.numBathrooms,
+                        propertyType: p.propertyType?.toString() ?? 'Unknown',
+                        status: 'Available',
+                        thumbnailUrl: thumb || '',
+                        features: []
+                    };
+                });
+
+                this.comparisonListSubject.next(dtos);
+            },
+            error: err => {
+                console.error('Error fetching comparison data', err);
+            }
+        });
+    }
+
+    analyzeWithAi(userType: PropertyComparisonUserType): Observable<AiComparisonResultDTO> {
+        const payload: PropertyComparisonRequestDTO = {
+            propertyIds: this.comparisonIds,
+            userType
+        };
+
+        return this.http.post<AiComparisonResultDTO>(
+            `${this.apiUrl}/compare`,
+            payload
+        );
     }
 
     getMyProperties(): Observable<Property[]> {
         return this.http.get<Property[]>(`${this.apiUrl}/my`);
     }
 
-    // Helper to get all properties for browsing (if needed by simple browser)
     getAllProperties(page: number = 1, pageSize: number = 12): Observable<any> {
-        return this.http.get(`${this.apiUrl}/all?page=${page}&pageSize=${pageSize}`);
+        return this.http.get(
+            `${this.apiUrl}/all?page=${page}&pageSize=${pageSize}`
+        );
     }
 
     private saveToStorage(): void {

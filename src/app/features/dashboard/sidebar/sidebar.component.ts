@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 interface SidebarMenuItem {
   label: string;
@@ -23,11 +24,26 @@ export class SidebarComponent {
 
   currentUser$ = this.authService.currentUser$;
 
+  getActionUrl(url: string | null | undefined): string {
+    if (!url) return '';
+
+    // إذا كان الرابط خارجياً (مثل صور جوجل)
+    if (url.startsWith('http')) return url;
+
+    // تنظيف apiBaseUrl للحصول على الدومين الرئيسي (مثلاً http://localhost:5001)
+    const base = environment.apiBaseUrl.replace(/\/api\/?$/, '');
+
+    // التأكد من أن المسار يبدأ بـ /
+    const path = url.startsWith('/') ? url : `/${url}`;
+
+    return `${base}${path}`;
+  }
+
   private allMenuItems: SidebarMenuItem[] = [
 
     {
       label: 'Dashboard',
-      path: '/dashboard/interiordesigner/dashboard',
+      path: '/dashboard/designer/dashboard',
       icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
       roles: ['InteriorDesigner']
     },
@@ -37,7 +53,6 @@ export class SidebarComponent {
       icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
       roles: ['PropertyOwner']
     },
-
     {
       label: 'Overview',
       path: '/dashboard',
@@ -94,7 +109,7 @@ export class SidebarComponent {
     },
     {
       label: 'My Profile',
-      path: '/dashboard/interiordesigner/profile',
+      path: '/dashboard/designer/profile',
       icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
       roles: ['InteriorDesigner']
     },
@@ -111,28 +126,22 @@ export class SidebarComponent {
       roles: ['PropertyOwner'] // Only designers see available requests
     },
     {
-        label: 'My Bookings',
-        path: '/dashboard/customer/MyBooking',
-        icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-        roles: ['Customer']
-    },
-    {
-      label: 'Tenants/Buyers',
-      path: '/propertyowner/tenants-buyers',
+      label: 'My Bookings',
+      path: '/dashboard/customer/MyBooking',
       icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-      roles: ['PropertyOwner'] // Only designers see available requests
-    },
-    {
-      label: 'Earnings',
-      path: '/propertyowner/earnings',
-      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-      roles: ['PropertyOwner', 'InteriorDesigner', 'Customer'] // Only designers see available requests
+      roles: ['Customer']
     },
     {
       label: 'Reviews',
-      path: '/propertyowner/reviews',
+      path: '/dashboard/propertyowner/reviews',
       icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-      roles: ['PropertyOwner', 'InteriorDesigner'] // Only designers see available requests
+      roles: ['PropertyOwner']
+    },
+    {
+      label: 'Reviews',
+      path: '/dashboard/designer/reviews',
+      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+      roles: ['InteriorDesigner']
     },
     {
       label: 'Ai Insights',
@@ -159,38 +168,26 @@ export class SidebarComponent {
       roles: ['InteriorDesigner', 'PropertyOwner'] // Only designers see available requests
     },
     {
-      label: 'Investment Insights',
-      path: '/propertyowner/investment-insights',
-      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-      roles: ['PropertyOwner'] // Only designers see available requests
-    },
-    {
-      label: 'Settings',
-      path: '/propertyowner/settings',
-      icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-      roles: ['PropertyOwner'] // Only designers see available requests
-    },
-    {
       label: 'Available Projects',
-      path: '/dashboard/interiordesigner/available-projects',
+      path: '/dashboard/designer/available-projects',
       icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
       roles: ['InteriorDesigner']
     },
     {
       label: 'My Proposals',
-      path: '/dashboard/interiordesigner/my-proposals',
+      path: '/dashboard/designer/my-proposals',
       icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
       roles: ['InteriorDesigner']
     },
     {
       label: 'My Designs',
-      path: '/dashboard/interiordesigner/my-designs',
+      path: '/dashboard/designer/my-designs',
       icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z',
       roles: ['InteriorDesigner']
     },
     {
       label: 'Active Projects',
-      path: '/dashboard/interiordesigner/active-projects',
+      path: '/dashboard/designer/active-projects',
       icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
       roles: ['InteriorDesigner']
     },

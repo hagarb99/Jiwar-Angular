@@ -7,8 +7,8 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import {
   GoogleLoginProvider,
   SocialAuthServiceConfig
-}
-  from '@abacritt/angularx-social-login';
+} from '@abacritt/angularx-social-login';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 
 export const appConfig: ApplicationConfig = {
@@ -34,6 +34,7 @@ export const appConfig: ApplicationConfig = {
         ],
         onError: (err: any) => { console.error('social login error', err) }
       } as SocialAuthServiceConfig
-    }
+    },
+    provideCharts(withDefaultRegisterables())
   ]
 };

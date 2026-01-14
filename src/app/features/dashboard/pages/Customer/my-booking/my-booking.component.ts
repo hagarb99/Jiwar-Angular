@@ -1,39 +1,75 @@
 import { Component, inject, OnInit } from '@angular/core';
-import {BookingService, CustomerBooking} from '../../../../../core/services/booking.service';
+import {BookingService, CustomerBooking , BookingStatus} from '../../../../../core/services/booking.service';
 import { CommonModule } from '@angular/common';
+import { NotificationService } from '../../../../../core/services/notification.service';
+import { AuthService } from '../../../../../core/services/auth.service';
+
+type BookingTab = 'pending' | 'approved' | 'rejected';
+
 @Component({
   selector: 'app-my-booking',
+   standalone: true,
   imports: [CommonModule],
   templateUrl: './my-booking.component.html',
   styleUrl: './my-booking.component.css'
 })
 export class MyBookingComponent implements OnInit{
   private bookingService = inject(BookingService); // Injection الصحيح
+   private notificationService = inject(NotificationService);
+  private authService = inject(AuthService);
 
   customerBookings: CustomerBooking[] = [];
   isLoadingBookings = true;
+BookingStatus = BookingStatus;
+ activeTab: BookingTab = 'pending';
 
   ngOnInit(): void {
+  this.loadCustomerBookings();
+
+  this.notificationService.notifications$.subscribe(() => {
     this.loadCustomerBookings();
+  });
   }
 
   loadCustomerBookings(): void {
-    this.isLoadingBookings = true;
-    this.bookingService.getCustomerBookings().subscribe({
-      next: (bookings) => {
-        this.customerBookings = bookings.map(b => ({
-          ...b,
-          bookingDate: new Date(b.bookingDate).toLocaleDateString()
-        }));
-        this.isLoadingBookings = false;
-      },
-      error: (err) => {
-        console.error('Error loading bookings:', err);
-        this.isLoadingBookings = false;
-      }
-    });
-  }
+  this.isLoadingBookings = true;
 
+  this.bookingService.getCustomerBookings().subscribe({
+    next: (bookings) => {
+      this.customerBookings = bookings.map(booking => ({
+        ...booking,
+        startDate: new Date(booking.startDate).toLocaleDateString(),
+        endDate: booking.endDate
+          ? new Date(booking.endDate).toLocaleDateString()
+          : undefined
+      }));
+      this.isLoadingBookings = false;
+    },
+    error: () => {
+      this.isLoadingBookings = false;
+    }
+  });
+}
+  setTab(tab: BookingTab): void {
+    this.activeTab = tab;
+  }
+   get filteredBookings(): CustomerBooking[] {
+    switch (this.activeTab) {
+      case 'pending':
+        return this.customerBookings.filter(
+          booking => booking.status === BookingStatus.Pending
+        );
+      case 'approved':
+        return this.customerBookings.filter(
+          booking => booking.status === BookingStatus.Confirmed
+        );
+      case 'rejected':
+        return this.customerBookings.filter(
+          booking => booking.status === BookingStatus.Cancelled
+        );
+    }
+  }
+  
   get totalCustomerBookings(): number {
     return this.customerBookings.length; // صححت الطريقة
   }

@@ -1,0 +1,79 @@
+/* chat.component.css */
+.chat-container {
+    animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Custom Scrollbar for modern look */
+.no-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.no-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.no-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.1);
+    /* slate-400 with opacity */
+    border-radius: 10px;
+}
+
+.no-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.3);
+}
+
+/* Glassmorphism focus effect */
+input:focus {
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.05);
+    /* amber-500 with low opacity */
+}
+
+/* Message entry animation */
+.animate-in {
+    animation-fill-mode: both;
+}
+
+.duration-300 {
+    animation-duration: 300ms;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-wrapper {
+    overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .chat-container {
+        height: 100vh;
+        max-height: none;
+        border-radius: 0;
+    }
+
+    .chat-wrapper {
+        padding: 0;
+    }
+}

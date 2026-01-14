@@ -1,0 +1,85 @@
+<app-navbar></app-navbar>
+
+<div class="min-h-screen bg-gray-50 pt-20 pb-12">
+    <div class="container mx-auto px-4">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Hire a Designer</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+                Discover top interior designers to transform your space. Browse profiles, view portfolios, and connect
+                with the perfect match for your project.
+            </p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="max-w-xl mx-auto mb-12 relative">
+            <div class="relative">
+                <i class="pi pi-search absolute left-4 top-3.5 text-gray-400"></i>
+                <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                    placeholder="Search by name or keyword..."
+                    class="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 outline-none transition-all shadow-sm">
+                <button (click)="onSearch()"
+                    class="absolute right-2 top-1 bottom-1 bg-[#D4AF37] hover:bg-[#C5A028] text-white px-6 rounded-full text-sm font-medium transition-colors">
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex justify-center items-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
+        </div>
+
+        <!-- Grid -->
+        <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div *ngFor="let designer of designers"
+                class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100">
+                <!-- Card Content -->
+                <div class="p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <!-- Avatar -->
+                        <div
+                            class="h-16 w-16 rounded-full overflow-hidden bg-gray-200 border-2 gold-border flex-shrink-0">
+                            <img [src]="designer.profilePicURL || 'assets/images/placeholder-user.png'"
+                                alt="{{designer.name}}" class="h-full w-full object-cover">
+                        </div>
+                        <!-- Name & City -->
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">{{designer.name}}</h3>
+                            <p class="text-sm text-gray-500 flex items-center gap-1">
+                                <i class="pi pi-map-marker text-yellow-500"></i>
+                                {{designer.city || 'Available Online'}}
+                            </p>
+                            <!-- Rating (Optional visual) -->
+                            <div class="flex items-center gap-1 text-sm text-yellow-500 mt-1" *ngIf="designer.rating">
+                                <i class="pi pi-star-fill"></i>
+                                <span class="font-semibold">{{designer.rating}}</span>
+                                <span class="text-gray-400 text-xs">({{designer.completedProjects || 0}}
+                                    projects)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bio -->
+                    <p class="text-gray-600 text-sm mb-6 line-clamp-3 min-h-[3rem]">
+                        {{designer.bio || 'Professional Interior Designer ready to help you create your dream space.'}}
+                    </p>
+
+                    <!-- Action -->
+                    <button (click)="viewProfile(designer.id)"
+                        class="w-full text-center py-2.5 rounded-lg border-2 gold-border gold-text font-medium hover:bg-yellow-50 transition-colors">
+                        View Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!loading && designers.length === 0" class="text-center py-20">
+            <i class="pi pi-users text-4xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500">No designers found at the moment.</p>
+        </div>
+    </div>
+</div>
+
+<app-footer></app-footer>

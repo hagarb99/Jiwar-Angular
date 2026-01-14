@@ -10,6 +10,8 @@ import { ToastModule } from 'primeng/toast';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-my-proposals',
@@ -22,9 +24,9 @@ import { TooltipModule } from 'primeng/tooltip';
     ProgressSpinnerModule,
     TagModule,
     TooltipModule,
+    DialogModule,
     RouterModule
   ],
-  providers: [MessageService],
   templateUrl: './my-proposals.component.html',
   styleUrl: './my-proposals.component.css'
 })
@@ -34,8 +36,12 @@ export class MyProposalsComponent implements OnInit {
 
   constructor(
     private proposalService: DesignerProposalService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private router: Router
   ) { }
+
+  selectedProposal: DesignerProposal | null = null;
+  displayDetails = false;
 
   ngOnInit() {
     this.loadProposals();
@@ -63,20 +69,31 @@ export class MyProposalsComponent implements OnInit {
     });
   }
 
-  getStatusSeverity(status?: string): string {
-    switch (status) {
-      case 'Accepted':
-        return 'success';
-      case 'Rejected':
-        return 'danger';
-      case 'Pending':
-        return 'warning';
-      default:
-        return 'info';
+  getStatusSeverity(status?: string | number): string {
+    const s = Number(status);
+    if (s === 1 || s === 3) return 'success';
+    if (s === 2) return 'danger';
+    if (s === 0) return 'warning';
+    return 'info';
+  }
+
+  getStatusLabel(status?: string | number): string {
+    const s = Number(status);
+    switch (s) {
+      case 0: return 'Pending';
+      case 1: return 'Accepted';
+      case 2: return 'Rejected';
+      case 3: return 'Delivered';
+      default: return 'Pending';
     }
   }
 
-  getStatusLabel(status?: string): string {
-    return status || 'Unknown';
+  viewDetails(proposal: DesignerProposal) {
+    this.selectedProposal = proposal;
+    this.displayDetails = true;
+  }
+
+  goToWorkspace(requestId: number) {
+    this.router.navigate(['/dashboard/workspace', requestId]);
   }
 }

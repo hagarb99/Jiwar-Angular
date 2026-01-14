@@ -236,7 +236,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     const routes: Record<string, string> = {
       'PropertyOwner': '/dashboard/propertyowner/dashboard',
-      'InteriorDesigner': '/dashboard/interiordesigner/dashboard',
+      'InteriorDesigner': '/dashboard/designer/dashboard',
       'Admin': '/dashboard/admin',
       'Customer': '/dashboard/customer'
     };

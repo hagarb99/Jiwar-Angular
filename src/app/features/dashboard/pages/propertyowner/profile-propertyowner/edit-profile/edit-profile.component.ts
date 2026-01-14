@@ -35,6 +35,18 @@ export class EditProfilePropertyownerComponent implements OnInit {
     uploadingImage = false;
     previewUrl: string | null = null;
 
+    getProfileImageUrl(): string {
+        if (this.previewUrl) return this.previewUrl;
+
+        const url = this.profileForm.get('profilePicURL')?.value;
+        if (!url) return `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.profileForm.get('name')?.value}`;
+
+        if (url.startsWith('http')) return url;
+
+        const base = this.environment.apiBaseUrl.replace(/\/api\/?$/, '');
+        return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
+    }
+
     constructor(
         private fb: FormBuilder,
         private profileService: ProfileService,
@@ -54,6 +66,8 @@ export class EditProfilePropertyownerComponent implements OnInit {
             email: ['', [Validators.required, Validators.email]],
             phoneNumber: [''],
             bio: [''],
+            location: [''],
+            title: [''],
             profilePicURL: ['']
         });
     }
@@ -144,6 +158,8 @@ export class EditProfilePropertyownerComponent implements OnInit {
                     email: profile.email,
                     phoneNumber: profile.phoneNumber,
                     bio: profile.bio,
+                    location: profile.location,
+                    title: profile.title,
                     profilePicURL: profile.profilePicURL
                 });
 
@@ -160,35 +176,47 @@ export class EditProfilePropertyownerComponent implements OnInit {
     cancel(): void {
         this.router.navigate(['/dashboard/propertyowner/profile']);
     }
-
     save(): void {
         if (this.profileForm.invalid) {
-            this.messageService.add({ severity: 'warn', summary: 'Invalid Form', detail: 'Please check all fields' });
+            this.messageService.add({ severity: 'warn', summary: 'Check Fields', detail: 'Please fill all required fields.' });
             return;
         }
 
         this.loading = true;
-        const formValue = this.profileForm.value;
 
-        // Build partial update payload - only send edited fields with valid values
-        const editProfilePayload = this.buildEditProfilePayload(formValue);
+        // الفلو: إذا كان هناك ملف مختار ولم يتم رفعه بعد، نرفعه أولاً
+        if (this.selectedFile) {
+            this.authService.uploadProfilePicture(this.selectedFile).subscribe({
+                next: (res) => {
+                    this.profileForm.patchValue({ profilePicURL: res.profilePicURL });
+                    this.selectedFile = null; // تفريغ الملف بعد الرفع
+                    this.executeProfileUpdate(); // ثم نحدث البيانات النصية
+                },
+                error: () => this.loading = false
+            });
+        } else {
+            this.executeProfileUpdate();
+        }
+    }
 
-        this.profileService.editPropertyOwnerProfile(editProfilePayload).pipe(
+    private executeProfileUpdate(): void {
+        const payload = this.buildEditProfilePayload(this.profileForm.value);
+        this.profileService.editPropertyOwnerProfile(payload).pipe(
             finalize(() => this.loading = false)
         ).subscribe({
             next: (updatedProfile) => {
-                // Update user state in AuthService for reactive updates across app
-                this.authService.updateUserFromProfile(updatedProfile);
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Profile updated successfully' });
+                // Ensure we use the latest profilePicURL from the form to guarantee immediate UI update
+                const currentFormUrl = this.profileForm.get('profilePicURL')?.value;
+                const profileToUpdate = { ...updatedProfile };
+                if (currentFormUrl) {
+                    profileToUpdate.profilePicURL = currentFormUrl;
+                }
+                this.authService.updateUserFromProfile(profileToUpdate);
+                this.messageService.add({ severity: 'success', summary: 'Jiwar', detail: 'Profile updated successfully' });
                 this.router.navigate(['/dashboard/propertyowner/profile']);
-            },
-            error: (err) => {
-                console.error('Failed to update profile', err);
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update profile' });
             }
         });
     }
-
     /**
      * Builds partial update payload containing only edited fields with valid values
      */
@@ -209,6 +237,8 @@ export class EditProfilePropertyownerComponent implements OnInit {
         if (hasFieldChanged('email', formValue.email)) payload.email = formValue.email;
         if (hasFieldChanged('phoneNumber', formValue.phoneNumber)) payload.phoneNumber = formValue.phoneNumber;
         if (hasFieldChanged('bio', formValue.bio)) payload.bio = formValue.bio;
+        if (hasFieldChanged('location', formValue.location)) payload.location = formValue.location;
+        if (hasFieldChanged('title', formValue.title)) payload.title = formValue.title;
         if (hasFieldChanged('profilePicURL', formValue.profilePicURL)) payload.profilePicURL = formValue.profilePicURL;
 
         return payload;
