@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { NotificationService } from './core/services/notification.service';
 import { TranslationService } from './core/services/translation.service';
@@ -17,6 +17,7 @@ export class AppComponent implements OnInit, OnDestroy {
   title = 'app';
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
+  private router = inject(Router);
   private translationService = inject(TranslationService);
 
 
@@ -43,5 +44,12 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     console.log('AppComponent destroyed');
     this.notificationService.stopConnection();
+  }
+
+  onToastClick(message: any) {
+    if (message.data?.type === 'Chat' && message.data?.relatedId) {
+      console.log('🔔 Toast clicked: navigating to chat', message.data.relatedId);
+      this.router.navigate(['/dashboard/workspace', message.data.relatedId]);
+    }
   }
 }

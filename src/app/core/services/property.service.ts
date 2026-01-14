@@ -10,15 +10,15 @@ export interface PropertyOwner {
     name: string;
     profilePicURL?: string;
     phoneNumber?: string;
-  }
+}
 export interface BookingCreateDTO {
-  propertyID: number;
-  startDate: string; // ISO format
-  message?: string;
-  phone: string;
-  email: string;
-  name: string;
-  offerID?: number | null; // 0 -> null في backend
+    propertyID: number;
+    startDate: string; // ISO format
+    message?: string;
+    phone: string;
+    email: string;
+    name: string;
+    offerID?: number | null; // 0 -> null في backend
 }
 
 export interface Property {
@@ -44,7 +44,7 @@ export interface Property {
     thumbnailUrl?: string; // Still used by browse endpoint for card display
     ThumbnailUrl?: string; // Used by /my endpoint (PropertyListBDTO)
     propertyMedia?: PropertyMedia[]; // Still used by some endpoints
-    propertyOwner?: PropertyOwner; 
+    propertyOwner?: PropertyOwner;
 }
 
 export interface PropertyMedia {
@@ -70,6 +70,7 @@ export interface PropertyFilterDTO {
     numBedrooms?: number;
     numBathrooms?: number;
     propertyType?: PropertyType;
+    listingType?: number;
 }
 
 export interface PropertyAnalytics {
@@ -126,6 +127,9 @@ export class PropertyService {
         }
         if (filter.propertyType !== null && filter.propertyType !== undefined) {
             params = params.set('propertyType', filter.propertyType.toString());
+        }
+        if (filter.listingType !== null && filter.listingType !== undefined) {
+            params = params.set('listingType', filter.listingType.toString());
         }
 
         return this.http.get<any>(`${this.apiUrl}/browse`, { params });
@@ -206,7 +210,7 @@ export class PropertyService {
     }
     createBooking(booking: BookingCreateDTO) {
         return this.http.post(`${environment.apiBaseUrl}/Booking`, booking);
-      }      
+    }
 
 
 }

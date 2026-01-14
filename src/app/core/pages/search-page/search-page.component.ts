@@ -77,6 +77,12 @@ export class SearchPageComponent implements OnInit {
     // Map form values to PropertyFilterDTO
     const filter: PropertyFilterDTO = {};
 
+    if (formValue.status === 'buy') {
+      filter.listingType = 1;
+    } else if (formValue.status === 'rent') {
+      filter.listingType = 0;
+    }
+
     // Map location to district
     if (formValue.location && formValue.location.trim() !== '') {
       filter.district = formValue.location.trim();
@@ -120,31 +126,48 @@ export class SearchPageComponent implements OnInit {
    * Loads properties from the backend API
    * @param filter PropertyFilterDTO with optional filter criteria
    */
+  // private loadProperties(filter: PropertyFilterDTO) {
+  //   this.isLoading = true;
+  //   this.errorMessage = null;
+
+  //   this.propertyService.getFilteredProperties(filter).subscribe({
+  //     next: (properties) => {
+  //       console.log(properties);
+
+  //       // Sort properties by Newest First (Descending ID or publishedAt if available)
+  //       this.properties = properties.sort((a: any, b: any) => {
+  //         // If publishedAt exists, use it
+  //         if (a.publishedAt && b.publishedAt) {
+  //           return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  //         }
+  //         // Fallback to ID (assuming higher ID = newer)
+  //         return (b.propertyID || b.id || 0) - (a.propertyID || a.id || 0);
+  //       });
+
+  //       this.isLoading = false;
+  //       console.log('Properties loaded:', properties.length);
+  //     },
+  //     error: (error) => {
+  //       this.errorMessage = 'Failed to load properties. Please try again.';
+  //       this.isLoading = false;
+  //       console.error('Error loading properties:', error);
+  //     }
+  //   });
+  // }
   private loadProperties(filter: PropertyFilterDTO) {
     this.isLoading = true;
     this.errorMessage = null;
 
     this.propertyService.getFilteredProperties(filter).subscribe({
-      next: (properties) => {
-        console.log(properties);
-
-        // Sort properties by Newest First (Descending ID or publishedAt if available)
-        this.properties = properties.sort((a: any, b: any) => {
-          // If publishedAt exists, use it
-          if (a.publishedAt && b.publishedAt) {
-            return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-          }
-          // Fallback to ID (assuming higher ID = newer)
-          return (b.propertyID || b.id || 0) - (a.propertyID || a.id || 0);
-        });
-
+      next: (data) => {
+        // 'data' هنا هو المصفوفة القادمة من الباك أند مرتبة وجاهزة
+        this.properties = data;
         this.isLoading = false;
-        console.log('Properties loaded:', properties.length);
       },
-      error: (error) => {
-        this.errorMessage = 'Failed to load properties. Please try again.';
+      error: (err) => {
+        this.errorMessage = "Failed to load properties. Please try again.";
         this.isLoading = false;
-        console.error('Error loading properties:', error);
+        console.error('Search error:', err);
       }
     });
   }

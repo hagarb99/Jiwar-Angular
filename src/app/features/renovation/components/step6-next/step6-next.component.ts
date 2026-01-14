@@ -18,8 +18,7 @@ export class Step6NextComponent {
 
     onHireDesigner() {
         console.log('Navigating to Designer Marketplace...');
-        // this.router.navigate(['/designers']); // Placeholder
-        alert('Designer Marketplace feature coming soon!');
+        this.router.navigate(['/designers']);
     }
 
     onPostRequest() {

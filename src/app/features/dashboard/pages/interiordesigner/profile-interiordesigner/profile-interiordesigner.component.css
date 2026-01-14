@@ -1,0 +1,52 @@
+/* Custom Paginator Styling */
+:host ::ng-deep .custom-paginator {
+    background: transparent !important;
+    border: none !important;
+    padding: 1rem 0 0 0 !important;
+}
+
+:host ::ng-deep .custom-paginator .p-paginator-pages .p-paginator-page {
+    border-radius: 12px !important;
+    min-width: 2.5rem !important;
+    height: 2.5rem !important;
+    transition: all 0.2s ease !important;
+}
+
+:host ::ng-deep .custom-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+    background: #fffbeb !important;
+    /* amber-50 */
+    color: #d97706 !important;
+    /* amber-600 */
+    font-weight: 700 !important;
+    border: 1px solid #fde68a !important;
+    /* amber-200 */
+}
+
+:host ::ng-deep .custom-paginator .p-link {
+    color: #6b7280 !important;
+    /* gray-500 */
+}
+
+:host ::ng-deep .custom-paginator .p-paginator-current {
+    font-size: 0.875rem !important;
+    color: #9ca3af !important;
+    /* gray-400 */
+    margin-right: auto !important;
+}
+
+/* Review Card Animation */
+.group {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

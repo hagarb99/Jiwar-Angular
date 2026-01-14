@@ -1,18 +1,21 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subject, throwError } from 'rxjs';
+import { Router } from '@angular/router';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { MessageService } from 'primeng/api';
 import { AuthService } from './auth.service';
+import { playBeep } from '../utils/beep-sound';
+import { ChatService } from './chat.service';
 
 export interface NotificationDto {
     notificationID: number;
     title: string;
     message: string;
     notificationType: string;
-    isRead: boolean; // Note: Backend DTO might use IsRead (PascalCase) or isRead (camelCase), adjust if necessary
+    isRead: boolean;
     sentDate: string;
     timeAgo: string;
     link?: string;
@@ -35,11 +38,16 @@ export class NotificationService implements OnDestroy {
     // Observable for unread count
     public unreadCount$ = new BehaviorSubject<number>(0);
 
+    // Subject to notify components to refresh their data
+    public refresh$ = new Subject<void>();
+
     constructor(
         private http: HttpClient,
         private messageService: MessageService,
         private authService: AuthService,
-        private zone: NgZone
+        private zone: NgZone,
+        private chatService: ChatService,
+        private router: Router
     ) {
         // Initialize Notification Sound
         this.notificationSound.src = 'https://www.soundjay.com/phone/sounds/sms-alert-1.mp3';
@@ -129,6 +137,7 @@ export class NotificationService implements OnDestroy {
         this.currentToken = token;
 
         // Clean up existing connection if necessary (e.g. token changed)
+        // If connection already exists, check its state
         if (this.hubConnection) {
             console.log('🧹 Cleaning up old SignalR connection...');
             this.stopConnection();
@@ -195,7 +204,44 @@ export class NotificationService implements OnDestroy {
             this.connectionPromise = null;
         });
 
-        // Notification Event
+        // Remove existing listeners to avoid duplicates if re-setup
+        this.hubConnection.off('ReceiveNotification');
+        this.hubConnection.off('ReceiveChatNotification');
+
+        this.hubConnection.on('ReceiveChatNotification', (data: any) => {
+            console.log('💬 SignalR ReceiveChatNotification trigger:', data);
+
+            this.zone.run(() => {
+                // 1. Update the Chat Icon Badge directly from payload
+                // Handle both camelCase and PascalCase
+                const count = data.unreadCount !== undefined ? data.unreadCount : data.UnreadCount;
+                if (count !== undefined) {
+                    this.chatService.updateUnreadCount(count);
+                }
+
+                // 2. Play sound
+                this.playNotificationSound();
+
+                // 3. Show a specialized chat toast (ONLY if not currently in that specific chat room)
+                const currentUrl = this.router.url;
+                const workspaceUrl = `/dashboard/workspace/${data.relatedId}`;
+
+                if (currentUrl !== workspaceUrl) {
+                    this.messageService.add({
+                        severity: 'info',
+                        summary: data.title || 'New Message',
+                        detail: data.message || 'You have a new message',
+                        life: 5000,
+                        icon: 'pi pi-comments',
+                        data: { relatedId: data.relatedId, type: 'Chat' }
+                    });
+                }
+
+                // 4. Trigger refresh for any subscribers (like the messages list)
+                this.refresh$.next();
+            });
+        });
+
         this.hubConnection.on('ReceiveNotification', (arg1: any, arg2?: string) => {
             this.handleNotification(arg1, arg2);
         });
@@ -212,33 +258,50 @@ export class NotificationService implements OnDestroy {
     private handleNotification(arg1: any, arg2?: string): void {
         // Play Sound
         this.playNotificationSound();
+        console.log('📬 SignalR ReceiveNotification trigger:', { arg1, arg2 });
 
         let title = 'New Notification';
         let message = '';
         let type = 'Info';
         let data: any = {};
 
+        // Handle multiple argument formats from backend
         if (typeof arg1 === 'string' && typeof arg2 === 'string') {
+            // Format: (title, message)
             title = arg1;
             message = arg2;
         } else if (typeof arg1 === 'object') {
+            // Format: (dataObject)
             data = arg1;
             title = data.title || title;
             message = data.message || '';
             type = data.type || type;
         }
 
-        // 1. Show Toast
-        this.zone.run(() => {
-            this.messageService.add({
-                severity: type.toLowerCase() === 'success' ? 'success' : (type.toLowerCase() === 'error' ? 'error' : 'info'),
-                summary: title,
-                detail: message,
-                life: 5000
-            });
+        const relatedId = data.relatedId || data.RelatedId;
 
-            // 2. Optimistic Update or Refresh
-            // We'll create a temporary object to prepend immediately
+        // Custom Sound check (if payload has playSound=true)
+        const isObject = typeof arg1 === 'object' && arg1 !== null;
+        if (isObject && arg1.playSound === true) {
+            this.playNotificationSound();
+        }
+
+        // 1. Show toast notification (EXCEPT for Chat type which is handled separately)
+        if (type.toLowerCase() !== 'chat') {
+            this.zone.run(() => {
+                this.messageService.add({
+                    severity: type.toLowerCase() === 'success' ? 'success' : (type.toLowerCase() === 'error' ? 'error' : 'info'),
+                    summary: title,
+                    detail: message,
+                    life: 6000,
+                    data: { relatedId, type } // Pass ID and Type for click handling
+                });
+            });
+        }
+
+        // 2. Optimistic Update or Refresh
+        this.zone.run(() => {
+            // Create a temporary object to prepend immediately
             const newNotif: NotificationDto = {
                 notificationID: (data && data.id) || Date.now(),
                 title: title,
@@ -247,7 +310,7 @@ export class NotificationService implements OnDestroy {
                 isRead: false,
                 sentDate: new Date().toISOString(),
                 timeAgo: 'Just now',
-                link: data.link
+                link: data?.link
             };
 
             const current = this.notifications$.value;
@@ -256,30 +319,34 @@ export class NotificationService implements OnDestroy {
             this.notifications$.next(updated);
             this.unreadCount$.next(updated.filter(n => !n.isRead).length);
             this.saveToStorage(updated);
-
-            // Optionally fetch from server to ensure full consistency
-            // this.loadNotifications().subscribe(); 
         });
     }
 
     private playNotificationSound(): void {
         try {
-            this.notificationSound.currentTime = 0;
-            this.notificationSound.play().catch(() => { });
+            // Use local beeper util as primary
+            console.log('🔔 NOTIFICATION RECEIVED - Playing beep...');
+            playBeep();
         } catch (e) {
             console.warn('Could not play notification sound');
         }
     }
 
+    /**
+     * Stop SignalR connection (call on logout)
+     */
     public stopConnection(): Promise<void> {
         if (this.hubConnection) {
             this.hubConnection.off('ReceiveNotification');
             this.hubConnection.off('ReceiveNotificationObject');
+            this.hubConnection.off('ReceiveChatNotification');
 
             return this.hubConnection.stop().then(() => {
                 this.hubConnection = null as any;
                 this.connectionPromise = null;
-            }).catch(() => {
+                console.log('SignalR Disconnected');
+            }).catch((err) => {
+                console.error('Error stopping connection:', err);
                 this.hubConnection = null as any;
                 this.connectionPromise = null;
             });
@@ -296,6 +363,9 @@ export class NotificationService implements OnDestroy {
     // API Methods
     // =========================================================================
 
+    /**
+     * Load all notifications from API
+     */
     public loadNotifications(): Observable<NotificationDto[]> {
         return this.http.get<NotificationDto[]>(this.apiUrl).pipe(
             tap(notifications => {
@@ -307,11 +377,14 @@ export class NotificationService implements OnDestroy {
             }),
             catchError(err => {
                 console.error('Failed to load notifications', err);
-                throw err;
+                return throwError(() => err);
             })
         );
     }
 
+    /**
+     * Mark a single notification as read
+     */
     public markAsRead(notificationId: number): Observable<any> {
         return this.http.put(`${this.apiUrl}/${notificationId}/read`, {}).pipe(
             tap(() => {
@@ -328,6 +401,9 @@ export class NotificationService implements OnDestroy {
         );
     }
 
+    /**
+     * Mark all notifications as read
+     */
     public markAllAsRead(): Observable<void> {
         return this.http.put<void>(`${this.apiUrl}/read-all`, {}).pipe(
             tap(() => {
@@ -342,6 +418,9 @@ export class NotificationService implements OnDestroy {
         );
     }
 
+    /**
+     * Get unread notifications count
+     */
     public getUnreadCount(): number {
         return this.unreadCount$.value;
     }
