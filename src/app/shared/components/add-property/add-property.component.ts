@@ -17,7 +17,7 @@ import { StepsModule } from 'primeng/steps';
 import { MenuItem } from 'primeng/api';
 import { CardModule } from 'primeng/card';
 import { FileUploadModule } from 'primeng/fileupload';
-import { PropertyService } from '../../../core/services/property.service';
+import { PropertyService, PropertyType } from '../../../core/services/property.service';
 import { PanoramaUploadComponent } from '../panorama-upload/panorama-upload.component';
 
 
@@ -36,6 +36,7 @@ interface PropertyCreateDTO {
   locationLat?: number;
   locationLang?: number;
   listingType: number;
+  propertyType: number;
 }
 
 export enum ListingTypeEnum {
@@ -85,6 +86,17 @@ export class AddPropertyComponent implements OnDestroy {
     { label: 'Premium', value: 4 },
     { label: 'Commercial', value: 5 }
   ];
+
+  propertyTypes = [
+    { label: 'Apartment', value: PropertyType.Apartment },
+    { label: 'Villa', value: PropertyType.Villa },
+    { label: 'Studio', value: PropertyType.Studio },
+    { label: 'Office', value: PropertyType.Office },
+    { label: 'Empty Land', value: PropertyType.EmptyLand },
+    { label: 'Duplex', value: PropertyType.Duplex },
+    { label: 'Shop', value: PropertyType.Shop },
+    { label: 'Garage', value: PropertyType.Garage }
+  ];
   listingTypes = [
     { label: 'Rent', value: ListingTypeEnum.Rent },
     { label: 'Sell', value: ListingTypeEnum.Sell }
@@ -115,6 +127,7 @@ export class AddPropertyComponent implements OnDestroy {
       bathrooms: [null, Validators.min(0)],
       categoryId: [null, Validators.required],
       listingType: [ListingTypeEnum.Sell, Validators.required],
+      propertyType: [PropertyType.Apartment, Validators.required],
       tour360Url: [''],
       locationLat: [''],
       locationLang: ['']
@@ -160,6 +173,11 @@ export class AddPropertyComponent implements OnDestroy {
     if (!categoryId) return '—';
     const category = this.categories.find(cat => cat.value === categoryId);
     return category ? category.label : '—';
+  }
+
+  getPropertyTypeName(value: number): string {
+    const type = this.propertyTypes.find(t => t.value === value);
+    return type ? type.label : 'Property';
   }
   uploadedFiles: File[] = []; // Array for user uploaded images
 
@@ -253,7 +271,8 @@ export class AddPropertyComponent implements OnDestroy {
       listingType: Number(formValue.listingType),
       tour360Url: formValue.tour360Url || undefined,
       locationLat: formValue.locationLat ? Number(formValue.locationLat) : undefined,
-      locationLang: formValue.locationLang ? Number(formValue.locationLang) : undefined
+      locationLang: formValue.locationLang ? Number(formValue.locationLang) : undefined,
+      propertyType: Number(formValue.propertyType)
     };
 
     this.propertyService.addProperty(dto, this.uploadedFiles).subscribe({

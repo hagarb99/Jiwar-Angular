@@ -2,7 +2,11 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminDashboardService, AdminPropertyDto } from '../../../../../../core/services/admin-dashboard.service';
+import { PropertyType } from '../../../../../../core/services/property.service';
 import { ExcelExportHelper } from '../../../../../../core/utils/admin-helpers';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 
 enum PropEnum {
   Pending = 0,
@@ -14,12 +18,15 @@ enum PropEnum {
 @Component({
   selector: 'app-properties-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ToastModule, ConfirmDialogModule],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './properties-list.component.html',
   styleUrl: './properties-list.component.css'
 })
 export class PropertiesListComponent implements OnInit {
   private adminService = inject(AdminDashboardService);
+  private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
 
   properties: AdminPropertyDto[] = [];
   filteredProperties: AdminPropertyDto[] = [];
@@ -76,22 +83,27 @@ export class PropertiesListComponent implements OnInit {
   }
 
   updatePropertyStatus(propertyId: number, newStatus: PropEnum, propertyTitle: string): void {
-    if (confirm(`Update status for "${propertyTitle}"?`)) {
-      this.adminService.updatePropertyStatus(propertyId, newStatus).subscribe({
-        next: () => {
-          const property = this.properties.find(p => p.id === propertyId);
-          if (property) {
-            property.status = newStatus;
+    this.confirmationService.confirm({
+      message: `Update status for "${propertyTitle}"?`,
+      header: 'Status Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.adminService.updatePropertyStatus(propertyId, newStatus).subscribe({
+          next: () => {
+            const property = this.properties.find(p => p.id === propertyId);
+            if (property) {
+              property.status = newStatus;
+            }
+            this.filterProperties();
+            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Property status updated successfully' });
+          },
+          error: (err: any) => {
+            console.error('Error updating property status:', err);
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update property status' });
           }
-          this.filterProperties();
-          alert('Property status updated successfully');
-        },
-        error: (err: any) => {
-          console.error('Error updating property status:', err);
-          alert('Failed to update property status');
-        }
-      });
-    }
+        });
+      }
+    });
   }
 
   exportToExcel(): void {
@@ -110,6 +122,21 @@ export class PropertiesListComponent implements OnInit {
 
   getStatusLabel(status: number): string {
     return PropEnum[status] || 'Unknown';
+  }
+
+  getPropertyTypeName(type?: PropertyType): string {
+    if (type === undefined) return 'Property';
+    switch (type) {
+      case PropertyType.Apartment: return 'Apartment';
+      case PropertyType.Villa: return 'Villa';
+      case PropertyType.Studio: return 'Studio';
+      case PropertyType.Office: return 'Office';
+      case PropertyType.EmptyLand: return 'Empty Land';
+      case PropertyType.Duplex: return 'Duplex';
+      case PropertyType.Shop: return 'Shop';
+      case PropertyType.Garage: return 'Garage';
+      default: return 'Property';
+    }
   }
 
   getStatusBadgeClass(status: number): string {

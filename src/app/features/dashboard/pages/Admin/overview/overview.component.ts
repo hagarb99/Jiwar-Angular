@@ -4,16 +4,18 @@ import { AdminAnalyticsService } from '../../../../../core/services/admin-analyt
 import { AdminAnalyticsDTO } from '../../../../../core/models/admin-analytics.dto';
 import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
+import { LucideAngularModule, MapPin } from 'lucide-angular';
 
 @Component({
   selector: 'app-overview',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective],
+  imports: [CommonModule, BaseChartDirective, LucideAngularModule],
   providers: [provideCharts(withDefaultRegisterables())],
   templateUrl: './overview.component.html',
   styleUrl: './overview.component.css'
 })
 export class OverviewComponent implements OnInit {
+  MapPin = MapPin;
   analyticsData: AdminAnalyticsDTO | null = null;
   isLoading = true;
   error: string | null = null;
@@ -53,6 +55,7 @@ export class OverviewComponent implements OnInit {
   // Revenue Chart
   public revenueChartData: ChartData<'line'> = {
     labels: [],
+
     datasets: [
       {
         data: [],
@@ -79,7 +82,26 @@ export class OverviewComponent implements OnInit {
   ngOnInit(): void {
     this.analyticsService.getAnalytics().subscribe({
       next: (data) => {
+
+
         this.analyticsData = data;
+
+        // Static fallbacks as requested by user
+        if (!this.analyticsData.engagementMetrics.pageVisits) {
+          this.analyticsData.engagementMetrics.pageVisits = 12500; // Static mockup
+        }
+        if (!this.analyticsData.engagementMetrics.propertyViews) {
+          this.analyticsData.engagementMetrics.propertyViews = 8400; // Static mockup
+        }
+        if (Object.keys(this.analyticsData.engagementMetrics.searchTrends).length === 0) {
+          this.analyticsData.engagementMetrics.searchTrends = {
+            'Luxury Villa': 450,
+            'Apartment Cairo': 320,
+            'New Capital': 280,
+            'Rent Giza': 150
+          };
+        }
+
         this.isLoading = false;
 
         // Map Roles Distribution

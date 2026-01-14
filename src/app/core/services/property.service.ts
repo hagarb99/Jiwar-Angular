@@ -10,7 +10,17 @@ export interface PropertyOwner {
     name: string;
     profilePicURL?: string;
     phoneNumber?: string;
-  }
+}
+
+export interface BookingCreateDTO {
+    propertyID: number;
+    startDate: string; // ISO format
+    message?: string;
+    phone: string;
+    email: string;
+    name: string;
+    offerID?: number | null; // 0 -> null في backend
+}
 export interface Property {
     propertyID: number;
     id?: number; // fallback
@@ -47,8 +57,12 @@ export interface PropertyMedia {
 export enum PropertyType {
     Apartment = 0,
     Villa = 1,
-    House = 2,
-    Studio = 3,
+    Studio = 2,
+    Office = 3,
+    EmptyLand = 4,
+    Duplex = 5,
+    Shop = 6,
+    Garage = 7,
 }
 
 export interface PropertyFilterDTO {

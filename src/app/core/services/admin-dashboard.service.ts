@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiBaseService } from './api-base.service';
+import { PropertyType } from './property.service';
 
 export interface AdminUserDto {
     id: string;
@@ -20,6 +21,7 @@ export interface AdminPropertyDto {
     ownerName: string;
     status: number; // PropEnum
     price?: number;
+    propertyType?: PropertyType;
     createdDate: Date;
 }
 

@@ -86,6 +86,23 @@
                         <td *ngIf="properties.length < 5"></td>
                     </tr>
 
+                    <!-- Property Type Row -->
+                    <tr>
+                        <td class="sticky-col">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500">
+                                    <lucide-angular [img]="Home" class="w-5 h-5"></lucide-angular>
+                                </div>
+                                Property Type
+                            </div>
+                        </td>
+                        <td *ngFor="let property of properties" class="text-center font-medium text-gray-600">
+                            {{ getPropertyTypeName(property.propertyType) }}
+                        </td>
+                        <td *ngIf="properties.length < 5"></td>
+                    </tr>
+
                     <!-- Price Row -->
                     <tr>
                         <td class="sticky-col">

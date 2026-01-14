@@ -2,13 +2,14 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PropertyService, Property } from '../../../../../core/services/property.service';
+import { PropertyService, Property, PropertyType } from '../../../../../core/services/property.service';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextarea } from 'primeng/inputtextarea';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { DropdownModule } from 'primeng/dropdown';
 import { OwnerMyPropertiesComponent } from '../owner-my-properties/owner-my-properties.component';
 import { environment } from '../../../../../../environments/environment';
 import { PanoramaUploadComponent } from '../../../../../shared/components/panorama-upload/panorama-upload.component';
@@ -23,7 +24,8 @@ import { PanoramaUploadComponent } from '../../../../../shared/components/panora
     ButtonModule,
     InputTextModule,
     InputTextarea,
-    InputNumberModule
+    InputNumberModule,
+    DropdownModule
   ],
   providers: [MessageService],
   templateUrl: './edit-property.component.html'
@@ -36,6 +38,16 @@ export class EditPropertyComponent implements OnInit {
   existingImages: string[] = [];
   loading = false;
   uploading = false;
+  propertyTypes = [
+    { label: 'Apartment', value: PropertyType.Apartment },
+    { label: 'Villa', value: PropertyType.Villa },
+    { label: 'Studio', value: PropertyType.Studio },
+    { label: 'Office', value: PropertyType.Office },
+    { label: 'Empty Land', value: PropertyType.EmptyLand },
+    { label: 'Duplex', value: PropertyType.Duplex },
+    { label: 'Shop', value: PropertyType.Shop },
+    { label: 'Garage', value: PropertyType.Garage }
+  ];
 
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
@@ -72,6 +84,7 @@ export class EditPropertyComponent implements OnInit {
       area_sqm: [null, [Validators.min(0)]],
       numBedrooms: [null, [Validators.min(0)]],
       numBathrooms: [null, [Validators.min(0)]],
+      propertyType: [PropertyType.Apartment, [Validators.required]],
       tour360Url: ['']
     });
   }
@@ -93,6 +106,7 @@ export class EditPropertyComponent implements OnInit {
           area_sqm: property.area_sqm,
           numBedrooms: property.numBedrooms,
           numBathrooms: property.numBathrooms,
+          propertyType: property.propertyType,
           tour360Url: property.tour360Url
         });
         this.loading = false;

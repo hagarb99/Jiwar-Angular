@@ -37,7 +37,7 @@ import {
   ChevronRight
 } from 'lucide-angular';
 import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
-import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour } from '../../services/property.service';
+import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour, BookingCreateDTO } from '../../services/property.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { PanoramaViewerComponent } from '../../../shared/components/panorama-viewer/panorama-viewer.component';
@@ -49,15 +49,6 @@ import { AdminAnalyticsDTO, TopDistrictDTO, TopCategoryDTO } from '../../models/
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 
-export interface BookingCreateDTO {
-  propertyID: number;
-  startDate: string; // ISO format
-  message?: string;
-  phone: string;
-  email: string;
-  name: string;
-  offerID?: number | null; // 0 -> null في backend
-}
 
 
 
@@ -729,8 +720,12 @@ export class PropertyDetailsComponent implements OnInit {
     switch (type) {
       case PropertyType.Apartment: return 'Apartment';
       case PropertyType.Villa: return 'Villa';
-      case PropertyType.House: return 'House';
       case PropertyType.Studio: return 'Studio';
+      case PropertyType.Office: return 'Office';
+      case PropertyType.EmptyLand: return 'Empty Land';
+      case PropertyType.Duplex: return 'Duplex';
+      case PropertyType.Shop: return 'Shop';
+      case PropertyType.Garage: return 'Garage';
       default: return 'Property';
     }
   }

@@ -1,9 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ComparisonService, PropertyComparisonDTO, AiComparisonResultDTO, PropertyComparisonUserType, AiPropertyScoreBreakdownDTO } from '../../core/services/comparison.service';
-import { Property } from '../../core/services/property.service';
+import { Property, PropertyType } from '../../core/services/property.service';
 import { environment } from '../../../environments/environment';
-import { LucideAngularModule, X, Scale, MapPin, Maximize2, Bed, Bath, Info, Sparkles, TrendingUp, Brain, Check } from 'lucide-angular';
+import { LucideAngularModule, X, Scale, MapPin, Maximize2, Bed, Bath, Info, Sparkles, TrendingUp, Brain, Check, Home } from 'lucide-angular';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -39,6 +39,7 @@ export class ComparisonPageComponent implements OnInit {
     TrendingUp = TrendingUp;
     Brain = Brain;
     Check = Check;
+    Home = Home;
 
     ngOnInit(): void {
         this.comparisonService.comparisonList$.subscribe(list => {
@@ -158,5 +159,21 @@ export class ComparisonPageComponent implements OnInit {
         if (score >= 80) return 'bg-green-500';
         if (score >= 60) return 'bg-yellow-500';
         return 'bg-red-500';
+    }
+
+    getPropertyTypeName(type: string | number | undefined): string {
+        if (type === undefined) return 'Property';
+        const typeNum = typeof type === 'string' ? parseInt(type) : type;
+        switch (typeNum) {
+            case PropertyType.Apartment: return 'Apartment';
+            case PropertyType.Villa: return 'Villa';
+            case PropertyType.Studio: return 'Studio';
+            case PropertyType.Office: return 'Office';
+            case PropertyType.EmptyLand: return 'Empty Land';
+            case PropertyType.Duplex: return 'Duplex';
+            case PropertyType.Shop: return 'Shop';
+            case PropertyType.Garage: return 'Garage';
+            default: return 'Property';
+        }
     }
 }

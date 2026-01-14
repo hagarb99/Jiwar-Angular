@@ -19,6 +19,8 @@ export interface PropertyMetricsDTO {
     totalProperties: number;
     activeListings: number;
     pendingListings: number;
+    forSaleListings: number;
+    forRentListings: number;
     soldOrRentedUnits: number;
     topCategories: TopCategoryDTO[];
     topDistricts: TopDistrictDTO[];

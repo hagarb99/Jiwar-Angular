@@ -52,6 +52,12 @@
               <p-dropdown formControlName="listingType" [options]="listingTypes" optionLabel="label" optionValue="value"
                 placeholder="Select listing type" class="w-full" />
             </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Property Type *</label>
+              <p-dropdown formControlName="propertyType" [options]="propertyTypes" optionLabel="label"
+                optionValue="value" placeholder="Select property type" class="w-full" />
+            </div>
           </div>
         </div>
 
@@ -168,6 +174,7 @@
             <p><strong>Location:</strong> {{ propertyForm.get('address')?.value }}, {{ propertyForm.get('city')?.value
               }} {{ propertyForm.get('district')?.value ? '(' + propertyForm.get('district')?.value + ')' : '' }}</p>
             <p><strong>Category:</strong> {{ selectedCategoryLabel }}</p>
+            <p><strong>Property Type:</strong> {{ getPropertyTypeName(propertyForm.get('propertyType')?.value) }}</p>
             <p><strong>Area:</strong> {{ propertyForm.get('area')?.value ? (propertyForm.get('area')?.value + ' m²') :
               'Not specified' }}</p>
             <p><strong>Rooms:</strong> {{ propertyForm.get('rooms')?.value || 0 }} Bedrooms • {{
