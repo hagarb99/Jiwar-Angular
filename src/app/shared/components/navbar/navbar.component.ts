@@ -133,9 +133,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private proposalService: DesignerProposalService,
     private messageService: MessageService,
     private zone: NgZone,
-    private elementRef: ElementRef
-    private zone: NgZone,
-    private notificationService: NotificationService,
+    private elementRef: ElementRef,
     private translationService: TranslationService
   ) {
     this.router.events
