@@ -81,9 +81,9 @@ export class EditPropertyComponent implements OnInit {
       address: ['', [Validators.required]],
       city: ['', [Validators.required]],
       district: [''],
-      area_sqm: [null, [Validators.min(0)]],
-      numBedrooms: [null, [Validators.min(0)]],
-      numBathrooms: [null, [Validators.min(0)]],
+      area: [null, [Validators.min(0)]],
+      rooms: [null, [Validators.min(0)]],
+      bathrooms: [null, [Validators.min(0)]],
       propertyType: [PropertyType.Apartment, [Validators.required]],
       tour360Url: ['']
     });
@@ -103,9 +103,9 @@ export class EditPropertyComponent implements OnInit {
           address: property.address,
           city: property.city,
           district: property.district,
-          area_sqm: property.area_sqm,
-          numBedrooms: property.numBedrooms,
-          numBathrooms: property.numBathrooms,
+          area: property.area_sqm,
+          rooms: property.numBedrooms,
+          bathrooms: property.numBathrooms,
           propertyType: property.propertyType,
           tour360Url: property.tour360Url
         });

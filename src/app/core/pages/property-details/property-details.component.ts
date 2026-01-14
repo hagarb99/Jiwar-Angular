@@ -210,7 +210,7 @@ export class PropertyDetailsComponent implements OnInit {
     if (!this.adminAnalytics || !this.property) return false;
     const typeName = this.getPropertyTypeName(this.property.propertyType).toLowerCase();
     return this.adminAnalytics.propertyMetrics.topCategories?.some(
-      (c: TopCategoryDTO) => c.categoryName.toLowerCase() === typeName
+      (c: TopCategoryDTO) => c.propertyType.toLowerCase() === typeName
     ) || false;
   }
 

@@ -81,7 +81,7 @@ export class SidebarComponent {
       label: 'Compare',
       path: '/compare',
       icon: 'M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2M9 21h6a2 2 0 002-2v-3a2 2 0 01-2-2H9a2 2 0 01-2 2v3a2 2 0 002 2zM3 9V6a2 2 0 012-2h14a2 2 0 012 2v3M3 19v-7a2 2 0 012-2h14a2 2 0 012 2v7',
-      roles: ['Customer', 'PropertyOwner', 'Admin']
+      roles: ['Customer', 'PropertyOwner']
     },
     {
       label: 'Wishlist',
@@ -97,9 +97,15 @@ export class SidebarComponent {
     },
     {
       label: 'My Profile',
-      path: '/dashboard/profile',
+      path: '/dashboard/admin/profile',
       icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-      roles: ['Customer', 'Admin']
+      roles: ['Admin']
+    },
+    {
+      label: 'My Profile',
+      path: '/dashboard/customer/profile',
+      icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+      roles: ['Customer']
     },
     {
       label: 'My Profile',

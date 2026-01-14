@@ -50,11 +50,11 @@ export class AdminDashboardService extends ApiBaseService {
     }
 
     deleteUser(userId: string): Observable<string> {
-        return this.httpClient.delete<string>(`${this.apiBaseUrl}/admin/dashboard/users/${userId}`);
+        return this.httpClient.delete<string>(`${this.apiBaseUrl}/admin/dashboard/users/${userId}`, { responseType: 'text' as 'json' });
     }
 
     toggleUserStatus(userId: string): Observable<any> {
-        return this.httpClient.post(`${this.apiBaseUrl}/admin/dashboard/users/${userId}/toggle-status`, {});
+        return this.httpClient.post(`${this.apiBaseUrl}/admin/dashboard/users/${userId}/toggle-status`, {}, { responseType: 'text' as 'json' });
     }
 
     // PROPERTIES
@@ -66,7 +66,10 @@ export class AdminDashboardService extends ApiBaseService {
         return this.httpClient.put<string>(
             `${this.apiBaseUrl}/admin/dashboard/properties/${propertyId}/status`,
             null,
-            { params: { statusEnum: status.toString() } }
+            {
+                params: { statusEnum: status.toString() },
+                responseType: 'text' as 'json'
+            }
         );
     }
 
