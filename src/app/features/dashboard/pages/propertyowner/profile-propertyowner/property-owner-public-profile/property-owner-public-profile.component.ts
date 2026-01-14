@@ -25,11 +25,15 @@ export class PropertyOwnerPublicProfileComponent implements OnInit {
   hasError = false;
 
   ngOnInit(): void {
-    // 1. الحصول على الـ ID من الرابط (URL)
-    const ownerId = this.route.snapshot.paramMap.get('id');
+    // 1. Get ID from URL
+    const ownerId = this.route.snapshot.paramMap.get('userId');
 
     if (ownerId) {
       this.loadOwnerProfile(ownerId);
+    } else {
+      console.error('Owner ID not found in route parameters');
+      this.hasError = true;
+      this.isLoading = false;
     }
   }
 
