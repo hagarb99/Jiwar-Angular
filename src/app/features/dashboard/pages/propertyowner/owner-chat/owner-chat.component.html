@@ -1,0 +1,51 @@
+<div class="container mx-auto px-4 py-8 max-w-4xl h-[calc(100vh-100px)] flex flex-col">
+    <!-- Header -->
+    <div class="bg-white rounded-t-3xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37]">
+                <lucide-angular [img]="User" class="w-6 h-6"></lucide-angular>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-gray-900">Customer Inquiry</h1>
+                <p class="text-sm text-gray-500">Property ID: #{{ propertyId }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="flex-1 bg-gray-50 overflow-y-auto p-6 space-y-6 border-x border-gray-100">
+        <div *ngFor="let msg of messages" class="flex"
+            [ngClass]="msg.senderId === currentUserId ? 'justify-end' : 'justify-start'">
+
+            <div class="max-w-[70%] rounded-2xl px-6 py-4 shadow-sm"
+                [ngClass]="msg.senderId === currentUserId ? 'bg-[#D4AF37] text-white rounded-br-none' : 'bg-white border border-gray-100 text-gray-700 rounded-bl-none'">
+                <p>{{ msg.message }}</p>
+                <span class="text-xs opacity-70 mt-2 block text-right">
+                    {{ msg.sentDate | date:'shortTime' }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="messages.length === 0" class="h-full flex flex-col items-center justify-center text-gray-400 gap-4">
+            <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                <lucide-angular [img]="MessageSquare" class="w-8 h-8 opacity-30"></lucide-angular>
+            </div>
+            <p class="font-medium">No messages yet</p>
+        </div>
+    </div>
+
+    <!-- Input -->
+    <div class="bg-white rounded-b-3xl shadow-sm border border-gray-100 p-4">
+        <form (ngSubmit)="sendMessage()" class="flex gap-4">
+            <input type="text" [(ngModel)]="newMessage" name="msg"
+                class="flex-1 px-6 py-4 rounded-xl border border-gray-200 focus:border-[#D4AF37] focus:ring-4 focus:ring-yellow-500/10 outline-none transition-all bg-gray-50"
+                placeholder="Type your reply...">
+            <button type="submit" [disabled]="!newMessage.trim()"
+                class="bg-[#D4AF37] text-white px-8 rounded-xl font-bold hover:bg-[#C5A028] disabled:opacity-50 transition-all flex items-center gap-2">
+                <span>Send</span>
+                <lucide-angular [img]="Send" class="w-5 h-5"></lucide-angular>
+            </button>
+        </form>
+    </div>
+</div>

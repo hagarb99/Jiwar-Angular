@@ -32,22 +32,18 @@
         </div>
 
         <!-- Renovation -->
-        <div class="relative" (mouseenter)="setDropdown('renovation')" (mouseleave)="setDropdown(null)">
-          <button class="nav-btn nav-item">
-            Renovation
-            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'renovation'"></lucide-angular>
-          </button>
-          <!-- Added text-gray-900 to dropdown to reset color context -->
-          <div *ngIf="activeDropdown === 'renovation'" class="dropdown text-gray-900">
-            <a *ngFor="let item of renovationDropdownItems" [routerLink]="item.path" class="dropdown-item">
-              {{ item.label }}
-            </a>
-          </div>
-        </div>
+        <a routerLink="/renovation/intro" class="nav-btn nav-item">
+          Renovation
+        </a>
 
         <!-- Pricing -->
         <a routerLink="/subscriptions" class="nav-btn nav-item">
           Pricing
+        </a>
+
+        <!-- About -->
+        <a routerLink="/about" class="nav-btn nav-item">
+          About
         </a>
 
         <!-- Explore Properties -->
@@ -116,58 +112,42 @@
         <div class="relative" *ngIf="isLoggedIn">
           <button class="relative p-2 hover:bg-gray-100 rounded-full transition-colors" (click)="toggleMessages()">
             <lucide-angular [img]="MessageSquare" class="w-5 h-5 text-gray-600 hover:text-primary"></lucide-angular>
-            <span *ngIf="unreadMessageCount > 0"
+            <span *ngIf="(unreadMessageCount$ | async) as count"
               class="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">
-              {{ unreadMessageCount > 9 ? '9+' : unreadMessageCount }}
+              {{ count > 9 ? '9+' : count }}
             </span>
           </button>
 
           <!-- Message Dropdown -->
           <div *ngIf="toggleMessagesDropdown"
-            class="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden">
+            class="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden text-gray-900">
             <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
               <h3 class="font-semibold text-gray-900">Messages</h3>
             </div>
 
             <div class="max-h-80 overflow-y-auto">
-              <!-- Loading -->
-              <div *ngIf="loadingMessages" class="p-4 text-center">
-                <i class="pi pi-spin pi-spinner text-gray-400"></i>
-              </div>
-
-              <div *ngIf="!loadingMessages && conversations.length === 0" class="p-8 text-center bg-gray-50">
-                <i class="pi pi-comments text-gray-300 text-2xl mb-2"></i>
-                <p class="text-gray-500 text-sm">No new messages</p>
-              </div>
-
-              <div *ngFor="let item of conversations" (click)="onMessageClick(item)"
-                class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors flex items-center gap-3">
-                <!-- Avatar/Icon -->
-                <div
-                  class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0 overflow-hidden">
-                  <i class="pi pi-user" *ngIf="!item.image"></i>
-                  <img *ngIf="item.image" [src]="item.image" class="w-full h-full object-cover">
+              <!-- Empty State -->
+              <!-- Note: We check if array is empty. The async pipe returns null initially or array. -->
+              <ng-container *ngIf="(latestMessages$ | async) as messages">
+                <div *ngIf="messages.length === 0" class="p-8 text-center bg-gray-50">
+                  <i class="pi pi-comments text-gray-300 text-2xl mb-2"></i>
+                  <p class="text-gray-500 text-sm">No new messages</p>
                 </div>
 
-                <div class="flex-1 overflow-hidden">
-                  <div class="flex items-center justify-between">
-                    <p class="text-sm font-medium text-gray-900 truncate">{{ item.title }}</p>
-                    <span *ngIf="item.unreadCount > 0"
-                      class="flex items-center justify-center bg-red-500 text-white text-[10px] h-4 min-w-4 px-1 rounded-full">
-                      {{ item.unreadCount }}
-                    </span>
-                  </div>
-                  <p class="text-xs text-gray-600 truncate">{{ item.subtitle }}</p>
-                  <span class="text-[10px] text-gray-400" *ngIf="item.time">{{ item.time | date:'shortTime' }}</span>
+                <div *ngFor="let msg of messages" (click)="onMessageClick(msg)"
+                  class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors flex flex-col">
+                  <span class="font-bold text-sm text-gray-900">{{ msg.title || 'New Message' }}</span>
+                  <span class="text-xs text-gray-600 truncate mt-1">{{ msg.message }}</span>
+                  <span class="text-[10px] text-gray-400 text-right mt-1">{{ msg.sentDate | date:'shortTime' }}</span>
                 </div>
-              </div>
+              </ng-container>
             </div>
 
             <!-- Footer -->
             <div class="p-2 border-t border-gray-100">
-              <button (click)="goToMessages()"
+              <button (click)="onViewAll()"
                 class="block w-full text-center py-2 text-primary text-xs hover:bg-gray-50 rounded-lg">
-                View All
+                View All Messages
               </button>
             </div>
           </div>
@@ -284,7 +264,9 @@
       </div>
       <div class="px-6 border-t" [ngClass]="isDarkBgPage ? 'border-white/10' : 'border-gray-100'">
         <a routerLink="/add-property" class="block py-3 mt-2">Sell</a>
+        <a routerLink="/renovation/intro" class="block py-3" (click)="closeMobileMenu()">Renovation</a>
         <a routerLink="/subscriptions" class="block py-3">Pricing</a>
+        <a routerLink="/about" class="block py-3" (click)="closeMobileMenu()">About</a>
       </div>
     </div>
   </div>
