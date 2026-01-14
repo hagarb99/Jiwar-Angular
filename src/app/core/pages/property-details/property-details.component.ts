@@ -41,6 +41,7 @@ import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
 import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour } from '../../services/property.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import { PanoramaViewerComponent } from '../../../shared/components/panorama-viewer/panorama-viewer.component';
 import { environment } from '../../../../environments/environment';
 import { WishlistService } from '../../services/wishlist.service';
 import { AuthService } from '../../services/auth.service';
@@ -49,15 +50,6 @@ import { AdminAnalyticsDTO, TopDistrictDTO, TopCategoryDTO } from '../../models/
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 
-export interface BookingCreateDTO {
-  propertyID: number;
-  startDate: string; // ISO format
-  message?: string;
-  phone: string;
-  email: string;
-  name: string;
-  offerID?: number | null; // 0 -> null في backend
-}
 
 
 
@@ -135,6 +127,7 @@ export class PropertyDetailsComponent implements OnInit {
   virtualTours: (VirtualTour & { safeUrl: SafeResourceUrl })[] = [];
   activeTourUrl: string = '';
   showTour: boolean = false;
+  isPanoramaImage: boolean = false;
 
   // Analytics Data
   priceHistory: { year: number, price: number, percentage: number }[] = [];
@@ -361,9 +354,14 @@ export class PropertyDetailsComponent implements OnInit {
 
         // 360° Tour (Primary fallback if dedicated tours table is empty)
         if (data.tour360Url) {
-          const safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.getTourEmbedUrl(data.tour360Url));
-          this.safeTourUrl = safeUrl;
-          this.activeTourUrl = data.tour360Url;
+          this.isPanoramaImage = this.checkIsPanoramaImage(data.tour360Url);
+          if (this.isPanoramaImage) {
+            this.activeTourUrl = data.tour360Url;
+          } else {
+            const safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.getTourEmbedUrl(data.tour360Url));
+            this.safeTourUrl = safeUrl;
+            this.activeTourUrl = data.tour360Url;
+          }
 
           // Seed virtualTours if empty to ensure UI appears
           if (this.virtualTours.length === 0) {
@@ -373,7 +371,7 @@ export class PropertyDetailsComponent implements OnInit {
               tourTitle: 'Property 3D Tour',
               description: 'Interactive virtual exploration of this property.',
               createdDate: new Date().toISOString(),
-              safeUrl: safeUrl
+              safeUrl: !this.isPanoramaImage ? this.safeTourUrl : null
             } as any];
           }
         }
@@ -440,27 +438,27 @@ export class PropertyDetailsComponent implements OnInit {
   }
 
   selectTour(tour: VirtualTour & { safeUrl: SafeResourceUrl }): void {
+    this.isPanoramaImage = this.checkIsPanoramaImage(tour.tourURL);
     this.safeTourUrl = tour.safeUrl;
     this.activeTourUrl = tour.tourURL;
   }
 
+  private checkIsPanoramaImage(url: string): boolean {
+    if (!url) return false;
+    const extensions = ['.jpg', '.jpeg', '.png', '.webp'];
+    const lowerUrl = url.toLowerCase().split('?')[0];
+    return extensions.some(ext => lowerUrl.endsWith(ext)) || url.includes('storage.jiwar.com/panoramas/');
+  }
+
   private getTourEmbedUrl(url: string): string {
     if (!url) return '';
-
-    // Support YouTube
+    // Basic YouTube/Vimeo support if they are used as tours
     if (url.includes('youtube.com/watch?v=')) {
       return url.replace('watch?v=', 'embed/');
     }
     if (url.includes('youtu.be/')) {
       return url.replace('youtu.be/', 'youtube.com/embed/');
     }
-
-    // Support Kuula
-    if (url.includes('kuula.co/share/')) {
-      // Kuula share links work directly as embed links
-      return url;
-    }
-
     return url;
   }
 
@@ -727,8 +725,12 @@ export class PropertyDetailsComponent implements OnInit {
     switch (type) {
       case PropertyType.Apartment: return 'Apartment';
       case PropertyType.Villa: return 'Villa';
-      case PropertyType.House: return 'House';
       case PropertyType.Studio: return 'Studio';
+      case PropertyType.Office: return 'Office';
+      case PropertyType.EmptyLand: return 'Empty Land';
+      case PropertyType.Duplex: return 'Duplex';
+      case PropertyType.Shop: return 'Shop';
+      case PropertyType.Garage: return 'Garage';
       default: return 'Property';
     }
   }

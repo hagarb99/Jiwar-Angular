@@ -359,13 +359,20 @@
 
 
                         <!-- Details Section (Virtual Tour) -->
-                        <section id="details" class="scroll-mt-40 space-y-8" *ngIf="safeTourUrl">
+                        <section id="details" class="scroll-mt-40 space-y-8"
+                            *ngIf="safeTourUrl || (isPanoramaImage && activeTourUrl)">
                             <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
                                 <span class="flex h-8 w-1 bg-[#D4AF37] rounded-full"></span>
                                 Virtual Tour
                             </h2>
                             <div class="aspect-video rounded-3xl overflow-hidden bg-gray-900 shadow-2xl relative group">
-                                <iframe [src]="safeTourUrl"
+                                <!-- 360 Image Viewer -->
+                                <app-panorama-viewer *ngIf="isPanoramaImage && activeTourUrl" [src]="activeTourUrl"
+                                    height="100%">
+                                </app-panorama-viewer>
+
+                                <!-- Video/External Tour Iframe -->
+                                <iframe *ngIf="!isPanoramaImage && safeTourUrl" [src]="safeTourUrl"
                                     class="w-full h-full border-0 opacity-90 group-hover:opacity-100 transition-opacity"
                                     allowfullscreen></iframe>
                                 <div
@@ -498,7 +505,7 @@
                                             </svg>
                                         </button>
 
-                                        <button (click)="toggleChat()" *ngIf="canOpenChat"
+                                        <button (click)="toggleChat()"
                                             class="w-full bg-[#D4AF37] hover:bg-[#C5A028] text-white font-bold py-4 px-6 rounded-xl shadow-xl shadow-yellow-500/20 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3">
                                             <lucide-angular [img]="MessageSquare" class="w-5 h-5"></lucide-angular>
                                             <span>Chat with Owner</span>
@@ -526,14 +533,9 @@
                                         <div>
                                             <p class="text-sm font-bold text-gray-900">{{ property.ownerName || 'Jiwar
                                                 Agent' }}</p>
-                                            <a *ngIf="property.propertyOwner?.userId"
-                                                [routerLink]="['/propertyowner', property.propertyOwner?.userId]">
+                                            <a [routerLink]="['/propertyowner', property.propertyOwner?.userId]">
                                                 View Owner Profile →
                                             </a>
-                                            <span *ngIf="!property.propertyOwner?.userId"
-                                                class="text-gray-400 text-xs cursor-not-allowed">
-                                                Profile Unavailable
-                                            </span>
                                             <p class="text-xs text-gray-500">Listed Agent</p>
                                         </div>
                                     </div>

@@ -76,8 +76,12 @@ export class WishlistComponent implements OnInit {
         switch (type) {
             case PropertyType.Apartment: return 'Apartment';
             case PropertyType.Villa: return 'Villa';
-            case PropertyType.House: return 'House';
             case PropertyType.Studio: return 'Studio';
+            case PropertyType.Office: return 'Office';
+            case PropertyType.EmptyLand: return 'Empty Land';
+            case PropertyType.Duplex: return 'Duplex';
+            case PropertyType.Shop: return 'Shop';
+            case PropertyType.Garage: return 'Garage';
             default: return 'Property';
         }
     }

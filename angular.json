@@ -32,9 +32,12 @@
               }
             ],
             "styles": [
+              "node_modules/pannellum/build/pannellum.css",
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/pannellum/build/pannellum.js"
+            ]
           },
           "configurations": {
             "production": {
