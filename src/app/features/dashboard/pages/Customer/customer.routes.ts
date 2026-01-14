@@ -10,6 +10,11 @@ export const CustomerRoutes: Routes = [
   {
     path: 'MyBooking',
     component: MyBookingComponent
+  },
+  {
+    path: 'chat',
+    redirectTo: '/dashboard/chat',
+    pathMatch: 'full'
   }
 ];
 

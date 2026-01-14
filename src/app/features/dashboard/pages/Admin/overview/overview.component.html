@@ -1,109 +1,93 @@
-<div class="admin-dashboard p-6 space-y-6 bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-        <div>
-            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Admin Dashboard</h1>
-            <p class="text-gray-500 mt-1">Platform analytics and metrics oversight</p>
-        </div>
-        <div class="flex space-x-3">
-            <button
-                class="bg-white border text-gray-700 px-4 py-2 rounded-lg shadow-sm hover:bg-gray-50 transition font-medium flex items-center">
-                <i class="pi pi-download mr-2 text-primary"></i> Export Reports
-            </button>
-            <button (click)="ngOnInit()"
-                class="bg-primary text-white px-4 py-2 rounded-lg shadow-md hover:bg-primary/90 transition font-medium flex items-center bg-blue-600">
-                <i class="pi pi-refresh mr-2"></i> Refresh Data
-            </button>
-        </div>
+<div class="p-6 space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold tracking-tight text-foreground">Dashboard Overview</h1>
     </div>
 
-    <div *ngIf="isLoading"
-        class="flex flex-col justify-center items-center h-96 space-y-4 bg-white rounded-2xl shadow-sm border border-gray-100">
-        <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-        <p class="text-gray-500 animate-pulse font-medium">Crunching analytics data...</p>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p class="mt-4 text-muted-foreground">Loading dashboard data...</p>
     </div>
 
-    <div *ngIf="error" class="bg-red-50 border-l-4 border-red-500 p-6 rounded-xl shadow-sm flex items-start space-x-4">
-        <i class="pi pi-exclamation-triangle text-red-500 text-2xl mt-1"></i>
-        <div>
-            <h3 class="text-red-800 font-bold mb-1">System Error</h3>
-            <p class="text-red-700 text-sm leading-relaxed">{{ error }}</p>
-        </div>
+    <!-- Error State -->
+    <div *ngIf="error" class="p-4 bg-red-100 text-red-700 rounded-lg border border-red-200">
+        {{ error }}
     </div>
 
-    <div *ngIf="analyticsData as data" class="space-y-8 animate-in fade-in duration-500">
-        <!-- Stats Grid -->
+    <!-- No Data State -->
+    <div *ngIf="!isLoading && !error && !analyticsData" class="p-10 text-center text-gray-500">
+        No analytics data available.
+    </div>
+
+    <!-- content -->
+    <div *ngIf="analyticsData as data" class="space-y-8 animate-in fade-in duration-700">
+
+        <!-- Phase 1: High Level Metrics -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Revenue Card -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
-                <h3 class="text-sm font-medium text-muted-foreground">Total Revenue</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ data.paymentMetrics.totalRevenue |
-                    currency }}</p>
-                <p class="text-xs text-muted-foreground mt-1">Total earnings across all channels</p>
-            </div>
-
-            <!-- Users Card -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
-                <h3 class="text-sm font-medium text-muted-foreground">Total Users</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ data.usersMetrics.totalUsers }}</p>
-                <div class="flex items-center mt-1 text-green-600">
-                    <span class="text-xs font-medium">+{{ data.usersMetrics.newSignUpsToday }} today</span>
-                </div>
-            </div>
-
-            <!-- Listings Card -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
-                <h3 class="text-sm font-medium text-muted-foreground">Active Listings</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ data.propertyMetrics.activeListings }}
-                </p>
-                <p class="text-xs text-muted-foreground mt-1">{{ data.propertyMetrics.pendingListings }}
-                    pending approval</p>
-            </div>
-
-            <!-- Transactions Card -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
-                <h3 class="text-sm font-medium text-muted-foreground">Total Transactions</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ data.paymentMetrics.totalTransactions
-                    }}
-                </p>
-                <p class="text-xs text-muted-foreground mt-1">Processed successfully</p>
-            </div>
-        </div>
-
-        <!-- Detailed Stats Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            <!-- User Statistics -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm">
-                <h3 class="text-lg font-semibold text-foreground mb-4">User Statistics</h3>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center p-3 bg-secondary/10 rounded-lg">
-                        <span class="text-muted-foreground">Active Users</span>
-                        <span class="font-bold text-foreground">{{ data.usersMetrics.activeUsers }}</span>
-                    </div>
-                    <p class="text-gray-500 text-sm font-medium">Total Properties</p>
-                    <div class="flex items-baseline space-x-2">
-                        <span class="text-3xl font-bold text-gray-900">{{ data.propertyMetrics.totalProperties | number
-                            }}</span>
-                        <span class="text-xs text-gray-400">Sold: {{ data.propertyMetrics.soldOrRentedUnits }}</span>
+            <!-- Revenue -->
+            <div
+                class="group relative overflow-hidden bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-1 transition-all">
+                <div class="relative z-10 flex flex-col">
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Gross Revenue</span>
+                    <span class="text-3xl font-black text-slate-900 mt-2">{{ data.paymentMetrics.totalRevenue |
+                        currency:'SAR ':'symbol':'1.0-0' }}</span>
+                    <div class="mt-4 flex items-center gap-2">
+                        <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded-lg">{{
+                            data.paymentMetrics.totalTransactions }} TXNS</span>
+                        <span class="text-[10px] text-slate-400 font-bold">Managed Volume</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Property Insights -->
-            <div class="p-6 rounded-xl bg-card border border-border shadow-sm">
-                <h3 class="text-lg font-semibold text-foreground mb-4">Property Insights</h3>
-                <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="p-3 bg-secondary/10 rounded-lg text-center">
-                            <span class="block text-xs text-muted-foreground">Total Properties</span>
-                            <span class="block text-xl font-bold text-foreground">{{
-                                data.propertyMetrics.totalProperties }}</span>
+            <!-- Detailed Users -->
+            <div
+                class="group relative overflow-hidden bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-2xl transition-all">
+                <div class="relative z-10 flex flex-col">
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">User Base</span>
+                    <span class="text-3xl font-black text-slate-900 mt-2">{{ data.usersMetrics.totalUsers | number
+                        }}</span>
+                    <div class="mt-4 grid grid-cols-3 gap-2">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Today</span>
+                            <span class="text-xs font-black text-blue-600">+{{ data.usersMetrics.newSignUpsToday
+                                }}</span>
                         </div>
-                        <div class="p-3 bg-secondary/10 rounded-lg text-center">
-                            <span class="block text-xs text-muted-foreground">Sold/Rented</span>
-                            <span class="block text-xl font-bold text-foreground">{{
-                                data.propertyMetrics.soldOrRentedUnits }}</span>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Week</span>
+                            <span class="text-xs font-black text-blue-600">+{{ data.usersMetrics.newSignUpsWeek
+                                }}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Month</span>
+                            <span class="text-xs font-black text-blue-600">+{{ data.usersMetrics.newSignUpsMonth
+                                }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Listings -->
+            <div
+                class="group relative overflow-hidden bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-2xl transition-all">
+                <div class="relative z-10 flex flex-col">
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Listing Status</span>
+                    <span class="text-3xl font-black text-slate-900 mt-2">{{ data.propertyMetrics.activeListings
+                        }}</span>
+                    <div class="mt-4 grid grid-cols-3 gap-2">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Pending</span>
+                            <span class="text-xs font-black text-orange-600">{{ data.propertyMetrics.pendingListings
+                                }}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Sale</span>
+                            <span class="text-xs font-black text-blue-600">{{ data.propertyMetrics.forSaleListings
+                                }}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Rent</span>
+                            <span class="text-xs font-black text-emerald-600">{{ data.propertyMetrics.forRentListings
+                                }}</span>
                         </div>
                     </div>
 
@@ -116,75 +100,164 @@
                                 <div class="flex items-center gap-2">
                                     <div class="w-24 h-2 bg-secondary/20 rounded-full overflow-hidden">
                                         <div class="h-full bg-primary"
-                                            [style.width.%]="(cat.count / (data.propertyMetrics.totalProperties || 1)) * 100">
+                                            [style.width.%]="(cat.count / (data.propertyMetrics?.totalProperties || 1)) * 100">
+                                            [style.width.%]="(cat.count / (data.propertyMetrics.totalProperties || 1)) *
+                                            100">
                                         </div>
                                     </div>
                                     <span class="font-medium text-foreground w-8 text-right">{{ cat.count }}</span>
                                 </div>
                             </div>
                         </div>
-                        <span class="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-full">{{
-                            data.paymentMetrics.totalTransactions }} txn</span>
-                    </div>
-                    <p class="text-gray-500 text-sm font-medium">Total Revenue</p>
-                    <div class="flex items-baseline space-x-2">
-                        <span class="text-3xl font-bold text-gray-900">${{ data.paymentMetrics.totalRevenue |
-                            number:'1.0-0' }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Charts Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Role Distribution -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
-                <div class="w-full flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-bold text-gray-900">User Role Distribution</h3>
-                    <i class="pi pi-info-circle text-gray-400 cursor-help"></i>
+        <!-- Phase 2: Core Analysis Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Revenue & Performance -->
+            <div class="lg:col-span-2 bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-10">
+                    <div>
+                        <h3 class="text-xl font-black text-slate-900 uppercase tracking-tight">Revenue Trends</h3>
+                        <p class="text-sm text-slate-500 font-medium">Monthly financial performance analysis</p>
+                    </div>
                 </div>
-                <div class="relative w-full aspect-square max-w-[400px]">
-                    <canvas baseChart [data]="pieChartData" [options]="pieChartOptions" [type]="pieChartType">
-                    </canvas>
+                <div class="h-[350px]">
+                    <canvas baseChart [data]="revenueChartData" [options]="revenueChartOptions"
+                        [type]="lineChartType"></canvas>
                 </div>
             </div>
 
-            <!-- Valuation Trends -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <div class="w-full flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-bold text-gray-900">Valuation Volume Trends</h3>
-                    <i class="pi pi-chart-bar text-gray-400"></i>
+            <!-- User Base Distribution -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col">
+                <div class="text-center mb-10">
+                    <h3 class="text-xl font-black text-slate-900 uppercase tracking-tight">User Roles</h3>
+                    <p class="text-sm text-slate-500 font-medium">Community distribution overview</p>
                 </div>
-                <div class="relative w-full aspect-[4/3]">
-                    <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="barChartType">
-                    </canvas>
+                <div class="relative h-64 flex items-center justify-center">
+                    <canvas baseChart [data]="pieChartData" [options]="pieChartOptions" [type]="pieChartType"></canvas>
+                </div>
+                <div class="mt-auto pt-8 border-t border-slate-50 grid grid-cols-2 gap-4">
+                    <div class="p-4 bg-slate-50 rounded-2xl text-center">
+                        <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Retention</span>
+                        <span class="text-xl font-black text-slate-900">94.2%</span>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-2xl text-center">
+                        <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Active Rate</span>
+                        <span class="text-xl font-black text-blue-600">
+                            {{ (data.usersMetrics.activeUsers / data.usersMetrics.totalUsers * 100) | number:'1.0-1' }}%
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Engagement -->
-        <div class="p-6 rounded-xl bg-card border border-border shadow-sm lg:col-span-2">
-            <h3 class="text-lg font-semibold text-foreground mb-4">Engagement & Traffic</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="text-center p-4 border border-border rounded-lg">
-                    <span class="text-sm text-muted-foreground">Total Page Visits</span>
-                    <p class="text-2xl font-bold text-foreground mt-1">{{ data.engagementMetrics.pageVisits }}</p>
+        <!-- Phase 3: Market & Engagement Intelligence -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Top Categories -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Top Categories</h3>
+                    <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                    </div>
                 </div>
-                <div class="text-center p-4 border border-border rounded-lg">
-                    <span class="text-sm text-muted-foreground">Property Views</span>
-                    <p class="text-2xl font-bold text-foreground mt-1">{{ data.engagementMetrics.propertyViews }}</p>
+                <div class="space-y-6 flex-1">
+                    <div *ngFor="let cat of data.propertyMetrics.topCategories" class="space-y-3">
+                        <div class="flex justify-between items-center text-sm font-black">
+                            <span class="text-slate-700">{{ cat.categoryName }}</span>
+                            <span class="text-slate-900 px-3 py-1 bg-slate-50 rounded-lg shadow-sm">{{ cat.count }}
+                                Listings</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-50 rounded-full overflow-hidden">
+                            <div class="h-full bg-slate-900 rounded-full transition-all duration-1000"
+                                [style.width.%]="(cat.count / (data.propertyMetrics.totalProperties || 1)) * 100"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div
-                class="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-100 transition hover:border-purple-200">
-                <div class="bg-purple-500 p-3 rounded-lg text-white font-bold text-xl shadow-sm shadow-purple-200">
-                    <i class="pi pi-globe"></i>
+
+            <!-- Top Districts -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Market Hubs</h3>
+                    <lucide-angular [img]="MapPin" class="w-6 h-6 text-slate-300"></lucide-angular>
                 </div>
+                <div class="space-y-3">
+                    <div *ngFor="let dist of data.propertyMetrics.topDistricts"
+                        class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-900 group transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-2 rounded-full bg-blue-500 group-hover:scale-150 transition-transform">
+                            </div>
+                            <span class="font-bold text-slate-700 group-hover:text-white transition-colors">{{
+                                dist.districtName }}</span>
+                        </div>
+                        <span
+                            class="px-3 py-1 bg-white rounded-xl text-xs font-black text-slate-900 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">{{
+                            dist.count }} Properties</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Engagement Intelligence -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Engagement IQ</h3>
+                    <div class="flex h-2 w-2 relative">
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="p-5 bg-blue-600 rounded-3xl text-white shadow-lg shadow-blue-200">
+                        <span class="text-[10px] font-black opacity-80 uppercase tracking-wider block mb-1">Page
+                            Visits</span>
+                        <p class="text-2xl font-black">{{ data.engagementMetrics.pageVisits | number }}</p>
+                    </div>
+                    <div class="p-5 bg-slate-900 rounded-3xl text-white shadow-lg shadow-slate-200">
+                        <span class="text-[10px] font-black opacity-80 uppercase tracking-wider block mb-1">Ad
+                            Views</span>
+                        <p class="text-2xl font-black">{{ data.engagementMetrics.propertyViews | number }}</p>
+                    </div>
+                </div>
+                <div class="p-6 bg-slate-50 rounded-3xl flex-1">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-4">Trending
+                        Search Terms</span>
+                    <div class="flex flex-wrap gap-2">
+                        <div *ngFor="let trend of data.engagementMetrics.searchTrends | keyvalue"
+                            class="px-3 py-2 bg-white rounded-xl border border-slate-100 shadow-sm flex items-center gap-2 hover:border-blue-400 transition-colors cursor-default">
+                            <span class="text-xs font-bold text-slate-700">{{ trend.key }}</span>
+                            <span class="text-[10px] font-black text-blue-500">{{ trend.value }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 4: Service Demand -->
+        <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
+            <div class="flex items-center justify-between mb-10">
                 <div>
-                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Page Visits</p>
-                    <p class="text-2xl font-black text-gray-900">{{ data.engagementMetrics.pageVisits | number }}
+                    <h3 class="text-2xl font-black text-slate-900 uppercase tracking-tight">Service Volume Analysis</h3>
+                    <p class="text-sm text-slate-500 font-medium">Monitoring valuations and professional service demand
                     </p>
                 </div>
+                <div class="flex gap-4">
+                    <div class="px-6 py-4 bg-slate-900 rounded-2xl text-white flex flex-col items-center min-w-[140px]">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Total
+                            Valuations</span>
+                        <span class="text-2xl font-black">{{ data.valuationMetrics.totalValuations | number }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="h-[350px]">
+                <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="barChartType"></canvas>
             </div>
         </div>
     </div>

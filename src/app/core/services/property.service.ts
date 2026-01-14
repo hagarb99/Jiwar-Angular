@@ -11,6 +11,7 @@ export interface PropertyOwner {
     profilePicURL?: string;
     phoneNumber?: string;
 }
+
 export interface BookingCreateDTO {
     propertyID: number;
     startDate: string; // ISO format
@@ -20,7 +21,6 @@ export interface BookingCreateDTO {
     name: string;
     offerID?: number | null; // 0 -> null في backend
 }
-
 export interface Property {
     propertyID: number;
     id?: number; // fallback
@@ -57,8 +57,12 @@ export interface PropertyMedia {
 export enum PropertyType {
     Apartment = 0,
     Villa = 1,
-    House = 2,
-    Studio = 3,
+    Studio = 2,
+    Office = 3,
+    EmptyLand = 4,
+    Duplex = 5,
+    Shop = 6,
+    Garage = 7,
 }
 
 export interface PropertyFilterDTO {
@@ -161,7 +165,10 @@ export class PropertyService {
         if (dto.locationLat) formData.append('locationLat', dto.locationLat.toString());
         if (dto.locationLang) formData.append('locationLang', dto.locationLang.toString());
 
-        images.forEach(file => formData.append('Images', file));
+        images.forEach(file => {
+            const sanitizedFile = this.sanitizeFile(file);
+            formData.append('Images', sanitizedFile);
+        });
         return this.http.post(`${this.apiUrl}/add`, formData);
     }
 
@@ -199,7 +206,10 @@ export class PropertyService {
 
         // Add images if provided
         if (images && images.length > 0) {
-            images.forEach(file => formData.append('Images', file));
+            images.forEach(file => {
+                const sanitizedFile = this.sanitizeFile(file);
+                formData.append('Images', sanitizedFile);
+            });
         }
 
         return this.http.put(`${this.apiUrl}/update/${id}`, formData);
@@ -212,5 +222,11 @@ export class PropertyService {
         return this.http.post(`${environment.apiBaseUrl}/Booking`, booking);
     }
 
-
+    private sanitizeFile(file: File): File {
+        const extension = file.name.split('.').pop() || 'jpg';
+        const guid = (typeof crypto !== 'undefined' && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : Math.random().toString(36).substring(2, 11);
+        return new File([file], `${guid}.${extension}`, { type: file.type });
+    }
 }

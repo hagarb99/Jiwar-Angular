@@ -6,16 +6,22 @@ import { WishlistService } from '../../../core/services/wishlist.service';
 import { Property } from '../../../core/services/property.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ComparisonService } from '../../../core/services/comparison.service';
+import { ImgFallbackDirective } from '../../directives/img-fallback.directive';
 
 @Component({
   selector: 'app-property-card',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, ImgFallbackDirective],
   template: `
     <div class="group relative overflow-hidden rounded-2xl bg-white border border-gray-100 hover:shadow-2xl hover:shadow-yellow-500/10 transition-all duration-500 cursor-pointer" [class.md:col-span-2]="size === 'large' || size === 'medium'" [class.md:row-span-2]="size === 'large'">
       
       <div class="aspect-[4/3] overflow-hidden relative" (click)="goToDetails()">
-        <img [src]="image || '/logo2.png'" [alt]="title" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+    <img
+      [src]="image || '/assets/placeholder.jpg'"
+      [appImgFallback]="'/assets/placeholder.jpg'"
+      [alt]="title"
+      class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+      (error)="onImageError($event)" />
         <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         
         <div class="absolute top-4 left-4 flex gap-2">
@@ -163,4 +169,13 @@ export class PropertyCardComponent implements OnInit {
       }
     }
   }
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    const fallback = '/assets/placeholder.jpg';
+    // Ensure we don't re-set the fallback if it's already set (prevents infinite loops)
+    if (img.src !== window.location.origin + fallback) {
+      img.src = fallback;
+    }
+  }
+
 }

@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ApiBaseService } from './api-base.service';
 import { GoogleLoginProvider, SocialAuthService, SocialUser } from '@abacritt/angularx-social-login';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map, tap, distinctUntilChanged } from 'rxjs/operators';
 
 export interface RegisterRequest {
   username: string;
@@ -97,10 +97,12 @@ export class AuthService extends ApiBaseService {
     const hasToken = !!this.getToken();
 
     this.currentUserSubject = new BehaviorSubject<UserData | null>(initialUser);
-    this.currentUser$ = this.currentUserSubject.asObservable();
+    this.currentUser$ = this.currentUserSubject.asObservable().pipe(
+      distinctUntilChanged((prev: UserData | null, curr: UserData | null) => JSON.stringify(prev) === JSON.stringify(curr))
+    );
 
     this.isLoggedInSubject = new BehaviorSubject<boolean>(hasToken && !!initialUser);
-    this.isLoggedIn$ = this.isLoggedInSubject.asObservable();
+    this.isLoggedIn$ = this.isLoggedInSubject.asObservable().pipe(distinctUntilChanged());
   }
 
 
@@ -281,6 +283,10 @@ export class AuthService extends ApiBaseService {
   getUserId(): string | null {
     const user = this.currentUserSubject.value || this.loadUserFromStorage();
     return user?.id ?? null;
+  }
+
+  getCurrentUserValue(): UserData | null {
+    return this.currentUserSubject.value;
   }
 
   private loadUserFromStorage(): UserData | null {

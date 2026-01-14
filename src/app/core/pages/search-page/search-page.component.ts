@@ -179,8 +179,12 @@ export class SearchPageComponent implements OnInit {
     const typeMap: { [key: string]: PropertyType } = {
       'apartment': PropertyType.Apartment,
       'villa': PropertyType.Villa,
-      'house': PropertyType.House,
-      'studio': PropertyType.Studio
+      'studio': PropertyType.Studio,
+      'office': PropertyType.Office,
+      'emptyland': PropertyType.EmptyLand,
+      'duplex': PropertyType.Duplex,
+      'shop': PropertyType.Shop,
+      'garage': PropertyType.Garage
     };
 
     return typeMap[type.toLowerCase()];
@@ -201,8 +205,12 @@ export class SearchPageComponent implements OnInit {
     const typeNames: { [key in PropertyType]: string } = {
       [PropertyType.Apartment]: 'Apartment',
       [PropertyType.Villa]: 'Villa',
-      [PropertyType.House]: 'House',
-      [PropertyType.Studio]: 'Studio'
+      [PropertyType.Studio]: 'Studio',
+      [PropertyType.Office]: 'Office',
+      [PropertyType.EmptyLand]: 'Empty Land',
+      [PropertyType.Duplex]: 'Duplex',
+      [PropertyType.Shop]: 'Shop',
+      [PropertyType.Garage]: 'Garage'
     };
 
     return typeNames[propertyType] || 'Property';

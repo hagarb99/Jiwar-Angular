@@ -52,6 +52,12 @@
               <p-dropdown formControlName="listingType" [options]="listingTypes" optionLabel="label" optionValue="value"
                 placeholder="Select listing type" class="w-full" />
             </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Property Type *</label>
+              <p-dropdown formControlName="propertyType" [options]="propertyTypes" optionLabel="label"
+                optionValue="value" placeholder="Select property type" class="w-full" />
+            </div>
           </div>
         </div>
 
@@ -137,10 +143,19 @@
           </div>
 
           <!-- Virtual Tour -->
-          <div>
-            <label class="block text-sm font-medium mb-2">360° Virtual Tour URL (Optional)</label>
-            <input pInputText formControlName="tour360Url" placeholder="https://my.matterport.com/show/?m=..."
-              class="w-full" />
+          <div class="mt-8">
+            <label class="block text-sm font-medium mb-3">360° Virtual Tour URL</label>
+            <div class="p-inputgroup mb-3">
+              <span class="p-inputgroup-addon">
+                <i class="pi pi-external-link"></i>
+              </span>
+              <input pInputText formControlName="tour360Url"
+                placeholder="Paste external 360 tour link (Kuula, Matterport, etc.)"
+                class="w-full h-12 px-4 bg-white/50 border-gray-200 focus:border-primary" />
+            </div>
+            <p class="text-sm text-muted-foreground mt-2">
+              Paste a 360 tour link (e.g. from Kuula or Matterport). Example: https://kuula.co/share/collection/7fQCn
+            </p>
           </div>
         </div>
 
@@ -159,6 +174,7 @@
             <p><strong>Location:</strong> {{ propertyForm.get('address')?.value }}, {{ propertyForm.get('city')?.value
               }} {{ propertyForm.get('district')?.value ? '(' + propertyForm.get('district')?.value + ')' : '' }}</p>
             <p><strong>Category:</strong> {{ selectedCategoryLabel }}</p>
+            <p><strong>Property Type:</strong> {{ getPropertyTypeName(propertyForm.get('propertyType')?.value) }}</p>
             <p><strong>Area:</strong> {{ propertyForm.get('area')?.value ? (propertyForm.get('area')?.value + ' m²') :
               'Not specified' }}</p>
             <p><strong>Rooms:</strong> {{ propertyForm.get('rooms')?.value || 0 }} Bedrooms • {{

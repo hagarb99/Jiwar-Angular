@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -16,7 +17,8 @@ import { StepsModule } from 'primeng/steps';
 import { MenuItem } from 'primeng/api';
 import { CardModule } from 'primeng/card';
 import { FileUploadModule } from 'primeng/fileupload';
-import { PropertyService } from '../../../core/services/property.service';
+import { PropertyService, PropertyType } from '../../../core/services/property.service';
+import { PanoramaUploadComponent } from '../panorama-upload/panorama-upload.component';
 
 
 interface PropertyCreateDTO {
@@ -34,6 +36,7 @@ interface PropertyCreateDTO {
   locationLat?: number;
   locationLang?: number;
   listingType: number;
+  propertyType: number;
 }
 
 export enum ListingTypeEnum {
@@ -64,7 +67,7 @@ export enum ListingTypeEnum {
   styleUrls: ['./add-property.component.css'],
   providers: [MessageService]
 })
-export class AddPropertyComponent {
+export class AddPropertyComponent implements OnDestroy {
   activeStep: number = 0;
   steps: MenuItem[] = [
     { label: 'Basic Information' },
@@ -83,17 +86,33 @@ export class AddPropertyComponent {
     { label: 'Premium', value: 4 },
     { label: 'Commercial', value: 5 }
   ];
+
+  propertyTypes = [
+    { label: 'Apartment', value: PropertyType.Apartment },
+    { label: 'Villa', value: PropertyType.Villa },
+    { label: 'Studio', value: PropertyType.Studio },
+    { label: 'Office', value: PropertyType.Office },
+    { label: 'Empty Land', value: PropertyType.EmptyLand },
+    { label: 'Duplex', value: PropertyType.Duplex },
+    { label: 'Shop', value: PropertyType.Shop },
+    { label: 'Garage', value: PropertyType.Garage }
+  ];
   listingTypes = [
     { label: 'Rent', value: ListingTypeEnum.Rent },
     { label: 'Sell', value: ListingTypeEnum.Sell }
   ];
 
 
+  private previewUrls: Map<File, SafeUrl> = new Map();
+  private objectUrls: Map<File, string> = new Map();
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private propertyService: PropertyService,
     private messageService: MessageService,
+    private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef,
     public router: Router
   ) {
     this.propertyForm = this.fb.group({
@@ -108,6 +127,7 @@ export class AddPropertyComponent {
       bathrooms: [null, Validators.min(0)],
       categoryId: [null, Validators.required],
       listingType: [ListingTypeEnum.Sell, Validators.required],
+      propertyType: [PropertyType.Apartment, Validators.required],
       tour360Url: [''],
       locationLat: [''],
       locationLang: ['']
@@ -154,6 +174,11 @@ export class AddPropertyComponent {
     const category = this.categories.find(cat => cat.value === categoryId);
     return category ? category.label : '—';
   }
+
+  getPropertyTypeName(value: number): string {
+    const type = this.propertyTypes.find(t => t.value === value);
+    return type ? type.label : 'Property';
+  }
   uploadedFiles: File[] = []; // Array for user uploaded images
 
   onFileSelect(event: any) {
@@ -171,15 +196,49 @@ export class AddPropertyComponent {
   }
 
   removeFile(file: File) {
+    this.cleanupFile(file);
     this.uploadedFiles = this.uploadedFiles.filter(f => f !== file);
   }
 
-  getImagePreview(file: File): string {
-    return URL.createObjectURL(file);
+  getImagePreview(file: File): SafeUrl {
+    if (this.previewUrls.has(file)) {
+      return this.previewUrls.get(file)!;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const safeUrl = this.sanitizer.bypassSecurityTrustUrl(objectUrl);
+    this.objectUrls.set(file, objectUrl);
+    this.previewUrls.set(file, safeUrl);
+
+    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    // when a new file is added and the URL is generated during a check
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    });
+
+    return safeUrl;
+  }
+
+  private cleanupFile(file: File) {
+    const objectUrl = this.objectUrls.get(file);
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+      this.objectUrls.delete(file);
+    }
+    this.previewUrls.delete(file);
+  }
+
+  ngOnDestroy() {
+    this.objectUrls.forEach(url => URL.revokeObjectURL(url));
+    this.objectUrls.clear();
+    this.previewUrls.clear();
   }
   onFileRemove(event: any) {
+    this.cleanupFile(event.file);
     this.uploadedFiles = this.uploadedFiles.filter(f => f !== event.file);
   }
+
+
 
   onSubmit() {
     if (this.activeStep !== this.steps.length - 1) return;
@@ -212,7 +271,8 @@ export class AddPropertyComponent {
       listingType: Number(formValue.listingType),
       tour360Url: formValue.tour360Url || undefined,
       locationLat: formValue.locationLat ? Number(formValue.locationLat) : undefined,
-      locationLang: formValue.locationLang ? Number(formValue.locationLang) : undefined
+      locationLang: formValue.locationLang ? Number(formValue.locationLang) : undefined,
+      propertyType: Number(formValue.propertyType)
     };
 
     this.propertyService.addProperty(dto, this.uploadedFiles).subscribe({
