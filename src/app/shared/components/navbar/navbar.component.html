@@ -32,22 +32,18 @@
         </div>
 
         <!-- Renovation -->
-        <div class="relative" (mouseenter)="setDropdown('renovation')" (mouseleave)="setDropdown(null)">
-          <button class="nav-btn nav-item">
-            Renovation
-            <lucide-angular [img]="ChevronDown" [class.rotate]="activeDropdown === 'renovation'"></lucide-angular>
-          </button>
-          <!-- Added text-gray-900 to dropdown to reset color context -->
-          <div *ngIf="activeDropdown === 'renovation'" class="dropdown text-gray-900">
-            <a *ngFor="let item of renovationDropdownItems" [routerLink]="item.path" class="dropdown-item">
-              {{ item.label }}
-            </a>
-          </div>
-        </div>
+        <a routerLink="/renovation/intro" class="nav-btn nav-item">
+          Renovation
+        </a>
 
         <!-- Pricing -->
         <a routerLink="/subscriptions" class="nav-btn nav-item">
           Pricing
+        </a>
+
+        <!-- About -->
+        <a routerLink="/about" class="nav-btn nav-item">
+          About
         </a>
 
         <!-- Explore Properties -->
@@ -282,7 +278,9 @@
       </div>
       <div class="px-6 border-t" [ngClass]="isDarkBgPage ? 'border-white/10' : 'border-gray-100'">
         <a routerLink="/add-property" class="block py-3 mt-2">Sell</a>
+        <a routerLink="/renovation/intro" class="block py-3" (click)="closeMobileMenu()">Renovation</a>
         <a routerLink="/subscriptions" class="block py-3">Pricing</a>
+        <a routerLink="/about" class="block py-3" (click)="closeMobileMenu()">About</a>
       </div>
     </div>
   </div>

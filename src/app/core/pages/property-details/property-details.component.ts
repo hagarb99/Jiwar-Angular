@@ -36,7 +36,6 @@ import {
   MessageSquare,
   LineChart
 } from 'lucide-angular';
-import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
 import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour } from '../../services/property.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
@@ -265,6 +264,9 @@ export class PropertyDetailsComponent implements OnInit {
 
   // Navigation State
   activeSection = 'overview';
+  chatMessage: string = '';
+  chatMessages: any[] = [];
+  isChatModalOpen: boolean = false;
 
   scrollToSection(sectionId: string): void {
     this.activeSection = sectionId;

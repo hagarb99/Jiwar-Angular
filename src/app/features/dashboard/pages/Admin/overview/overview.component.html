@@ -37,7 +37,7 @@
             <!-- Revenue Card -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-sm font-medium text-muted-foreground">Total Revenue</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ analyticsData?.paymentMetrics?.totalRevenue |
+                <p class="text-2xl font-bold text-foreground mt-2">{{ data.paymentMetrics.totalRevenue |
                     currency }}</p>
                 <p class="text-xs text-muted-foreground mt-1">Total earnings across all channels</p>
             </div>
@@ -45,25 +45,25 @@
             <!-- Users Card -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-sm font-medium text-muted-foreground">Total Users</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ analyticsData?.usersMetrics?.totalUsers }}</p>
+                <p class="text-2xl font-bold text-foreground mt-2">{{ data.usersMetrics.totalUsers }}</p>
                 <div class="flex items-center mt-1 text-green-600">
-                    <span class="text-xs font-medium">+{{ analyticsData?.usersMetrics?.newSignUpsToday }} today</span>
+                    <span class="text-xs font-medium">+{{ data.usersMetrics.newSignUpsToday }} today</span>
                 </div>
             </div>
 
             <!-- Listings Card -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-sm font-medium text-muted-foreground">Active Listings</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ analyticsData?.propertyMetrics?.activeListings }}
+                <p class="text-2xl font-bold text-foreground mt-2">{{ data.propertyMetrics.activeListings }}
                 </p>
-                <p class="text-xs text-muted-foreground mt-1">{{ analyticsData?.propertyMetrics?.pendingListings }}
+                <p class="text-xs text-muted-foreground mt-1">{{ data.propertyMetrics.pendingListings }}
                     pending approval</p>
             </div>
 
             <!-- Transactions Card -->
             <div class="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-sm font-medium text-muted-foreground">Total Transactions</h3>
-                <p class="text-2xl font-bold text-foreground mt-2">{{ analyticsData?.paymentMetrics?.totalTransactions
+                <p class="text-2xl font-bold text-foreground mt-2">{{ data.paymentMetrics.totalTransactions
                     }}
                 </p>
                 <p class="text-xs text-muted-foreground mt-1">Processed successfully</p>
@@ -79,7 +79,7 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center p-3 bg-secondary/10 rounded-lg">
                         <span class="text-muted-foreground">Active Users</span>
-                        <span class="font-bold text-foreground">{{ analyticsData?.usersMetrics?.activeUsers }}</span>
+                        <span class="font-bold text-foreground">{{ data.usersMetrics.activeUsers }}</span>
                     </div>
                     <p class="text-gray-500 text-sm font-medium">Total Properties</p>
                     <div class="flex items-baseline space-x-2">
@@ -98,25 +98,26 @@
                         <div class="p-3 bg-secondary/10 rounded-lg text-center">
                             <span class="block text-xs text-muted-foreground">Total Properties</span>
                             <span class="block text-xl font-bold text-foreground">{{
-                                analyticsData?.propertyMetrics?.totalProperties }}</span>
+                                data.propertyMetrics.totalProperties }}</span>
                         </div>
                         <div class="p-3 bg-secondary/10 rounded-lg text-center">
                             <span class="block text-xs text-muted-foreground">Sold/Rented</span>
                             <span class="block text-xl font-bold text-foreground">{{
-                                analyticsData?.propertyMetrics?.soldOrRentedUnits }}</span>
+                                data.propertyMetrics.soldOrRentedUnits }}</span>
                         </div>
                     </div>
 
                     <div class="pt-2">
                         <h4 class="text-sm font-medium text-foreground mb-3">Top Categories</h4>
                         <div class="space-y-2">
-                            <div *ngFor="let cat of analyticsData?.propertyMetrics?.topCategories"
+                            <div *ngFor="let cat of data.propertyMetrics.topCategories"
                                 class="flex justify-between items-center text-sm">
                                 <span class="text-muted-foreground">{{ cat.categoryName }}</span>
                                 <div class="flex items-center gap-2">
                                     <div class="w-24 h-2 bg-secondary/20 rounded-full overflow-hidden">
                                         <div class="h-full bg-primary"
                                             [style.width.%]="(cat.count / (data.propertyMetrics?.totalProperties || 1)) * 100">
+                                            [style.width.%]="(cat.count / (data.propertyMetrics.totalProperties || 1)) * 100">
                                         </div>
                                     </div>
                                     <span class="font-medium text-foreground w-8 text-right">{{ cat.count }}</span>
