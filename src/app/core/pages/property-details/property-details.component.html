@@ -579,9 +579,14 @@
                                         <div>
                                             <p class="text-sm font-bold text-gray-900">{{ property.ownerName || 'Jiwar
                                                 Agent' }}</p>
-                                            <a [routerLink]="['/propertyowner', property.propertyOwner?.userId]">
+                                            <a *ngIf="property.propertyOwner?.userId"
+                                                [routerLink]="['/propertyowner', property.propertyOwner?.userId]">
                                                 View Owner Profile →
                                             </a>
+                                            <span *ngIf="!property.propertyOwner?.userId"
+                                                class="text-gray-400 text-xs cursor-not-allowed">
+                                                Profile Unavailable
+                                            </span>
                                             <p class="text-xs text-gray-500">Listed Agent</p>
                                         </div>
                                     </div>

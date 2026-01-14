@@ -4,16 +4,14 @@ import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { ProfileService, InteriorDesigner } from './profile.service';
 import { DesignerProposalService } from '../../../../../core/services/designer-proposal.service';
 import { DesignService } from '../../../../../core/services/design.service';
-import { DesignRequestService } from '../../../../../core/services/design-request.service';
-import { DesignerProposal } from '../../../../../core/interfaces/designer-proposal.interface';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { WorkspaceService } from '../../../../../core/services/workspace.service';
-import { DesignerReview } from '../../../../../core/interfaces/workspace.interface';
-import { forkJoin, of, Subject, takeUntil, Subscription } from 'rxjs';
-import { catchError, filter, map, switchMap } from 'rxjs/operators';
+import { forkJoin, of, Subject, Subscription } from 'rxjs';
+import { catchError, filter, takeUntil, switchMap } from 'rxjs/operators';
 import { NotificationService } from '../../../../../core/services/notification.service';
 import { PaginatorModule } from 'primeng/paginator';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-profile-interiordesigner',
@@ -31,10 +29,7 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
   averageRating: number = 0;
   totalReviews: number = 0;
 
-  // Review expansion tracking
   expandedReviews: Set<number> = new Set();
-
-  // Pagination stats
   rows = 3;
   first = 0;
 
@@ -45,7 +40,6 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private proposalService: DesignerProposalService,
     private designService: DesignService,
-    private designRequestService: DesignRequestService,
     private workspaceService: WorkspaceService,
     private notificationService: NotificationService,
     private messageService: MessageService,
@@ -61,9 +55,9 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe((event: any) => {
-        if (event.url === '/dashboard/interiordesigner/profile' ||
-          event.urlAfterRedirects === '/dashboard/interiordesigner/profile') {
-          this.fetchProfile();
+        if (event.url.includes('/dashboard/interiordesigner/profile') ||
+          event.url.includes('/dashboard/designer/profile')) {
+          this.fetchProfile(false);
         }
       });
 
@@ -87,50 +81,49 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
 
     this.profileService.getProfile().pipe(
       switchMap(profileRaw => {
-        // Handle wrapper from backend structure update
         const profile = profileRaw?.interiorDesigner || profileRaw;
-        const id = profile?.id || profile?.Id || profileRaw?.id || profileRaw?.Id;
+        const id = profile?.id || profileRaw?.id;
 
         return forkJoin({
           profile: of(profile),
           proposals: this.proposalService.getMyProposals().pipe(catchError(() => of([]))),
-          reviews: id ? this.workspaceService.getDesignerReviews(id).pipe(catchError(() => of({ designerId: '', averageRating: 0, totalReviews: 0, reviews: [] }))) : of({ designerId: '', averageRating: 0, totalReviews: 0, reviews: [] })
+          designs: this.designService.getMyDesigns().pipe(catchError(() => of([]))),
+          reviews: id ? this.workspaceService.getDesignerReviews(id).pipe(
+            catchError(() => of({ averageRating: 0, totalReviews: 0, reviews: [] }))
+          ) : of({ averageRating: 0, totalReviews: 0, reviews: [] })
         });
       }),
       takeUntil(this.destroy$)
     ).subscribe({
-      next: ({ profile, proposals, reviews }: any) => {
+      next: ({ profile, proposals, designs, reviews }: any) => {
         this.reviews = reviews.reviews || [];
         this.averageRating = reviews.averageRating || 0;
         this.totalReviews = reviews.totalReviews || 0;
-
         this.updatePagedReviews();
 
         const totalProposals = (proposals || []).length;
-        const acceptedCount = (proposals || []).filter((p: any) =>
-          Number(p.status) === 1
-        ).length;
-        const completedCount = (proposals || []).filter((p: any) =>
-          Number(p.status) === 3
-        ).length;
+        const acceptedCount = (proposals || []).filter((p: any) => Number(p.status) === 1).length;
+        const completedCount = (proposals || []).filter((p: any) => Number(p.status) === 3).length;
 
-        const rawBio = (profile?.bio || profile?.Bio || '').trim();
-        const bio = (rawBio === 'No bio information provided yet.') ? '' : rawBio;
+        const designerData = profile.interiorDesigner || {};
 
         this.profile = {
-          name: profile?.name || profile?.Name || '',
-          email: profile?.email || profile?.Email || '',
-          phoneNumber: profile?.phoneNumber || profile?.PhoneNumber || '',
-          profilePicURL: profile?.profilePicURL || profile?.ProfilePicURL || '',
-          title: profile?.title || profile?.Title || 'Interior Designer',
-          location: profile?.location || profile?.Location || '',
-          bio: bio,
-          specializations: profile?.specialization ? [profile.specialization] : (Array.isArray(profile?.specializations) ? profile.specializations : (Array.isArray(profile?.Specializations) ? profile.Specializations : [])),
-          certifications: Array.isArray(profile?.certifications) ? profile.certifications : (Array.isArray(profile?.Certifications) ? profile.Certifications : []),
-          website: profile?.website || '',
-          hourlyRate: profile?.hourlyRate ?? null,
-          projectMinimum: profile?.projectMinimum ?? null,
-          yearsOfExperience: profile?.yearsOfExperience ?? null,
+          name: profile?.name || '',
+          email: profile?.email || '',
+          phoneNumber: profile?.phoneNumber || '',
+          profilePicURL: this.getProfileImageUrl(profile?.profilePicURL),
+          title: profile?.title || 'Interior Designer',
+          location: profile?.location || '',
+          bio: (profile?.bio === 'No bio information provided yet.') ? '' : (profile?.bio || ''),
+
+          yearsOfExperience: designerData.experienceYears || profile.yearsOfExperience || null,
+          specializations: designerData.specialization ? [designerData.specialization] :
+            (Array.isArray(profile.specializations) ? profile.specializations : []),
+          certifications: Array.isArray(profile.certifications) ? profile.certifications : [],
+          website: designerData.portfolioURL || profile.website || '',
+          hourlyRate: profile.hourlyRate || null,
+          projectMinimum: profile.projectMinimum || null,
+
           stats: [
             { label: 'Rating', value: this.averageRating > 0 ? this.averageRating.toFixed(1) + ' ★' : 'No Ratings' },
             { label: 'Total Proposals', value: totalProposals },
@@ -147,6 +140,8 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  // --- ميثودات المراجعات (Reviews) التي كانت تسبب الأخطاء ---
 
   onPageChange(event: any) {
     this.first = event.first;
@@ -176,7 +171,14 @@ export class ProfileInteriordesignerComponent implements OnInit, OnDestroy {
     return comment.substring(0, limit) + '...';
   }
 
-  trackByIndex(index: number, item: any): any {
-    return index;
+  // --- ميثودات مساعدة ---
+
+  getProfileImageUrl(url: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('data:image') || url.startsWith('http')) return url;
+    const base = environment.apiBaseUrl.replace(/\/api\/?$/, '');
+    return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
   }
+
+  trackByIndex(index: number): any { return index; }
 }
