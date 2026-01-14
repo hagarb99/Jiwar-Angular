@@ -235,20 +235,9 @@ export class CreateDesignRequestComponent implements OnInit {
       return;
     }
 
-    // Validate request type selection
-    if (this.requestType === 'specific' && !this.selectedDesigner) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Designer Required',
-        detail: 'Please select a designer or choose a different request type.'
-      });
-      return;
-    }
-
-    this.saving = true;
+    // Validation: Ensure property is selected
     const formValue = this.requestForm.value;
-
-    const propertyId = this.selectedProperty!.propertyID || this.selectedProperty!.id;
+    const propertyId = this.selectedProperty?.propertyID || this.selectedProperty?.id;
 
     if (!propertyId) {
       this.messageService.add({
@@ -256,10 +245,12 @@ export class CreateDesignRequestComponent implements OnInit {
         summary: 'Error',
         detail: 'Selected property does not have a valid ID.'
       });
-      this.saving = false;
       return;
     }
 
+    this.saving = true;
+
+    // Redundant checks removed because they are done above
     const requestData: any = {
       userID: this.authService.getUserId(),
       propertyID: propertyId,

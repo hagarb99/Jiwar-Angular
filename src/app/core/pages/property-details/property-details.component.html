@@ -551,7 +551,7 @@
                                             </svg>
                                         </button>
 
-                                        <button (click)="toggleChat()"
+                                        <button (click)="toggleChat()" *ngIf="canOpenChat"
                                             class="w-full bg-[#D4AF37] hover:bg-[#C5A028] text-white font-bold py-4 px-6 rounded-xl shadow-xl shadow-yellow-500/20 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3">
                                             <lucide-angular [img]="MessageSquare" class="w-5 h-5"></lucide-angular>
                                             <span>Chat with Owner</span>

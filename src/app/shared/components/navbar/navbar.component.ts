@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, inject, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, NgZone, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
-import { filter, Subject, takeUntil } from 'rxjs';
+import { filter, Subject, takeUntil, combineLatest, map, startWith } from 'rxjs';
 import {
   LucideAngularModule,
   ChevronDown,
@@ -16,6 +16,7 @@ import { ButtonModule } from 'primeng/button';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
 import { ChatService } from '../../../core/services/chat.service';
+import { CustomerChatService } from '../../../core/services/customer-chat.service';
 import { NotificationService, NotificationDto } from '../../../core/services/notification.service';
 import { environment } from '../../../../environments/environment';
 import { DesignRequestService } from '../../../core/services/design-request.service';
@@ -51,15 +52,47 @@ export class NavbarComponent implements OnInit, OnDestroy {
   readonly Bell = Bell;
   readonly MessageSquare = MessageSquare;
 
+
   // 🟢 Global Message State
   private globalMessagesService = inject(GlobalMessagesService);
-  unreadMessageCount$ = this.globalMessagesService.unreadCount$;
-  latestMessages$ = this.globalMessagesService.latestMessages$;
-  toggleMessagesDropdown = false;
 
-  // Kept for backward compatibility / reference if needed, but primary logic moves to GlobalMessagesService
-  loadingMessages = false;
-  conversations: any[] = [];
+  // Combine both sources based on User Role
+  unreadMessageCount$ = combineLatest([
+    inject(AuthService).currentUser$,
+    this.globalMessagesService.unreadCount$.pipe(startWith(0)),
+    inject(CustomerChatService).unreadCount$.pipe(startWith(0))
+  ]).pipe(
+    map(([user, globalCount, customerCount]) => {
+      const role = user?.role;
+
+      // Ensure counts are valid numbers (fallback to 0)
+      const safeGlobalCount = typeof globalCount === 'number' ? globalCount : 0;
+      const safeCustomerCount = typeof customerCount === 'number' ? customerCount : 0;
+
+      // Interior Designer only sees Global/Workspace messages
+      if (role === 'InteriorDesigner') {
+        return safeGlobalCount;
+      }
+
+      // Customer only sees Property Chat messages (usually)
+      if (role === 'Customer') {
+        return safeCustomerCount + safeGlobalCount;
+      }
+
+      // Property Owner sees BOTH (Workspace messages + Customer inquires)
+      if (role === 'PropertyOwner') {
+        return safeGlobalCount + safeCustomerCount;
+      }
+
+      // Default/Admin/Not logged in
+      return 0;
+    }),
+    startWith(0) // Ensure we always start with 0
+  );
+
+  latestMessages$ = this.globalMessagesService.latestMessages$;
+  customerMessages$ = inject(CustomerChatService).inbox$; // Expose Inbox
+  toggleMessagesDropdown = false;
 
   // Notification State
   toggleNotificationsDropdown = false;
@@ -87,11 +120,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private chatService: ChatService,
+    private customerChatService: CustomerChatService,
     private notificationService: NotificationService,
     private designRequestService: DesignRequestService,
     private proposalService: DesignerProposalService,
     private messageService: MessageService,
-    private zone: NgZone
+    private zone: NgZone,
+    private elementRef: ElementRef
   ) {
     this.router.events
       .pipe(
@@ -128,6 +163,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
             // GlobalMessagesService auto-initializes in its constructor, 
             // but we ensure it's loaded by injecting it.
             this.globalMessagesService.loadInitialUnreadCount();
+
+            // 🟢 For PropertyOwner: Initialize CustomerChatService (SignalR + Inbox)
+            if (user.role === 'PropertyOwner') {
+              this.customerChatService.startConnection();
+              this.customerChatService.refreshInbox(); // Load initial inbox data
+            }
           }
         } else {
           this.profilePicUrl = null;
@@ -135,6 +176,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
           this.currentUserEmail = null;
           this.isLoggedIn = false;
           this.notificationService.stopConnection();
+          this.customerChatService.stopConnection(); // Also stop customer chat
         }
       });
 
@@ -279,7 +321,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.toggleNotificationsDropdown = false;
       this.toggleUserDropdown = false;
       this.globalMessagesService.loadInitialUnreadCount();
-      // this.loadConversations(); // Optional: if we wanted to fetch old conversations
+      // Refresh Customer Inbox to populate list (Only for PropertyOwner)
+      if (this.currentUserRole === 'PropertyOwner') {
+        this.customerChatService.refreshInbox();
+      }
     }
   }
 
@@ -314,5 +359,55 @@ export class NavbarComponent implements OnInit, OnDestroy {
   goToMessages(): void {
     this.toggleMessagesDropdown = false;
     this.router.navigate(['/dashboard/messages']);
+  }
+
+  /**
+   * 🟢 Open Customer Chat (PropertyOwner -> Customer conversation)
+   * Navigates to the correct chat page with propertyId and customerId
+   */
+  openCustomerChat(inboxItem: any): void {
+    this.toggleMessagesDropdown = false;
+
+    // Navigate to the chat page with proper parameters
+    this.router.navigate([
+      '/dashboard/propertyowner/messages/property',
+      inboxItem.propertyId,
+      'customer',
+      inboxItem.customerId
+    ]);
+
+    // Mark as read immediately (optimistic)
+    if (inboxItem.unreadCount > 0) {
+      this.customerChatService.markAsRead(inboxItem.propertyId, inboxItem.customerId).subscribe();
+    }
+  }
+
+  /**
+   * 🟢 Go to full inbox page based on user role
+   */
+  goToInbox(): void {
+    this.toggleMessagesDropdown = false;
+
+    if (this.currentUserRole === 'PropertyOwner') {
+      this.router.navigate(['/dashboard/propertyowner/messages/inbox']);
+    } else if (this.currentUserRole === 'InteriorDesigner') {
+      this.router.navigate(['/dashboard/designer/messages']);
+    } else {
+      this.router.navigate(['/dashboard/messages']);
+    }
+  }
+
+  /**
+   * 🟢 Click Outside Handler - Close all dropdowns when clicking outside
+   */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    // Check if click is outside the component
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.toggleMessagesDropdown = false;
+      this.toggleNotificationsDropdown = false;
+      this.toggleUserDropdown = false;
+      this.activeDropdown = null;
+    }
   }
 }

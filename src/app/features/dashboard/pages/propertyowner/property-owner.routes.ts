@@ -64,6 +64,10 @@ export const propertyOwnerRoutes: Routes = [
     loadComponent: () => import('./messages/owner-inbox/owner-inbox.component').then(m => m.OwnerInboxComponent)
   },
   {
+    path: 'messages/inbox',
+    loadComponent: () => import('./messages/owner-inbox/owner-inbox.component').then(m => m.OwnerInboxComponent)
+  },
+  {
     path: 'messages/property/:propertyId/customer/:customerId',
     loadComponent: () => import('./messages/property-customer-chat/property-customer-chat.component').then(m => m.PropertyCustomerChatComponent)
   },

@@ -113,44 +113,114 @@
         </div>
 
         <!-- Messages Notifications -->
-        <div class="relative" *ngIf="isLoggedIn">
-          <button class="relative p-2 hover:bg-gray-100 rounded-full transition-colors" (click)="toggleMessages()">
+        <div class="relative" *ngIf="isLoggedIn" #messagesContainer>
+          <button class="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+            (click)="toggleMessages(); $event.stopPropagation()">
             <lucide-angular [img]="MessageSquare" class="w-5 h-5 text-gray-600 hover:text-primary"></lucide-angular>
-            <span *ngIf="(unreadMessageCount$ | async) as count"
-              class="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">
-              {{ count > 9 ? '9+' : count }}
-            </span>
+            <ng-container *ngIf="unreadMessageCount$ | async as count">
+              <span *ngIf="count > 0"
+                class="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">
+                {{ count > 9 ? '9+' : count }}
+              </span>
+            </ng-container>
           </button>
 
           <!-- Message Dropdown -->
-          <div *ngIf="toggleMessagesDropdown"
-            class="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 overflow-hidden text-gray-900">
-            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <h3 class="font-semibold text-gray-900">Messages</h3>
+          <div *ngIf="toggleMessagesDropdown" (click)="$event.stopPropagation()"
+            class="absolute right-0 mt-3 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden text-gray-900">
+
+            <!-- Header -->
+            <div
+              class="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+              <h3 class="font-bold text-gray-900">Messages</h3>
+              <button (click)="toggleMessagesDropdown = false"
+                class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
+                <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
+              </button>
             </div>
 
-            <div class="max-h-80 overflow-y-auto">
-              <!-- Empty State -->
-              <!-- Note: We check if array is empty. The async pipe returns null initially or array. -->
+            <div class="max-h-96 overflow-y-auto">
+              <!-- Customer Chat Messages (Property Owner) -->
+              <ng-container *ngIf="(customerMessages$ | async) as customerMsgs">
+                <div *ngIf="customerMsgs.length > 0" class="px-4 py-2 bg-amber-50/50 border-b border-amber-100">
+                  <p class="text-[10px] text-amber-700 font-bold uppercase tracking-wider flex items-center gap-1">
+                    <i class="pi pi-home"></i> Property Inquiries
+                  </p>
+                </div>
+
+                <div *ngFor="let cMsg of customerMsgs" (click)="openCustomerChat(cMsg)"
+                  class="px-4 py-3 border-b border-gray-50 hover:bg-amber-50/50 cursor-pointer transition-all group">
+                  <div class="flex items-start gap-3">
+                    <!-- Avatar -->
+                    <div
+                      class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      {{ (cMsg.customerName || 'C').charAt(0).toUpperCase() }}
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between">
+                        <span
+                          class="font-bold text-sm text-gray-900 group-hover:text-amber-700 transition-colors truncate">
+                          {{ cMsg.customerName || 'Customer' }}
+                        </span>
+                        <span *ngIf="cMsg.unreadCount && cMsg.unreadCount > 0"
+                          class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-2 flex-shrink-0">
+                          {{ cMsg.unreadCount }}
+                        </span>
+                      </div>
+                      <p class="text-xs text-gray-500 truncate">{{ cMsg.propertyName || 'Property' }}</p>
+                      <p class="text-xs text-gray-600 truncate mt-0.5">{{ cMsg.lastMessage }}</p>
+                      <span class="text-[10px] text-gray-400 mt-1 block">{{ cMsg.lastMessageDate | date:'short'
+                        }}</span>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+
+              <!-- Designer/Global Messages -->
               <ng-container *ngIf="(latestMessages$ | async) as messages">
-                <div *ngIf="messages.length === 0" class="p-8 text-center bg-gray-50">
-                  <i class="pi pi-comments text-gray-300 text-2xl mb-2"></i>
-                  <p class="text-gray-500 text-sm">No new messages</p>
+                <div *ngIf="messages.length > 0" class="px-4 py-2 bg-blue-50/50 border-b border-blue-100">
+                  <p class="text-[10px] text-blue-700 font-bold uppercase tracking-wider flex items-center gap-1">
+                    <i class="pi pi-briefcase"></i> Workspace Updates
+                  </p>
                 </div>
 
                 <div *ngFor="let msg of messages" (click)="onMessageClick(msg)"
-                  class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors flex flex-col">
-                  <span class="font-bold text-sm text-gray-900">{{ msg.title || 'New Message' }}</span>
-                  <span class="text-xs text-gray-600 truncate mt-1">{{ msg.message }}</span>
-                  <span class="text-[10px] text-gray-400 text-right mt-1">{{ msg.sentDate | date:'shortTime' }}</span>
+                  class="px-4 py-3 border-b border-gray-50 hover:bg-blue-50/50 cursor-pointer transition-all group">
+                  <div class="flex items-start gap-3">
+                    <div
+                      class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white flex-shrink-0">
+                      <i class="pi pi-comments text-sm"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <span
+                        class="font-bold text-sm text-gray-900 group-hover:text-blue-700 transition-colors block truncate">
+                        {{ msg.title || 'New Message' }}
+                      </span>
+                      <p class="text-xs text-gray-600 truncate mt-0.5">{{ msg.message }}</p>
+                      <span class="text-[10px] text-gray-400 mt-1 block">{{ msg.sentDate | date:'short' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+
+              <!-- Empty State -->
+              <ng-container
+                *ngIf="((customerMessages$ | async)?.length || 0) === 0 && ((latestMessages$ | async)?.length || 0) === 0">
+                <div class="p-8 text-center">
+                  <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                    <lucide-angular [img]="MessageSquare" class="w-8 h-8 text-gray-300"></lucide-angular>
+                  </div>
+                  <p class="text-gray-500 text-sm font-medium">No messages yet</p>
+                  <p class="text-gray-400 text-xs mt-1">When you receive messages, they'll appear here</p>
                 </div>
               </ng-container>
             </div>
 
             <!-- Footer -->
-            <div class="p-2 border-t border-gray-100">
-              <button (click)="onViewAll()"
-                class="block w-full text-center py-2 text-primary text-xs hover:bg-gray-50 rounded-lg">
+            <div class="p-3 border-t border-gray-100 bg-gray-50/50">
+              <button (click)="goToInbox()"
+                class="block w-full text-center py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-medium rounded-lg hover:from-amber-600 hover:to-amber-700 transition-all shadow-sm">
                 View All Messages
               </button>
             </div>
