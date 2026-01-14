@@ -1,5 +1,6 @@
 <div class="min-h-screen">
     <app-navbar></app-navbar>
+
     <!-- Hero -->
     <section class="relative h-screen flex items-center justify-center text-white"
         [style.backgroundImage]="'url(' + heroBackgroundImage + ')'"
@@ -64,169 +65,12 @@
         </div>
     </section>
 
-
-    <!-- AI Interior Design -->
-    <section class="py-20 bg-gray-900 text-white overflow-hidden relative">
-        <div class="absolute inset-0 bg-[url('/assets/noise.png')] opacity-20"></div>
-        <div class="absolute top-0 right-0 w-1/3 h-full bg-[#D4AF37]/10 blur-3xl rounded-full translate-x-1/2"></div>
-
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="flex flex-col md:flex-row-reverse items-center gap-12 max-w-7xl mx-auto">
-                <div class="flex-1 space-y-6">
-                    <div class="inline-block">
-                        <span
-                            class="px-4 py-2 rounded-full bg-blue-500/20 text-blue-300 font-semibold text-sm border border-blue-500/30">
-                            Powered by AI
-                        </span>
-                    </div>
-                    <h2 class="text-4xl md:text-5xl font-bold">
-                        Visualize with <span
-                            class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-[#D4AF37]">AI
-                            Precision</span>
-                    </h2>
-                    <p class="text-xl text-gray-300 leading-relaxed">
-                        Upload a photo of your room and let our advanced AI generate stunning renovation ideas in
-                        seconds.
-                        Experiment with styles, layouts, and finishes before you commit.
-                    </p>
-                    <div class="grid grid-cols-2 gap-4 pt-4">
-                        <div class="p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm">
-                            <lucide-angular [img]="Wand2" class="h-8 w-8 text-blue-400 mb-2"></lucide-angular>
-                            <h4 class="font-bold">Instant Render</h4>
-                        </div>
-                        <div class="p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm">
-                            <lucide-angular [img]="Brain" class="h-8 w-8 text-[#D4AF37] mb-2"></lucide-angular>
-                            <h4 class="font-bold">Smart Suggestions</h4>
-                        </div>
-                    </div>
-                    <button
-                        class="px-8 py-3 bg-white text-gray-900 rounded-lg font-bold hover:bg-gray-100 transition-colors mt-6">
-                        Try AI Design Tool
-                    </button>
-                </div>
-
-                <div
-                    class="flex-1 w-full h-[500px] bg-gray-800 rounded-3xl overflow-hidden shadow-2xl border border-white/10 relative group">
-                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent z-10">
-                    </div>
-                    <img src="/assets/ai-design-demo.jpg" alt="AI Design"
-                        class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-                        onerror="this.src='https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?auto=format&fit=crop&q=80&w=2000'">
-
-                    <!-- Floating UI Element Mockup -->
-                    <div
-                        class="absolute bottom-8 left-8 right-8 z-20 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
-                        <div class="flex items-center gap-3">
-                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                            <span class="text-sm font-mono text-white">Generating 4 variations...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-    <!-- Professional Interior Design -->
-    <section class="py-20 bg-muted">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row items-center gap-12 max-w-7xl mx-auto">
-                <div class="flex-1 space-y-6">
-                    <div class="inline-block">
-                        <span
-                            class="px-4 py-2 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] font-semibold text-sm border border-[#D4AF37]/20">
-                            Expert Consultation
-                        </span>
-                    </div>
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900">
-                        Professional <span class="text-gradient-gold">Interior Design</span>
-                    </h2>
-                    <p class="text-xl text-gray-500 leading-relaxed">
-                        Transform your space with the guidance of our world-class interior designers.
-                        We blend functionality with luxury to create environments that reflect your unique style and
-                        rigorous standards.
-                    </p>
-                    <ul class="space-y-4 pt-4">
-                        <li class="flex items-center gap-3 text-gray-700">
-                            <lucide-angular [img]="Palette" class="h-6 w-6 text-[#D4AF37]"></lucide-angular>
-                            <span class="font-medium">Personalized Color Palettes</span>
-                        </li>
-                        <li class="flex items-center gap-3 text-gray-700">
-                            <lucide-angular [img]="CheckCircle" class="h-6 w-6 text-[#D4AF37]"></lucide-angular>
-                            <span class="font-medium">Curated Furniture Selection</span>
-                        </li>
-                    </ul>
-                    <button class="btn-gold mt-6">
-                        Book a Consultation
-                    </button>
-                </div>
-                <!-- Placeholder for Image or dynamic asset -->
-                <div class="flex-1 w-full h-[500px] bg-gray-200 rounded-3xl overflow-hidden shadow-2xl relative">
-                    <img src="/assets/designer-showcase.jpg" alt="Interior Design"
-                        class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
-                        onerror="this.src='https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&q=80&w=2000'">
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-    <!-- Testimonials -->
-    <section class="py-20 bg-muted">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                    Trusted by <span class="text-gradient-gold">Thousands</span>
-                </h2>
-                <p class="text-lg text-gray-500 max-w-2xl mx-auto">
-                    See what our clients say about their experience with Smart Real Estate
-                </p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div *ngFor="let testimonial of testimonials"
-                    class="p-8 rounded-2xl shadow-luxury bg-white border border-gray-100">
-                    <div class="flex mb-4">
-                        <lucide-angular *ngFor="let _ of getRatingArray(testimonial.rating)" [img]="Star"
-                            class="h-5 w-5 text-[#D4AF37] fill-[#D4AF37]">
-                        </lucide-angular>
-                    </div>
-                    <p class="italic text-gray-600 mb-6">"{{ testimonial.content }}"</p>
-                    <div>
-                        <p class="font-bold text-gray-900">{{ testimonial.name }}</p>
-                        <p class="text-sm text-gray-500">{{ testimonial.role }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Subscriptions & Plans -->
-    <section class="py-20 bg-gray-900">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
-                    Unlock Premium <span class="text-gradient-gold">Features</span>
-                </h2>
-                <p class="text-lg text-gray-400 max-w-2xl mx-auto">
-                    Choose the perfect plan to accelerate your real estate journey
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 items-stretch max-w-7xl mx-auto">
-                <app-pricing-card *ngFor="let plan of plans" [plan]="plan" (onSubscribe)="handleSubscribe(plan)">
-                </app-pricing-card>
-            </div>
-        </div>
-    </section>
-
-
     <!-- Why Choose Us -->
     <section class="py-20 bg-white">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16">
                 <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                    Why Choose <span class="text-gradient-gold">Smart Real Estate</span>
+                    Why Choose <span class="text-gradient-gold">Jiwar</span>
                 </h2>
                 <p class="text-lg text-gray-500 max-w-2xl mx-auto">
                     Powered by cutting-edge AI technology and real-time market data
@@ -247,20 +91,14 @@
         </div>
     </section>
 
-    <!-- About Us (Redesigned) -->
-    <!-- About Jiwar (Compact & Elegant) -->
-    <!-- About Jiwar (Minimal & Compact) -->
-    <!-- About Jiwar (Standard Modern) -->
+    <!-- About Us -->
     <section class="py-24 bg-[#0F172A] relative overflow-hidden">
-        <!-- Background Accents -->
         <div
             class="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37]/5 blur-3xl rounded-full translate-x-1/3 -translate-y-1/3">
         </div>
 
         <div class="container mx-auto px-4 relative z-10">
             <div class="grid md:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
-
-                <!-- Content -->
                 <div class="md:pr-12 space-y-8">
                     <div class="inline-block px-4 py-1.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/20">
                         <span class="text-[#D4AF37] text-xs font-bold tracking-[0.2em] uppercase">The Future of
@@ -310,7 +148,6 @@
                     </div>
                 </div>
 
-                <!-- Visual -->
                 <div class="relative hidden md:block">
                     <div
                         class="absolute inset-0 bg-gradient-to-tr from-[#D4AF37] to-transparent opacity-20 transform rotate-6 rounded-2xl blur-lg">
@@ -319,40 +156,69 @@
                         <img src="/assets/about-us.jpg" alt="Jiwar Experience"
                             class="w-full h-[600px] object-cover opacity-90 hover:opacity-100 hover:scale-105 transition-all duration-700"
                             onerror="this.src='https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=1000'">
-
-                        <!-- Overlay Text -->
                         <div
                             class="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#0F172A] to-transparent">
                             <p class="text-white/80 font-light italic">"Where data meets design."</p>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 
-    <!-- Why Choose Us -->
-    <section class="py-20 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                    Why Choose <span class="text-gradient-gold">Jiwar Website</span>
-                </h2>
-                <p class="text-lg text-gray-500 max-w-2xl mx-auto">
-                    Powered by cutting-edge AI technology and real-time market data
-                </p>
-            </div>
+    <!-- AI Interior Design -->
+    <section class="py-20 bg-gray-900 text-white overflow-hidden relative">
+        <div class="absolute inset-0 bg-[url('/assets/noise.png')] opacity-20"></div>
+        <div class="absolute top-0 right-0 w-1/3 h-full bg-[#D4AF37]/10 blur-3xl rounded-full translate-x-1/2"></div>
 
-            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div *ngFor="let feature of features"
-                    class="p-8 rounded-2xl shadow-luxury border hover:shadow-gold transition-all duration-300 group">
-                    <div
-                        class="mb-6 inline-flex p-4 rounded-xl bg-orange-50 group-hover:bg-orange-100 transition-colors">
-                        <lucide-angular [img]="feature.icon" class="h-8 w-8 text-[#D4AF37]"></lucide-angular>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="flex flex-col md:flex-row-reverse items-center gap-12 max-w-7xl mx-auto">
+                <div class="flex-1 space-y-6">
+                    <div class="inline-block">
+                        <span
+                            class="px-4 py-2 rounded-full bg-blue-500/20 text-blue-300 font-semibold text-sm border border-blue-500/30">
+                            Powered by AI
+                        </span>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-3">{{ feature.title }}</h3>
-                    <p class="text-gray-500 leading-relaxed">{{ feature.description }}</p>
+                    <h2 class="text-4xl md:text-5xl font-bold">
+                        Visualize with <span
+                            class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-[#D4AF37]">AI
+                            Precision</span>
+                    </h2>
+                    <p class="text-xl text-gray-300 leading-relaxed">
+                        Upload a photo of your room and let our advanced AI generate stunning renovation ideas in
+                        seconds. Experiment with styles, layouts, and finishes before you commit.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 pt-4">
+                        <div class="p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm">
+                            <lucide-angular [img]="Wand2" class="h-8 w-8 text-blue-400 mb-2"></lucide-angular>
+                            <h4 class="font-bold">Instant Render</h4>
+                        </div>
+                        <div class="p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm">
+                            <lucide-angular [img]="Brain" class="h-8 w-8 text-[#D4AF37] mb-2"></lucide-angular>
+                            <h4 class="font-bold">Smart Suggestions</h4>
+                        </div>
+                    </div>
+                    <button
+                        class="px-8 py-3 bg-white text-gray-900 rounded-lg font-bold hover:bg-gray-100 transition-colors mt-6">
+                        Try AI Design Tool
+                    </button>
+                </div>
+
+                <div
+                    class="flex-1 w-full h-[500px] bg-gray-800 rounded-3xl overflow-hidden shadow-2xl border border-white/10 relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent z-10">
+                    </div>
+                    <img src="/assets/ai-design-demo.jpg" alt="AI Design"
+                        class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+                        onerror="this.src='https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?auto=format&fit=crop&q=80&w=2000'">
+                    <div
+                        class="absolute bottom-8 left-8 right-8 z-20 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                            <span class="text-sm font-mono text-white">Generating 4 variations...</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -391,72 +257,10 @@
                         Book a Consultation
                     </button>
                 </div>
-                <!-- Placeholder for Image or dynamic asset -->
                 <div class="flex-1 w-full h-[500px] bg-gray-200 rounded-3xl overflow-hidden shadow-2xl relative">
                     <img src="/assets/designer-showcase.jpg" alt="Interior Design"
                         class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
                         onerror="this.src='https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&q=80&w=2000'">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- AI Interior Design -->
-    <section class="py-20 bg-gray-900 text-white overflow-hidden relative">
-        <div class="absolute inset-0 bg-[url('/assets/noise.png')] opacity-20"></div>
-        <div class="absolute top-0 right-0 w-1/3 h-full bg-[#D4AF37]/10 blur-3xl rounded-full translate-x-1/2"></div>
-
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="flex flex-col md:flex-row-reverse items-center gap-12 max-w-7xl mx-auto">
-                <div class="flex-1 space-y-6">
-                    <div class="inline-block">
-                        <span
-                            class="px-4 py-2 rounded-full bg-blue-500/20 text-blue-300 font-semibold text-sm border border-blue-500/30">
-                            Powered by AI
-                        </span>
-                    </div>
-                    <h2 class="text-4xl md:text-5xl font-bold">
-                        Visualize with <span
-                            class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-[#D4AF37]">AI
-                            Precision</span>
-                    </h2>
-                    <p class="text-xl text-gray-300 leading-relaxed">
-                        Upload a photo of your room and let our advanced AI generate stunning renovation ideas in
-                        seconds.
-                        Experiment with styles, layouts, and finishes before you commit.
-                    </p>
-                    <div class="grid grid-cols-2 gap-4 pt-4">
-                        <div class="p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm">
-                            <lucide-angular [img]="Wand2" class="h-8 w-8 text-blue-400 mb-2"></lucide-angular>
-                            <h4 class="font-bold">Instant Render</h4>
-                        </div>
-                        <div class="p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm">
-                            <lucide-angular [img]="Brain" class="h-8 w-8 text-[#D4AF37] mb-2"></lucide-angular>
-                            <h4 class="font-bold">Smart Suggestions</h4>
-                        </div>
-                    </div>
-                    <button
-                        class="px-8 py-3 bg-white text-gray-900 rounded-lg font-bold hover:bg-gray-100 transition-colors mt-6">
-                        Try AI Design Tool
-                    </button>
-                </div>
-
-                <div
-                    class="flex-1 w-full h-[500px] bg-gray-800 rounded-3xl overflow-hidden shadow-2xl border border-white/10 relative group">
-                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent z-10">
-                    </div>
-                    <img src="/assets/ai-design-demo.jpg" alt="AI Design"
-                        class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-                        onerror="this.src='https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?auto=format&fit=crop&q=80&w=2000'">
-
-                    <!-- Floating UI Element Mockup -->
-                    <div
-                        class="absolute bottom-8 left-8 right-8 z-20 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
-                        <div class="flex items-center gap-3">
-                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                            <span class="text-sm font-mono text-white">Generating 4 variations...</span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -512,5 +316,4 @@
     </section>
 
     <app-footer></app-footer>
-
 </div>

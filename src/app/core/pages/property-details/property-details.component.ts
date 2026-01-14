@@ -36,7 +36,6 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-angular';
-import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
 import { PropertyService, Property, PropertyType, PropertyAnalytics, VirtualTour } from '../../services/property.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
@@ -73,8 +72,7 @@ export interface BookingCreateDTO {
     NavbarComponent,
     FooterComponent,
     PropertyCardComponent,
-    ToastModule,
-    BaseChartDirective
+    ToastModule
   ],
   templateUrl: './property-details.component.html',
   styleUrls: ['./property-details.component.css']
