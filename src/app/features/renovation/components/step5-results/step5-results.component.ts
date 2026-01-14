@@ -27,16 +27,16 @@ export class Step5ResultsComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         const simulationId = this.state.getSimulationIdOrThrow();
 
-    this.api.generateRecommendations(simulationId).subscribe({
-        next: (res) => {
-            console.log("Recommendations generated",res);
-            this.fetchResults(simulationId);
-        },
-        error: err => {
-            console.error('AI generation failed', err);
-            this.fetchResults(simulationId); // نحاول نجيب أي حاجة
-        }
-    });
+        this.api.generateRecommendations(simulationId).subscribe({
+            next: () => {
+                this.fetchResults(simulationId);
+            },
+            error: err => {
+                console.error('AI generation failed', err);
+                this.fetchResults(simulationId); // fallback
+            }
+        });
+
     }
 
     ngOnDestroy(): void {
@@ -61,12 +61,18 @@ export class Step5ResultsComponent implements OnInit, OnDestroy {
             },
             error: (err) => {
                 console.error('Error fetching results', err);
-                // هنا مفيش Mock — نخلي loading
+
+                if (err.status === 401) {
+                    this.isLoading = false;
+                    return; // ❌ ممنوع retry
+                }
+
                 this.retryTimer = setTimeout(
                     () => this.fetchResults(simulationId),
                     this.RETRY_DELAY
                 );
             }
+
         });
     }
 
@@ -74,19 +80,19 @@ export class Step5ResultsComponent implements OnInit, OnDestroy {
     // Helpers
     // ===============================
 
-   getRecommendations(category: 'technical' | 'functional' | 'design') {
-    if (!this.result?.recommendations) return [];
+    getRecommendations(category: 'technical' | 'functional' | 'design') {
+        if (!this.result?.recommendations) return [];
 
-    const map: Record<'technical' | 'functional' | 'design', number> = {
-        technical: 0,
-        functional: 1,
-        design: 2
-    };
+        const map: Record<'technical' | 'functional' | 'design', number> = {
+            technical: 0,
+            functional: 1,
+            design: 2
+        };
 
-    return this.result.recommendations.filter(
-        r => r.category === map[category]
-    );
-}
+        return this.result.recommendations.filter(
+            r => r.category === map[category]
+        );
+    }
 
 
 

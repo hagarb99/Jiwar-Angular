@@ -18,10 +18,12 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ChatService } from '../../../core/services/chat.service';
 import { CustomerChatService } from '../../../core/services/customer-chat.service';
 import { NotificationService, NotificationDto } from '../../../core/services/notification.service';
+import { TranslationService, Language } from '../../../core/services/translation.service';
 import { environment } from '../../../../environments/environment';
 import { DesignRequestService } from '../../../core/services/design-request.service';
 import { DesignerProposalService } from '../../../core/services/designer-proposal.service';
 import { GlobalMessagesService, ChatNotification } from '../../../core/services/global-messages.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-navbar',
@@ -102,7 +104,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   // State
   mobileMenuOpen = false;
   activeDropdown: 'buy' | 'invest' | 'sell' | 'renovation' | null = null;
-  language: 'EN' | 'AR' = 'EN';
+  currentLanguage: Language = 'en';
   currentPath = '';
   isLoggedIn = false;
   isDarkBgPage = false;
@@ -110,6 +112,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
   buyDropdownItems = [
     { path: '/properties', label: 'Apartments for Sale' },
     { path: '/comparison', label: 'Compare Properties' },
+    { path: '/properties?type=rent', label: 'Apartments for Rent' },
+    { path: '/properties?type=new', label: 'New Developments' },
+    { path: '/properties?type=virtual', label: 'Virtual Tour Properties (360°)' },
+    { path: '/compare', label: 'Compare Properties' },
+    { path: '/properties?featured=true', label: 'Featured Properties' }
   ];
 
   renovationDropdownItems = [
@@ -127,6 +134,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private zone: NgZone,
     private elementRef: ElementRef
+    private zone: NgZone,
+    private notificationService: NotificationService,
+    private translationService: TranslationService
   ) {
     this.router.events
       .pipe(
@@ -200,7 +210,61 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .subscribe(count => {
         this.unreadCount = count;
       });
+
+    // Subscribe to unread messages count
+    // Legacy updates removed - using GlobalMessagesService
+    // this.chatService.unreadCount$
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe(count => {
+    //     this.unreadMessageCount = count;
+    //   });
+
+    // Refresh conversation list when a new message arrives real-time
+    // Legacy updates removed
+    // this.chatService.messageReceived$
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe(() => {
+    //     this.loadConversations();
+    //   });
+
+    // Also refresh on notifications (since chat notifications also come through there)
+    this.notificationService.refresh$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // this.loadConversations();
+        // Force refresh total unread count
+        this.chatService.getTotalUnreadCount().subscribe();
+      });
+
+    // Explicitly listen to ReceiveChatNotification if available via SignalR service generic listener
+    // Note: The specific listener is inside ChatService, which broadcasts to unreadCount$
+    // We just ensure we update when that stream changes, which we already do.
+    // We add a periodic refresh just in case, or on notification arrival.
+    this.notificationService.refresh$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.chatService.getTotalUnreadCount().subscribe();
+      });
+
+    // Subscribe to language changes
+    this.translationService.language$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(lang => {
+        this.currentLanguage = lang;
+      });
   }
+
+  toggleLanguage(): void {
+    const newLang = this.currentLanguage === 'en' ? 'ar' : 'en';
+    this.setLanguage(newLang);
+  }
+
+  // loadConversations removed as it is replaced by GlobalMessagesService streams
+  loadConversations(): void {
+    // No-op or removed. 
+    // If needed for legacy reasons, we can implement it, but for now we rely on latestMessages$
+  }
+
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -211,8 +275,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.activeDropdown = name;
   }
 
-  toggleLanguage(): void {
-    this.language = this.language === 'EN' ? 'AR' : 'EN';
+  setLanguage(lang: Language): void {
+    this.translationService.setLanguage(lang);
   }
 
   toggleMobileMenu(): void {

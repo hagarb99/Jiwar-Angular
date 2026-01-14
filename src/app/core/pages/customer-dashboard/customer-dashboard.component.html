@@ -1,4 +1,4 @@
-=<!-- customer-dashboard.component.html -->
+<!-- customer-dashboard.component.html -->
 <div class="dashboard-container space-y-8">
     <!-- Header -->
     <div>
@@ -20,7 +20,7 @@
                 <i class="icon-calendar"></i>
             </div>
             <p class="stat-label">Upcoming Bookings</p>
-            <p class="stat-value">{{ bookings.filter(b => b.status === 'upcoming').length }}</p>
+            <p class="stat-value">{{ upcomingBookingsCount }}</p>
         </div>
         <div class="stat-card">
             <div class="stat-icon">
@@ -34,7 +34,7 @@
                 <i class="icon-message"></i>
             </div>
             <p class="stat-label">Active Requests</p>
-            <p class="stat-value">{{ requests.filter(r => r.status !== 'completed').length }}</p>
+            <p class="stat-value">{{ activeRequestsCount }}</p>
         </div>
     </div>
 
@@ -235,7 +235,6 @@
     </div>
 
     <!-- Additional Sections -->
-    <!-- Include app-renovation-simulator and app-investment-insights components here -->
-    <app-renovation-simulator></app-renovation-simulator>
-    <app-investment-insights></app-investment-insights>
+    <!-- <app-renovation-simulator></app-renovation-simulator> -->
+    <!-- <app-investment-insights></app-investment-insights> -->
 </div>

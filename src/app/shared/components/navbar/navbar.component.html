@@ -232,6 +232,20 @@
         </a>
 
         <!-- Language -->
+        <div class="flex items-center gap-2 text-primary/80">
+          <lucide-angular [img]="Globe" class="w-5 h-5"></lucide-angular>
+          <div class="flex items-center gap-1.5 text-xs font-bold tracking-wider">
+            <span (click)="setLanguage('en')" 
+              class="cursor-pointer hover:text-primary transition-smooth px-1" 
+              [class.text-primary]="currentLanguage === 'en'"
+              [class.opacity-40]="currentLanguage !== 'en'">EN</span>
+            <span class="text-primary/20 select-none">|</span>
+            <span (click)="setLanguage('ar')" 
+              class="cursor-pointer hover:text-primary transition-smooth px-1" 
+              [class.text-primary]="currentLanguage === 'ar'"
+              [class.opacity-40]="currentLanguage !== 'ar'">AR</span>
+          </div>
+        </div>
         <button (click)="toggleLanguage()" class="flex items-center gap-2 nav-item">
           <lucide-angular [img]="Globe"></lucide-angular>
           EN | AR
