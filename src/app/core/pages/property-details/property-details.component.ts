@@ -670,6 +670,12 @@ export class PropertyDetailsComponent implements OnInit, OnDestroy {
         isSubmitting = false;
       },
       error: (err) => {
+        if (err.status === 403) {
+          this.closeBookingModal();
+          this.router.navigate(['/subscriptions']);
+          return;
+        }
+
         let errorMessage = 'Failed to submit booking. Please try again later.';
         if (err.status === 400) {
           errorMessage = 'Invalid booking data. Please check your information and try again.';

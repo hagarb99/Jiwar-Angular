@@ -95,7 +95,7 @@
         <app-property-card *ngFor="let prop of properties" [propertyID]="prop.propertyID" [title]="prop.title"
           [location]="prop.district" [type]="'Property'" [purpose]="'sale'"
           [image]="(prop.thumbnailUrl || (prop.mediaUrls && prop.mediaUrls.length > 0 ? prop.mediaUrls[0] : '/assets/placeholder.jpg')) || ''"
-          [propertyData]="prop">
+          [price]="(prop.price | currency:'EGP ') || ''" [propertyData]="prop">
         </app-property-card>
       </div>
 

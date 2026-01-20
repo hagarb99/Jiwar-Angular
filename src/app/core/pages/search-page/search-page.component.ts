@@ -160,9 +160,10 @@ export class SearchPageComponent implements OnInit {
 
     this.propertyService.getFilteredProperties(filter).subscribe({
       next: (data) => {
-        // 'data' هنا هو المصفوفة القادمة من الباك أند مرتبة وجاهزة
-        this.properties = data;
+        // 'data' here is the array from backend
+        this.properties = data || [];
         this.isLoading = false;
+        console.log('Properties loaded:', this.properties.length);
       },
       error: (err) => {
         this.errorMessage = "Failed to load properties. Please try again.";
@@ -194,7 +195,7 @@ export class SearchPageComponent implements OnInit {
    * Formats price number to currency string
    */
   formatPrice(price: number): string {
-    return `$${price.toLocaleString()}`;
+    return `EGP ${price.toLocaleString()}`;
   }
 
   /**

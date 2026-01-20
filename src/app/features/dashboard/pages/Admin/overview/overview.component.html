@@ -30,7 +30,7 @@
                 <div class="relative z-10 flex flex-col">
                     <span class="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Gross Revenue</span>
                     <span class="text-3xl font-black text-slate-900 mt-2">{{ data.paymentMetrics.totalRevenue |
-                        currency:'SAR ':'symbol':'1.0-0' }}</span>
+                        currency:'EGP ':'symbol':'1.0-0' }}</span>
                     <div class="mt-4 flex items-center gap-2">
                         <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded-lg">{{
                             data.paymentMetrics.totalTransactions }} TXNS</span>
@@ -73,12 +73,7 @@
                     <span class="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Listing Status</span>
                     <span class="text-3xl font-black text-slate-900 mt-2">{{ data.propertyMetrics.activeListings
                         }}</span>
-                    <div class="mt-4 grid grid-cols-3 gap-2">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase">Pending</span>
-                            <span class="text-xs font-black text-orange-600">{{ data.propertyMetrics.pendingListings
-                                }}</span>
-                        </div>
+                    <div class="mt-4 grid grid-cols-2 gap-2">
                         <div class="flex flex-col">
                             <span class="text-[10px] font-bold text-slate-400 uppercase">Sale</span>
                             <span class="text-xs font-black text-blue-600">{{ data.propertyMetrics.forSaleListings

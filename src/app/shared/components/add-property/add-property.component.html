@@ -33,8 +33,8 @@
               <input pInputText formControlName="title" placeholder="e.g. Luxury Villa in Riyadh" class="w-full" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-2">Price (SAR) *</label>
-              <p-inputNumber formControlName="price" mode="currency" currency="SAR" [min]="1" class="w-full" />
+              <label class="block text-sm font-medium mb-2">Price (EGP) *</label>
+              <p-inputNumber formControlName="price" mode="currency" currency="EGP" [min]="1" class="w-full" />
             </div>
             <div class="md:col-span-2">
               <label class="block text-sm font-medium mb-2">Description *</label>
@@ -170,7 +170,7 @@
 
           <div class="bg-gray-50 p-6 rounded-xl space-y-4 text-lg">
             <p><strong>Title:</strong> {{ propertyForm.get('title')?.value || '—' }}</p>
-            <p><strong>Price:</strong> {{ propertyForm.get('price')?.value | currency:'SAR ' }}</p>
+            <p><strong>Price:</strong> {{ propertyForm.get('price')?.value | currency:'EGP ' }}</p>
             <p><strong>Location:</strong> {{ propertyForm.get('address')?.value }}, {{ propertyForm.get('city')?.value
               }} {{ propertyForm.get('district')?.value ? '(' + propertyForm.get('district')?.value + ')' : '' }}</p>
             <p><strong>Category:</strong> {{ selectedCategoryLabel }}</p>

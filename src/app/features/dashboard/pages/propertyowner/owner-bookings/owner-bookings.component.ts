@@ -35,36 +35,57 @@ export class OwnerBookingsComponent implements OnInit {
 
   loadBookings(): void {
     this.loading = true;
+    console.log('🔄 Loading owner bookings...');
 
     this.bookingService.getOwnerBookings().subscribe({
       next: (data) => {
-        this.bookings = data;
+        console.log('✅ Owner bookings loaded:', data);
+        this.bookings = data || [];
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('❌ Error loading owner bookings:', err);
         this.loading = false;
       }
     });
   }
 
+  /**
+   * Helper to safely check status regardless of type (number/string)
+   */
+  private isStatus(bookingStatus: any, targetStatus: BookingStatus): boolean {
+    if (bookingStatus === undefined || bookingStatus === null) return false;
 
+    // Direct match (number or string if backend returns "0")
+    if (bookingStatus == targetStatus) return true;
+
+    // String match (e.g. "Pending" vs BookingStatus.Pending (0))
+    if (typeof bookingStatus === 'string') {
+      const targetString = BookingStatus[targetStatus]; // e.g. "Pending"
+      if (targetString && bookingStatus.toLowerCase() === targetString.toLowerCase()) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   get pendingBookings(): Booking[] {
     return this.bookings.filter(
-      booking => booking.status === BookingStatus.Pending
+      booking => this.isStatus(booking.status, BookingStatus.Pending)
     );
   }
 
 
   get confirmedBookings(): Booking[] {
     return this.bookings.filter(
-      booking => booking.status === BookingStatus.Confirmed
+      booking => this.isStatus(booking.status, BookingStatus.Confirmed)
     );
   }
 
   get rejectedBookings(): Booking[] {
     return this.bookings.filter(
-      booking => booking.status === BookingStatus.Cancelled
+      booking => this.isStatus(booking.status, BookingStatus.Cancelled)
     );
   }
 
@@ -81,29 +102,32 @@ export class OwnerBookingsComponent implements OnInit {
   acceptBooking(booking: Booking) {
     this.bookingService
       .updateBookingStatus(booking.id, BookingStatus.Confirmed)
-      .subscribe(() => {
-        booking.status = BookingStatus.Confirmed;
+      .subscribe({
+        next: () => {
+          // Optimistic update
+          booking.status = BookingStatus.Confirmed;
+          this.loadBookings(); // Reload to be sure and update lists
+        },
+        error: (err) => console.error('Error accepting booking', err)
       });
   }
 
   rejectBooking(booking: Booking) {
     this.bookingService
       .updateBookingStatus(booking.id, BookingStatus.Cancelled)
-      .subscribe(() => {
-        booking.status = BookingStatus.Cancelled;
+      .subscribe({
+        next: () => {
+          booking.status = BookingStatus.Cancelled;
+          this.loadBookings();
+        },
+        error: (err) => console.error('Error rejecting booking', err)
       });
   }
 
   getStatusClass(status: BookingStatus): string {
-    switch (status) {
-      case BookingStatus.Confirmed:
-        return 'bg-green-100 text-green-800';
-      case BookingStatus.Cancelled:
-        return 'bg-red-100 text-red-800';
-      case BookingStatus.Pending:
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+    if (this.isStatus(status, BookingStatus.Confirmed)) return 'bg-green-100 text-green-800';
+    if (this.isStatus(status, BookingStatus.Cancelled)) return 'bg-red-100 text-red-800';
+    if (this.isStatus(status, BookingStatus.Pending)) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-gray-100 text-gray-800';
   }
 }

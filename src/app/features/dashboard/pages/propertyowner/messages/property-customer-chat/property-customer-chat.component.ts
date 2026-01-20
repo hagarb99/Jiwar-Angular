@@ -134,7 +134,7 @@ export class PropertyCustomerChatComponent implements OnInit, OnDestroy, AfterVi
       next: (msgs) => {
         this.messages = msgs.map(m => ({
           senderId: m.senderId,
-          message: m.messageText,
+          message: m.messageText, // Normalized by service now
           sentDate: m.createdAt,
           isSelf: m.isMine
         }));

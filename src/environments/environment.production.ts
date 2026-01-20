@@ -1,5 +1,5 @@
 export const environment = {
     production: true,
-    apiBaseUrl: 'https://localhost:5001/api',
-    assetsBaseUrl: 'https://localhost:5001'
-}
+    apiBaseUrl: 'http://jiwar.runasp.net/api',
+    assetsBaseUrl: 'http://jiwar.runasp.net'
+};

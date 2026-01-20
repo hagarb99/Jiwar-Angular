@@ -8,11 +8,9 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
-enum PropEnum {
-  Pending = 0,
-  Approved = 1,
-  Rejected = 2,
-  Archived = 3
+// Extended interface for frontend simulation
+interface AdminPropertyExtended extends AdminPropertyDto {
+  isBooked?: boolean;
 }
 
 @Component({
@@ -28,19 +26,17 @@ export class PropertiesListComponent implements OnInit {
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
 
-  properties: AdminPropertyDto[] = [];
-  filteredProperties: AdminPropertyDto[] = [];
+  properties: AdminPropertyExtended[] = [];
+  filteredProperties: AdminPropertyExtended[] = [];
   isLoading = false;
   searchTerm = '';
-  selectedStatus = '';
+  selectedStatus = 'all'; // 'all', 'booked', 'unbooked'
 
-  PropEnum = PropEnum;
+  // Updated statuses for the filter
   statuses = [
-    { label: 'All', value: '' },
-    { label: 'Pending', value: PropEnum.Pending },
-    { label: 'Approved', value: PropEnum.Approved },
-    { label: 'Rejected', value: PropEnum.Rejected },
-    { label: 'Archived', value: PropEnum.Archived }
+    { label: 'All', value: 'all' },
+    { label: 'Booked', value: 'booked' },
+    { label: 'Unbooked', value: 'unbooked' }
   ];
 
   ngOnInit(): void {
@@ -52,14 +48,21 @@ export class PropertiesListComponent implements OnInit {
     this.adminService.getAllProperties().subscribe({
       next: (data: AdminPropertyDto[]) => {
         if (Array.isArray(data)) {
-          this.properties = data;
-          this.filteredProperties = data;
+          // Map and simulate "static data" for Booked/Unbooked
+          // We will deterministically assign it based on ID to be consistent (e.g. even IDs are booked)
+          this.properties = data.map(p => ({
+            ...p,
+            isBooked: p.id % 2 === 0 // Even IDs are booked, Odd are unbooked (Simulation)
+          }));
+          this.filteredProperties = [...this.properties];
         } else {
           console.warn('Expected array for properties but got:', data);
           this.properties = [];
           this.filteredProperties = [];
         }
         this.isLoading = false;
+        // Apply initial filter if any
+        this.filterProperties();
       },
       error: (err: any) => {
         console.error('Error loading properties:', err);
@@ -75,34 +78,14 @@ export class PropertiesListComponent implements OnInit {
         property.city.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         property.ownerName.toLowerCase().includes(this.searchTerm.toLowerCase());
 
-      const matchesStatus = this.selectedStatus === '' ||
-        property.status === Number(this.selectedStatus);
+      let matchesStatus = true;
+      if (this.selectedStatus === 'booked') {
+        matchesStatus = property.isBooked === true;
+      } else if (this.selectedStatus === 'unbooked') {
+        matchesStatus = property.isBooked === false;
+      }
 
       return matchesSearch && matchesStatus;
-    });
-  }
-
-  updatePropertyStatus(propertyId: number, newStatus: PropEnum, propertyTitle: string): void {
-    this.confirmationService.confirm({
-      message: `Update status for "${propertyTitle}"?`,
-      header: 'Status Confirmation',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.adminService.updatePropertyStatus(propertyId, newStatus).subscribe({
-          next: () => {
-            const property = this.properties.find(p => p.id === propertyId);
-            if (property) {
-              property.status = newStatus;
-            }
-            this.filterProperties();
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Property status updated successfully' });
-          },
-          error: (err: any) => {
-            console.error('Error updating property status:', err);
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update property status' });
-          }
-        });
-      }
     });
   }
 
@@ -113,15 +96,11 @@ export class PropertiesListComponent implements OnInit {
       City: p.city,
       Owner: p.ownerName,
       Price: p.price || 0,
-      Status: PropEnum[p.status],
+      Status: p.isBooked ? 'Booked' : 'Unbooked',
       Created: p.createdDate
     }));
 
     ExcelExportHelper.exportToExcel(dataToExport, 'properties_list');
-  }
-
-  getStatusLabel(status: number): string {
-    return PropEnum[status] || 'Unknown';
   }
 
   getPropertyTypeName(type?: PropertyType): string {
@@ -139,14 +118,10 @@ export class PropertiesListComponent implements OnInit {
     }
   }
 
-  getStatusBadgeClass(status: number): string {
-    const statusClasses: { [key: number]: string } = {
-      [PropEnum.Pending]: 'bg-yellow-100 text-yellow-700',
-      [PropEnum.Approved]: 'bg-green-100 text-green-700',
-      [PropEnum.Rejected]: 'bg-red-100 text-red-700',
-      [PropEnum.Archived]: 'bg-gray-100 text-gray-700'
-    };
-    return statusClasses[status] || 'bg-gray-100 text-gray-700';
+  getStatusBadgeClass(isBooked?: boolean): string {
+    return isBooked
+      ? 'bg-green-100 text-green-700' // Booked
+      : 'bg-gray-100 text-gray-700';  // Unbooked
   }
 }
 

@@ -53,7 +53,7 @@
                 <ng-container *ngIf="!loading; else loadingTemplate">
                     <app-property-card *ngFor="let prop of properties"
                         [image]="prop.thumbnailUrl || '/assets/logo2.png'" [title]="prop.title" [location]="prop.city"
-                        [price]="(prop.price | currency) || ''" [type]="getPropertyTypeName(prop.propertyType)"
+                        [price]="(prop.price | currency:'EGP ') || ''" [type]="getPropertyTypeName(prop.propertyType)"
                         [propertyID]="prop.propertyID" [propertyData]="prop" purpose="For Sale" />
                 </ng-container>
                 <ng-template #loadingTemplate>

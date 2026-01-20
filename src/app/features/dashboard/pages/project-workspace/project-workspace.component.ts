@@ -177,7 +177,7 @@ export class ProjectWorkspaceComponent implements OnInit, OnDestroy {
 
                 this.loading = false;
                 console.log('✅ Workspace data loaded (Robust):', this.workspaceData);
-                console.log(`📜 Found ${chatHistory.length} messages in API response`);
+                console.log(`📜 Found ${chatHistory ? chatHistory.length : 0} messages in API response`);
 
                 // Backend auto-marks as read when fetching workspace
                 // Wait a bit to ensure the backend completes the mark-as-read operation
@@ -188,19 +188,30 @@ export class ProjectWorkspaceComponent implements OnInit, OnDestroy {
                     });
                 }, 500);
 
+                const currentUserId = this.authService.getUserId();
+
                 // Load Chat History
-                if (chatHistory && chatHistory.length > 0) {
-                    this.messages = chatHistory.map((m: any) => ({
-                        senderId: m.senderId || m.SenderId || m.senderID || m.SenderID,
-                        senderName: m.senderName || m.SenderName || ((m.senderId || m.SenderId || m.senderID || m.SenderID) === this.currentUser.id ? 'Me' : 'User'),
-                        senderPhoto: m.senderPhoto || m.SenderPhoto,
-                        message: m.messageText || m.MessageText || m.message || m.Message || '',
-                        messageText: m.messageText || m.MessageText || m.message || m.Message || '',
-                        messageType: m.messageType ?? m.MessageType ?? 0,
-                        timestamp: new Date(m.sentDate || m.SentDate),
-                        isMe: (m.senderId || m.SenderId || m.senderID || m.SenderID) === this.currentUser.id,
-                        isRead: m.isRead || m.IsRead
-                    }));
+                // Handle various casing for ChatHistory/chatHistory
+                const rawChatHistory = chatHistory || [];
+                console.log('📜 [Workspace] Raw Chat History:', rawChatHistory);
+
+                if (rawChatHistory && rawChatHistory.length > 0) {
+                    this.messages = rawChatHistory.map((m: any) => {
+                        const sId = m.senderId || m.SenderId || m.senderID || m.SenderID;
+                        const isMe = sId === currentUserId;
+                        return {
+                            senderId: sId,
+                            senderName: m.senderName || m.SenderName || (isMe ? 'Me' : 'User'),
+                            senderPhoto: m.senderPhoto || m.SenderPhoto,
+                            // Extremely robust message extraction
+                            message: m.messageText || m.MessageText || m.message || m.Message || m.text || m.Text || m.content || m.Content || '',
+                            messageText: m.messageText || m.MessageText || m.message || m.Message || m.text || m.Text || m.content || m.Content || '',
+                            messageType: m.messageType ?? m.MessageType ?? 0,
+                            timestamp: new Date(m.sentDate || m.SentDate || m.createdAt || m.CreatedAt),
+                            isMe: isMe,
+                            isRead: m.isRead || m.IsRead
+                        };
+                    });
                     this.scrollToBottom();
                 } else {
                     console.log('⚠️ No chat history found to display');

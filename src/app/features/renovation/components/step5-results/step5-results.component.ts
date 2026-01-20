@@ -50,6 +50,7 @@ export class Step5ResultsComponent implements OnInit, OnDestroy {
             next: (res) => {
                 if (res?.recommendations?.length) {
                     this.result = res;
+
                     this.isLoading = false;
                 } else {
                     // AI لسه بيشتغل → استنى وجرب تاني
@@ -80,17 +81,11 @@ export class Step5ResultsComponent implements OnInit, OnDestroy {
     // Helpers
     // ===============================
 
-    getRecommendations(category: 'technical' | 'functional' | 'design') {
+    getRecommendations(category: 'Technical' | 'Functional' | 'Design') {
         if (!this.result?.recommendations) return [];
 
-        const map: Record<'technical' | 'functional' | 'design', number> = {
-            technical: 0,
-            functional: 1,
-            design: 2
-        };
-
         return this.result.recommendations.filter(
-            r => r.category === map[category]
+            r => r.category === category
         );
     }
 

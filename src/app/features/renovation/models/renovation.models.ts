@@ -67,7 +67,7 @@ export interface SimulationGoalsDto {
 }
 
 export interface SimulationRecommendationDto {
-  category: RecommendationCategoryEnum; // or string if mapped from backend enum string
+  category: string; // or string if mapped from backend enum string
   title: string;
   description: string;
   severity: RecommendationSeverityEnum;

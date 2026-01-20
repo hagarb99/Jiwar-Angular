@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed, DestroyRef, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel, HttpTransportType } from '@microsoft/signalr';
-import { Observable, tap, catchError, of, Subject } from 'rxjs';
+import { Observable, tap, catchError, of, Subject, map } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
@@ -411,14 +411,33 @@ export class CustomerPropertyChatService {
      * so NO separate mark-read call is needed.
      */
     public loadChatHistory(propertyId: number, customerId: string): Observable<MessageDto[]> {
-        return this.http.get<MessageDto[]>(`${this.apiUrl}/history`, {
+        return this.http.get<any>(`${this.apiUrl}/history`, {
             params: {
                 propertyId: propertyId.toString(),
                 customerId: customerId
             }
         }).pipe(
+            map((response: any) => {
+                // Robust: Handle if response is array OR object with data property
+                const rawMessages = Array.isArray(response) ? response : (response?.data || response?.result || []);
+
+                console.log('📜 [CustomerPropertyChat] Raw Response:', rawMessages);
+
+                // Normalize message fields
+                return rawMessages.map((m: any) => ({
+                    id: m.id || m.Id,
+                    senderId: m.senderId || m.SenderId || m.senderID || m.SenderID,
+                    senderName: m.senderName || m.SenderName,
+                    // Robust check for message content including common variations
+                    messageText: m.messageText || m.MessageText || m.message || m.Message || m.text || m.Text || m.content || m.Content || '',
+                    createdAt: m.createdAt || m.CreatedAt || m.sentDate || m.SentDate,
+                    isRead: m.isRead || m.IsRead,
+                    isMine: m.isMine || m.IsMine,
+                    propertyId: m.propertyId || m.PropertyId
+                } as MessageDto));
+            }),
             tap(messages => {
-                console.log('📜 [CustomerPropertyChat] History loaded:', messages);
+                console.log('📜 [CustomerPropertyChat] History loaded (Normalized):', messages);
                 this._messages.set(messages || []);
             }),
             catchError(err => {

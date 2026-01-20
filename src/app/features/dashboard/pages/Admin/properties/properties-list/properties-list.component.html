@@ -6,7 +6,7 @@
     <div class="mb-6 flex justify-between items-center">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Properties Management</h1>
-            <p class="text-gray-600 mt-2">Manage and approve property listings</p>
+            <p class="text-gray-600 mt-2">Manage property listings</p>
         </div>
         <button (click)="exportToExcel()"
             class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center">
@@ -68,8 +68,7 @@
                             Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Created</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions</th>
+                        <!-- Actions column removed -->
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -94,32 +93,14 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span
-                                [class]="'px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getStatusBadgeClass(property.status)">
-                                {{ getStatusLabel(property.status) }}
+                                [class]="'px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getStatusBadgeClass(property.isBooked)">
+                                {{ property.isBooked ? 'Booked' : 'Unbooked' }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ property.createdDate | date: 'MMM d, y' }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <div class="flex gap-2">
-                                <button *ngIf="property.status === PropEnum.Pending"
-                                    (click)="updatePropertyStatus(property.id, PropEnum.Approved, property.title)"
-                                    class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors">
-                                    Approve
-                                </button>
-                                <button *ngIf="property.status === PropEnum.Pending"
-                                    (click)="updatePropertyStatus(property.id, PropEnum.Rejected, property.title)"
-                                    class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors">
-                                    Reject
-                                </button>
-                                <button *ngIf="property.status !== PropEnum.Archived"
-                                    (click)="updatePropertyStatus(property.id, PropEnum.Archived, property.title)"
-                                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors">
-                                    Archive
-                                </button>
-                            </div>
-                        </td>
+                        <!-- Actions cell removed -->
                     </tr>
                 </tbody>
             </table>
